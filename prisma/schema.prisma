@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String             @id @default(uuid())
+  firstName          String
+  lastName           String
+  email              String             @unique
+  password           String // Hashed password for login
+  organizations      UserOrganization[]
+  ownedOrganizations Organization[] // A user can own multiple organizations
+  createdAt          DateTime           @default(now())
+}
+
+model Organization {
+  id        String             @id @default(uuid())
+  name      String             @unique
+  ownerId   String             @unique // Each organization must have only one owner
+  owner     User               @relation(fields: [ownerId], references: [id])
+  users     UserOrganization[]
+  invites   Invite[]
+  createdAt DateTime           @default(now())
+}
+
+model UserOrganization {
+  id             String @id @default(uuid())
+  userId         String
+  organizationId String
+  role           Role
+
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId]) // Prevents duplicate memberships
+}
+
+enum Role {
+  OWNER // Creator of the organization
+  ADMIN // Can manage users, roles, and exams
+  INSTRUCTOR // Can create and manage exams
+  STUDENT // Can take exams
+}
+
+model Invite {
+  id             String       @id @default(uuid())
+  code           String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  role           Role
+  expiresAt      DateTime
+  used           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+}
