@@ -1,8 +1,33 @@
-import { auth } from "@/auth";
-import Navbar from "@/components/navbar";
+"use client"; // Add this to make the component client-side
 
-export default async function LandingPage() {
-    const session = await auth();
+import Navbar from "@/components/navbar";
+import { ArrowUp } from "lucide-react"; // Import an icon for the scroll-to-top button
+import { useEffect, useState } from "react";
+
+export default function LandingPage() {
+    const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+    // Add scroll event listener
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > window.innerHeight) {
+                setShowScrollToTop(true);
+            } else {
+                setShowScrollToTop(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    // Scroll to top function
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
 
     return (
         <div>
@@ -53,6 +78,16 @@ export default async function LandingPage() {
             >
                 Report a Bug Section
             </section>
+
+            {/* Scroll-to-Top Button */}
+            {showScrollToTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 p-6 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-all"
+                >
+                    <ArrowUp className="h-8 w-8" />
+                </button>
+            )}
         </div>
     );
 }
