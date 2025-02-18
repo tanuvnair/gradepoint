@@ -21,83 +21,117 @@ const Navbar = () => {
         "Contact Us",
         "Report A Bug",
     ];
+
     const [selectedNavItem, setSelectedNavItem] = useState(navbarList[0]);
 
+    // Smooth scroll function
+    const smoothScroll = (id: string) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "start", // Aligns the element to the top of the viewport
+            });
+        }
+    };
+
+    // Scroll to top function
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
+
     return (
-        <header className="flex flex-row items-center justify-between p-8  sticky top-0 z-50 bg-white shadow-md">
+        <header className="flex flex-row items-center justify-between p-6 md:p-10 sticky top-0 z-50 bg-background shadow-lg">
+            {/* Logo */}
             <div>
-                <Link
-                    href="/"
-                    className="text-2xl md:text-3xl font-bold text-primary"
+                <a
+                    href="#top"
+                    className="text-2xl md:text-3xl font-bold text-primary hover:text-secondary hover:transition-all"
+                    onClick={(e) => {
+                        e.preventDefault(); // Prevent default anchor behavior
+                        scrollToTop(); // Smooth scroll to the top
+                    }}
                 >
                     GradePoint
-                </Link>
+                </a>
             </div>
-            <div className="hidden md:flex items-center gap-24 text-card-foreground">
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-8 lg:gap-24 text-card-foreground scroll-smooth">
                 {navbarList.map((item, index) => (
                     <a
                         href={`#${item.toLowerCase().replace(/\s+/g, "")}`}
-                        className={`font-semibold hover:transition-all hover:underline ${
-                            selectedNavItem === item ? "underline" : ""
-                        }`}
+                        className={`font-semibold hover:transition-all hover:underline`}
                         key={index}
-                        onClick={() => setSelectedNavItem(item)}
+                        onClick={(e) => {
+                            e.preventDefault(); // Prevent default anchor behavior
+                            const id = item.toLowerCase().replace(/\s+/g, "");
+                            smoothScroll(id); // Smooth scroll to the target section
+                            setSelectedNavItem(item); // Update selected nav item
+                        }}
                     >
                         {item}
                     </a>
                 ))}
             </div>
-            <div className="flex items-center gap-2">
-                <Button
-                    className="hidden md:block ml-2"
-                    variant={"link"}
-                    onClick={() => router.push("/signin")}
-                >
+
+            {/* Desktop Buttons */}
+            <div className="hidden md:flex items-center gap-2">
+                <Button variant={"link"} onClick={() => router.push("/signin")}>
                     Sign In
                 </Button>
                 <Button
-                    className="hidden md:block ml-2"
                     variant={"default"}
                     onClick={() => router.push("/signup")}
                 >
                     Get Started
                 </Button>
-                <div className="md:hidden flex items-center">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon">
-                                <Menu className="h-5 w-5" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                                <a href="#features">Features</a>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <a href="#pricing">Pricing</a>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <a href="#faqs">FAQs</a>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Link
-                                    href="/signin"
-                                    className="w-full text-sm block md:hidden"
+            </div>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden flex items-center">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon">
+                            <Menu className="h-5 w-5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                        {navbarList.map((item, index) => (
+                            <DropdownMenuItem key={index}>
+                                <a
+                                    href={`#${item
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "")}`}
+                                    className="w-full"
+                                    onClick={(e) => {
+                                        e.preventDefault(); // Prevent default anchor behavior
+                                        const id = item
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "");
+                                        smoothScroll(id); // Smooth scroll to the target section
+                                        setSelectedNavItem(item); // Update selected nav item
+                                    }}
                                 >
-                                    Sign In
-                                </Link>
+                                    {item}
+                                </a>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Link
-                                    href="/signup"
-                                    className="w-full text-sm block md:hidden"
-                                >
-                                    Get Started
-                                </Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+                        ))}
+                        <DropdownMenuItem>
+                            <Link href="/signin" className="w-full text-sm">
+                                Sign In
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Link href="/signup" className="w-full text-sm">
+                                Get Started
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
     );

@@ -9,7 +9,7 @@ export default async function LandingPage() {
             <Navbar />
             <section
                 id="features"
-                className="h-screen w-full bg-black flex items-center justify-center text-white text-2xl"
+                className="h-screen w-full bg-background flex items-center justify-center text-foreground text-2xl"
             >
                 Features Section
             </section>
