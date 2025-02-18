@@ -1,10 +1,15 @@
 import { hashPassword } from "@/lib/hashing"
 import { prisma } from "@/lib/prisma"
+import { signInSchema } from "@/lib/schema"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 
+const adapter = PrismaAdapter(prisma);
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
+    adapter,
+    providers: [
     Credentials({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
       // e.g. domain, username, password, 2FA token, etc.
@@ -13,13 +18,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: {},
       },
       authorize: async (credentials) => {
-        let user = null
+        const validatedCredentials = signInSchema.parse(credentials)
 
         // logic to salt and hash password
-        const pwHash = hashPassword(credentials.password as string)
+        const pwHash = hashPassword(validatedCredentials.password);
 
-        user = await prisma.user.findUnique({
-            where: { email: credentials.email , password: pwHash },
+        const user = await prisma.user.findUnique({
+            where: { email: validatedCredentials.email , password: pwHash },
         });
 
         if (!user) {

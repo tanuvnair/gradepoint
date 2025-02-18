@@ -22,19 +22,13 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signUpSchema } from "@/lib/schema";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-const formSchema = z.object({
-    firstName: z.string().nonempty(),
-    lastName: z.string().nonempty(),
-    email: z.string().email(),
-    password: z.string().min(8),
-});
 
 type ApiError = {
     status: number;
@@ -51,17 +45,16 @@ export function SignUpForm({
         statusText: "",
     });
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof signUpSchema>>({
+        resolver: zodResolver(signUpSchema),
         defaultValues: {
-            firstName: "",
-            lastName: "",
+            name: "",
             email: "",
             password: "",
         },
     });
 
-    async function onSignUp(values: z.infer<typeof formSchema>) {
+    async function onSignUp(values: z.infer<typeof signUpSchema>) {
         try {
             const response = await fetch("/api/auth/signup", {
                 method: "POST",
@@ -117,33 +110,13 @@ export function SignUpForm({
                                 <div className="grid gap-2">
                                     <FormField
                                         control={form.control}
-                                        name="firstName"
+                                        name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>
-                                                    First Name
-                                                </FormLabel>
+                                                <FormLabel>Your Name</FormLabel>
                                                 <FormControl>
                                                     <Input
-                                                        placeholder="First Name"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <FormField
-                                        control={form.control}
-                                        name="lastName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Last Name</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        placeholder="Last Name"
+                                                        placeholder="Your Name"
                                                         {...field}
                                                     />
                                                 </FormControl>
