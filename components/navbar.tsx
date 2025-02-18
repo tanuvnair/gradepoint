@@ -10,7 +10,7 @@ import {
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
     const router = useRouter();
@@ -23,6 +23,20 @@ const Navbar = () => {
     ];
 
     const [selectedNavItem, setSelectedNavItem] = useState(navbarList[0]);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 0) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     const smoothScroll = (id: string) => {
         const element = document.getElementById(id);
@@ -42,12 +56,18 @@ const Navbar = () => {
     };
 
     return (
-        <header className="flex flex-row items-center justify-between p-4 md:p-6 lg:p-10 sticky top-0 z-50 bg-background shadow-lg">
+        <header
+            className={`fixed w-full flex flex-row items-center justify-between p-4 md:p-6 lg:p-10 top-0 z-50 transition-all duration-300 ${
+                isScrolled
+                    ? "bg-background/95 shadow-lg backdrop-blur-sm"
+                    : "bg-transparent shadow-none"
+            }`}
+        >
             {/* Logo */}
             <div>
                 <a
                     href="#top"
-                    className="text-xl md:text-2xl lg:text-3xl font-bold text-primary hover:text-secondary hover:transition-all"
+                    className="text-xl md:text-2xl lg:text-3xl font-bold text-primary hover:text-foreground hover:transition-all"
                     onClick={(e) => {
                         e.preventDefault();
                         scrollToTop();
