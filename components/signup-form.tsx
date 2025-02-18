@@ -1,8 +1,10 @@
 "use client";
 
 // Icons
+import { AlertCircle } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -23,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -33,10 +36,21 @@ const formSchema = z.object({
     password: z.string().min(8),
 });
 
+type ApiError = {
+    status: number;
+    statusText: string;
+};
+
 export function SignUpForm({
     className,
     ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState({
+        status: 0,
+        statusText: "",
+    });
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -47,12 +61,48 @@ export function SignUpForm({
         },
     });
 
-    function onSignUp(values: z.infer<typeof formSchema>) {
-        console.log(values);
+    async function onSignUp(values: z.infer<typeof formSchema>) {
+        try {
+            const response = await fetch("/api/auth/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(values),
+            });
+
+            if (!response.ok) {
+                throw {
+                    status: response.status,
+                    statusText: response.statusText,
+                };
+            }
+        } catch (error: unknown) {
+            if (
+                typeof error === "object" &&
+                error !== null &&
+                "status" in error &&
+                "statusText" in error
+            ) {
+                setAlertMessage(error as ApiError);
+            }
+            setShowAlert(true);
+            console.log(alertMessage);
+        }
     }
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
+            {showAlert && (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        {alertMessage.status} {alertMessage.statusText}
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl">Sign Up</CardTitle>
@@ -63,7 +113,7 @@ export function SignUpForm({
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSignUp)}>
-                            <div className="flex flex-col gap-6">
+                            <div className="flex flex-col gap-4">
                                 <div className="grid gap-2">
                                     <FormField
                                         control={form.control}
@@ -141,7 +191,7 @@ export function SignUpForm({
                                     />
                                 </div>
 
-                                <div className="flex gap-4 flex-col lg:flex-row">
+                                <div className="mt-2 flex gap-4 flex-col lg:flex-row">
                                     <Button type="submit" className="w-full">
                                         Sign Up
                                     </Button>
