@@ -1,7 +1,7 @@
 "use client";
 
 // Icons
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCheck } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -30,20 +30,18 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-type ApiError = {
-    status: number;
-    statusText: string;
+type AlertType = {
+    variant: "default" | "destructive";
+    type: string;
+    title: string;
+    message: string;
 };
 
 export function SignUpForm({
     className,
     ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-    const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState({
-        status: 0,
-        statusText: "",
-    });
+    const [alert, setAlert] = useState<AlertType | null>();
 
     const form = useForm<z.infer<typeof signUpSchema>>({
         resolver: zodResolver(signUpSchema),
@@ -55,6 +53,8 @@ export function SignUpForm({
     });
 
     async function onSignUp(values: z.infer<typeof signUpSchema>) {
+        setAlert(null);
+
         try {
             const response = await fetch("/api/auth/signup", {
                 method: "POST",
@@ -64,38 +64,45 @@ export function SignUpForm({
                 body: JSON.stringify(values),
             });
 
-            if (response.ok) {
-
-            }
             if (!response.ok) {
-                throw {
-                    status: response.status,
-                    statusText: response.statusText,
-                };
+                setAlert({
+                    variant: "destructive",
+                    type: "error",
+                    title: "Error",
+                    message: "Something went wrong :/",
+                });
+            } else {
+                setAlert({
+                    variant: "default",
+                    type: "success",
+                    title: "Success!",
+                    message:
+                        "An email has been sent to your mail for verification",
+                });
             }
         } catch (error: unknown) {
-            if (
-                typeof error === "object" &&
-                error !== null &&
-                "status" in error &&
-                "statusText" in error
-            ) {
-                setAlertMessage(error as ApiError);
-            }
-            setShowAlert(true);
-            console.log(alertMessage);
+            setAlert({
+                variant: "destructive",
+                type: "error",
+                title: "Error",
+                message: error as string,
+            });
         }
     }
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            {showAlert && (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>
-                        {alertMessage.status} {alertMessage.statusText}
-                    </AlertDescription>
+            {alert && (
+                <Alert variant={alert.variant}>
+                    {alert.type === "success" ? (
+                        <CheckCheck />
+                    ) : alert.type === "error" ? (
+                        <AlertCircle />
+                    ) : null}
+                    <div className="ml-2 mt-1">
+                        <AlertTitle>{alert.title}</AlertTitle>
+                        <AlertDescription>{alert.message}</AlertDescription>
+                    </div>
                 </Alert>
             )}
 
