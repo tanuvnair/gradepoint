@@ -1,4 +1,6 @@
-import { signIn } from "@/auth";
+"use client";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -10,15 +12,82 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { AlertCircle, CheckCheck } from "lucide-react";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
+
+type AlertType = {
+    variant: "default" | "destructive";
+    type: string;
+    title: string;
+    message: string;
+};
 
 export function SignInForm({
     className,
     ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+    const [alert, setAlert] = useState<AlertType | null>();
+
+    async function onSignIn(formData: FormData) {
+        setAlert(null);
+
+        try {
+            const email = formData.get("email") as string;
+            const password = formData.get("password") as string;
+
+            const response = await signIn("credentials", {
+                redirect: false,
+                email,
+                password,
+            });
+
+            if (response?.error) {
+                setAlert({
+                    variant: "destructive",
+                    type: "error",
+                    title: "Error",
+                    message: "Invalid email or password",
+                });
+            } else {
+                setAlert({
+                    variant: "default",
+                    type: "success",
+                    title: "Success!",
+                    message: "Successfully signed in",
+                });
+            }
+        } catch (error: unknown) {
+            setAlert({
+                variant: "destructive",
+                type: "error",
+                title: "Error",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Something went wrong during sign-in",
+            });
+        }
+    }
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
+            {alert && (
+                <Alert variant={alert.variant}>
+                    {alert.type === "success" ? (
+                        <CheckCheck />
+                    ) : alert.type === "error" ? (
+                        <AlertCircle />
+                    ) : null}
+                    <div className="ml-2 mt-1">
+                        <AlertTitle>{alert.title}</AlertTitle>
+                        <AlertDescription>{alert.message}</AlertDescription>
+                    </div>
+                </Alert>
+            )}
+
             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl">Sign In</CardTitle>
@@ -27,12 +96,7 @@ export function SignInForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form
-                        action={async (formData) => {
-                            "use server";
-                            await signIn("credentials", formData);
-                        }}
-                    >
+                    <form action={onSignIn}>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email</Label>
@@ -66,7 +130,11 @@ export function SignInForm({
                                 <Button type="submit" className="w-full">
                                     Sign In
                                 </Button>
-                                <Button variant="outline" className="w-full">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                >
                                     <FaGoogle />
                                     Sign In with Google
                                 </Button>

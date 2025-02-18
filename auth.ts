@@ -1,41 +1,52 @@
-import { hashPassword } from "@/lib/hashing"
-import { prisma } from "@/lib/prisma"
-import { signInSchema } from "@/lib/schema"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
+import { prisma } from "@/lib/prisma";
+import { signInSchema } from "@/lib/schema";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import bcrypt from "bcryptjs";
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
 const adapter = PrismaAdapter(prisma);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter,
     providers: [
-    Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      credentials: {
-        email: {},
-        password: {},
-      },
-      authorize: async (credentials) => {
-        const validatedCredentials = signInSchema.parse(credentials)
+        Credentials({
+            credentials: {
+                email: {},
+                password: {},
+            },
+            authorize: async (credentials) => {
+                let user = null;
 
-        // logic to salt and hash password
-        const pwHash = hashPassword(validatedCredentials.password);
+                const { email, password } = await signInSchema.parseAsync(
+                    credentials
+                );
 
-        const user = await prisma.user.findUnique({
-            where: { email: validatedCredentials.email , password: pwHash },
-        });
+                try {
+                    user = await prisma.user.findUnique({
+                        where: {
+                            email: email,
+                        },
+                    });
 
-        if (!user) {
-          // No user found, so this is their first attempt to login
-          // Optionally, this is also the place you could do a user registration
-          throw new Error("Invalid credentials.")
-        }
+                    if (!user) {
+                        return null;
+                    }
 
-        // return user object with their profile data
-        return user
-      },
-    }),
-  ],
-})
+                    if (
+                        user &&
+                        (await bcrypt.compare(
+                            password,
+                            user.password as string
+                        ))
+                    ) {
+                        return user
+                    }
+                } catch (error) {
+                    console.log("Error during auth", error);
+                    return null;
+                }
+            },
+        }),
+    ],
+});
