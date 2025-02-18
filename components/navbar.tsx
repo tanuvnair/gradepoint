@@ -42,12 +42,12 @@ const Navbar = () => {
     };
 
     return (
-        <header className="flex flex-row items-center justify-between p-6 md:p-10 sticky top-0 z-50 bg-background shadow-lg">
+        <header className="flex flex-row items-center justify-between p-4 md:p-6 lg:p-10 sticky top-0 z-50 bg-background shadow-lg">
             {/* Logo */}
             <div>
                 <a
                     href="#top"
-                    className="text-2xl md:text-3xl font-bold text-primary hover:text-secondary hover:transition-all"
+                    className="text-xl md:text-2xl lg:text-3xl font-bold text-primary hover:text-secondary hover:transition-all"
                     onClick={(e) => {
                         e.preventDefault();
                         scrollToTop();
@@ -58,11 +58,11 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8 lg:gap-24 text-card-foreground scroll-smooth">
+            <div className="hidden md:flex items-center gap-4 lg:gap-8 xl:gap-24 text-card-foreground scroll-smooth">
                 {navbarList.map((item, index) => (
                     <a
                         href={`#${item.toLowerCase().replace(/\s+/g, "")}`}
-                        className={`font-semibold hover:transition-all hover:underline`}
+                        className={`font-semibold hover:transition-all hover:underline text-sm lg:text-base`}
                         key={index}
                         onClick={(e) => {
                             e.preventDefault();
