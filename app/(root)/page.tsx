@@ -1,19 +1,23 @@
-"use client"; // Add this to make the component client-side
+"use client";
 
 import Navbar from "@/components/navbar";
-import { ArrowUp } from "lucide-react"; // Import an icon for the scroll-to-top button
-import { useEffect, useState } from "react";
+import { ArrowUp } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function LandingPage() {
     const [showScrollToTop, setShowScrollToTop] = useState(false);
+    const heroSectionRef = useRef<HTMLElement>(null);
 
-    // Add scroll event listener
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > window.innerHeight) {
-                setShowScrollToTop(true);
-            } else {
-                setShowScrollToTop(false);
+            if (heroSectionRef.current) {
+                const heroSectionBottom =
+                    heroSectionRef.current.getBoundingClientRect().bottom;
+                if (heroSectionBottom <= 0) {
+                    setShowScrollToTop(true);
+                } else {
+                    setShowScrollToTop(false);
+                }
             }
         };
 
@@ -21,7 +25,6 @@ export default function LandingPage() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // Scroll to top function
     const scrollToTop = () => {
         window.scrollTo({
             top: 0,
@@ -35,6 +38,7 @@ export default function LandingPage() {
             {/* Hero Section */}
             <section
                 id="top"
+                ref={heroSectionRef}
                 className="min-h-screen w-full flex items-center justify-center bg-purple-500"
             >
                 <div className="text-center">
@@ -80,14 +84,16 @@ export default function LandingPage() {
             </section>
 
             {/* Scroll-to-Top Button */}
-            {showScrollToTop && (
-                <button
-                    onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 p-6 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-all"
-                >
-                    <ArrowUp className="h-8 w-8" />
-                </button>
-            )}
+            <button
+                onClick={scrollToTop}
+                className={`fixed bottom-8 right-8 p-6 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-all duration-300 ${
+                    showScrollToTop
+                        ? "opacity-100"
+                        : "opacity-0 pointer-events-none"
+                }`}
+            >
+                <ArrowUp className="h-8 w-8" />
+            </button>
         </div>
     );
 }
