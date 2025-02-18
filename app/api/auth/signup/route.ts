@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
         if (existingUser) {
             return NextResponse.json(
-                { error: "Email already in use" },
+                { message: "Email already in use" },
                 { status: 400 }
             );
         }
@@ -35,6 +35,9 @@ export async function POST(req: NextRequest) {
             { status: 201 }
         );
     } catch {
-        throw new Error("User creation failed");
+        return NextResponse.json(
+            { message: "User creation failed" },
+            { status: 400 }
+        );
     }
 }

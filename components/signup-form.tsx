@@ -67,21 +67,14 @@ export function SignUpForm({
             });
 
             if (!response.ok) {
+                const { message } = await response.json();
                 setAlert({
                     variant: "destructive",
                     type: "error",
                     title: "Error",
-                    message: "Something went wrong :/",
+                    message: message as string,
                 });
             } else {
-                // setAlert({
-                //     variant: "default",
-                //     type: "success",
-                //     title: "Success!",
-                //     message:
-                //         "An email has been sent to your mail for verification",
-                // });
-
                 await signIn("credentials", {
                     redirectTo: "/dashboard",
                     email: values.email,
