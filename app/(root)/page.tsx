@@ -16,7 +16,7 @@ export default async function LandingPage() {
                     height={38}
                     priority
                 />
-                <h1>HELlo</h1>
+                <h1>{session?.user?.name}</h1>
             </main>
         </div>
     );
