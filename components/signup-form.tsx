@@ -64,6 +64,9 @@ export function SignUpForm({
                 body: JSON.stringify(values),
             });
 
+            if (response.ok) {
+
+            }
             if (!response.ok) {
                 throw {
                     status: response.status,
