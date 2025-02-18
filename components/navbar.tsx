@@ -24,18 +24,16 @@ const Navbar = () => {
 
     const [selectedNavItem, setSelectedNavItem] = useState(navbarList[0]);
 
-    // Smooth scroll function
     const smoothScroll = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({
                 behavior: "smooth",
-                block: "start", // Aligns the element to the top of the viewport
+                block: "start",
             });
         }
     };
 
-    // Scroll to top function
     const scrollToTop = () => {
         window.scrollTo({
             top: 0,
@@ -51,8 +49,8 @@ const Navbar = () => {
                     href="#top"
                     className="text-2xl md:text-3xl font-bold text-primary hover:text-secondary hover:transition-all"
                     onClick={(e) => {
-                        e.preventDefault(); // Prevent default anchor behavior
-                        scrollToTop(); // Smooth scroll to the top
+                        e.preventDefault();
+                        scrollToTop();
                     }}
                 >
                     GradePoint
@@ -67,10 +65,10 @@ const Navbar = () => {
                         className={`font-semibold hover:transition-all hover:underline`}
                         key={index}
                         onClick={(e) => {
-                            e.preventDefault(); // Prevent default anchor behavior
+                            e.preventDefault();
                             const id = item.toLowerCase().replace(/\s+/g, "");
-                            smoothScroll(id); // Smooth scroll to the target section
-                            setSelectedNavItem(item); // Update selected nav item
+                            smoothScroll(id);
+                            setSelectedNavItem(item);
                         }}
                     >
                         {item}
@@ -108,12 +106,12 @@ const Navbar = () => {
                                         .replace(/\s+/g, "")}`}
                                     className="w-full"
                                     onClick={(e) => {
-                                        e.preventDefault(); // Prevent default anchor behavior
+                                        e.preventDefault();
                                         const id = item
                                             .toLowerCase()
                                             .replace(/\s+/g, "");
-                                        smoothScroll(id); // Smooth scroll to the target section
-                                        setSelectedNavItem(item); // Update selected nav item
+                                        smoothScroll(id);
+                                        setSelectedNavItem(item);
                                     }}
                                 >
                                     {item}
