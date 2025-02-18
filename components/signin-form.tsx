@@ -13,18 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { redirect, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
-
-type AlertType = {
-    variant: "default" | "destructive";
-    type: string;
-    title: string;
-    message: string;
-};
 
 interface ErrorMessages {
     [key: string]: string;
@@ -49,19 +41,10 @@ export function SignInForm({
     className,
     ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-    const { data: session } = useSession();
-    console.log(session);
-
-    if (session) {
-        redirect("/dashboard");
-    }
-    const [alert, setAlert] = useState<AlertType | null>();
     const searchParams = useSearchParams();
     const error = searchParams.get("error");
 
     async function onSignIn(formData: FormData) {
-        // setAlert(null);
-
         try {
             const email = formData.get("email") as string;
             const password = formData.get("password") as string;
@@ -74,23 +57,10 @@ export function SignInForm({
             });
 
             if (!response?.error) {
-                setAlert({
-                    variant: "default",
-                    type: "success",
-                    title: "Success!",
-                    message: "Successfully signed in. Redirecting...",
-                });
+                console.log(response?.error);
             }
         } catch (error: unknown) {
-            setAlert({
-                variant: "destructive",
-                type: "error",
-                title: "Error",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : "Something went wrong during sign-in",
-            });
+            console.log(error);
         }
     }
 

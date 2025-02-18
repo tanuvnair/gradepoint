@@ -1,4 +1,6 @@
-import { Button, buttonVariants } from "@/components/ui/button";
+"use client";
+
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -7,41 +9,57 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const Navbar = () => {
+    const router = useRouter();
+    const navbarList = [
+        "Features",
+        "About Us",
+        "FAQs",
+        "Contact Us",
+        "Report A Bug",
+    ];
+    const [selectedNavItem, setSelectedNavItem] = useState(navbarList[0]);
+
     return (
-        <header className="flex flex-row items-center justify-between p-6 m-4">
+        <header className="flex flex-row items-center justify-between p-8  sticky top-0 z-50 bg-white shadow-md">
             <div>
-                <a href="#home" className="text-2xl md:text-3xl font-semibold">
+                <Link
+                    href="/"
+                    className="text-2xl md:text-3xl font-bold text-primary"
+                >
                     GradePoint
-                </a>
+                </Link>
             </div>
-            <div className="hidden md:flex items-center gap-8 text-card-foreground">
-                <a href="#features">Features</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#faqs">FAQs</a>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <span className="cursor-pointer">Pages</span>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                        <DropdownMenuItem>
-                            <a href="#about">About</a>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <a href="#contact">Contact</a>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+            <div className="hidden md:flex items-center gap-24 text-card-foreground">
+                {navbarList.map((item, index) => (
+                    <a
+                        href={`#${item.toLowerCase().replace(/\s+/g, "")}`}
+                        className={`font-semibold hover:transition-all hover:underline ${
+                            selectedNavItem === item ? "underline" : ""
+                        }`}
+                        key={index}
+                        onClick={() => setSelectedNavItem(item)}
+                    >
+                        {item}
+                    </a>
+                ))}
             </div>
             <div className="flex items-center gap-2">
-                <Link
-                    href="/signin"
-                    className={buttonVariants({ variant: "link" })}
+                <Button
+                    className="hidden md:block ml-2"
+                    variant={"link"}
+                    onClick={() => router.push("/signin")}
                 >
                     Sign In
-                </Link>
-                <Button className="hidden md:block ml-2" variant={"secondary"}>
+                </Button>
+                <Button
+                    className="hidden md:block ml-2"
+                    variant={"default"}
+                    onClick={() => router.push("/signup")}
+                >
                     Get Started
                 </Button>
                 <div className="md:hidden flex items-center">
@@ -62,14 +80,20 @@ const Navbar = () => {
                                 <a href="#faqs">FAQs</a>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                                <Button className="w-full text-sm">
-                                    Login
-                                </Button>
+                                <Link
+                                    href="/signin"
+                                    className="w-full text-sm block md:hidden"
+                                >
+                                    Sign In
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                                <Button className="w-full text-sm">
+                                <Link
+                                    href="/signup"
+                                    className="w-full text-sm block md:hidden"
+                                >
                                     Get Started
-                                </Button>
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
