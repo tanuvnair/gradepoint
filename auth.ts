@@ -5,10 +5,8 @@ import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-const adapter = PrismaAdapter(prisma);
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
-    adapter,
+    adapter: PrismaAdapter(prisma),
     providers: [
         Credentials({
             credentials: {
@@ -40,7 +38,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             user.password as string
                         ))
                     ) {
-                        return user
+                        console.log(user);
+                        return user as any;
                     }
                 } catch (error) {
                     console.log("Error during auth", error);
@@ -49,4 +48,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
         }),
     ],
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.name = user.name;
+                token.email = user.email;
+                token.image = user.image;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            session.user.id = token.id as string;
+            session.user.name = token.email as string;
+            session.user.email = token.name as string;
+            session.user.image = token.image as string;
+            return session;
+        },
+    },
+    pages: {
+        signIn: "/signin",
+        error: "/signin"
+    }
 });

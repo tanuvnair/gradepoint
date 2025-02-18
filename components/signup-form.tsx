@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { signUpSchema } from "@/lib/schema";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -54,6 +55,7 @@ export function SignUpForm({
 
     async function onSignUp(values: z.infer<typeof signUpSchema>) {
         setAlert(null);
+        console.log();
 
         try {
             const response = await fetch("/api/auth/signup", {
@@ -72,12 +74,18 @@ export function SignUpForm({
                     message: "Something went wrong :/",
                 });
             } else {
-                setAlert({
-                    variant: "default",
-                    type: "success",
-                    title: "Success!",
-                    message:
-                        "An email has been sent to your mail for verification",
+                // setAlert({
+                //     variant: "default",
+                //     type: "success",
+                //     title: "Success!",
+                //     message:
+                //         "An email has been sent to your mail for verification",
+                // });
+
+                await signIn("credentials", {
+                    redirectTo: "/dashboard",
+                    email: values.email,
+                    password: values.password,
                 });
             }
         } catch (error: unknown) {

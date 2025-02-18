@@ -12,9 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCheck } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { AlertCircle } from "lucide-react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
+import { redirect, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 
@@ -25,38 +26,59 @@ type AlertType = {
     message: string;
 };
 
+interface ErrorMessages {
+    [key: string]: string;
+}
+
+const errors: ErrorMessages = {
+    Signin: "Try signing with a different account.",
+    OAuthSignin: "Try signing with a different account.",
+    OAuthCallback: "Try signing with a different account.",
+    OAuthCreateAccount: "Try signing with a different account.",
+    EmailCreateAccount: "Try signing with a different account.",
+    Callback: "Try signing with a different account.",
+    OAuthAccountNotLinked:
+        "To confirm your identity, sign in with the same account you used originally.",
+    EmailSignin: "Check your email address.",
+    CredentialsSignin:
+        "Sign in failed. Check the details you provided are correct.",
+    default: "Unable to sign in.",
+};
+
 export function SignInForm({
     className,
     ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+    const { data: session } = useSession();
+    console.log(session);
+
+    if (session) {
+        redirect("/dashboard");
+    }
     const [alert, setAlert] = useState<AlertType | null>();
+    const searchParams = useSearchParams();
+    const error = searchParams.get("error");
 
     async function onSignIn(formData: FormData) {
-        setAlert(null);
+        // setAlert(null);
 
         try {
             const email = formData.get("email") as string;
             const password = formData.get("password") as string;
 
             const response = await signIn("credentials", {
-                redirect: false,
+                redirectTo: "/dashboard",
+                // redirect: false,
                 email,
                 password,
             });
 
-            if (response?.error) {
-                setAlert({
-                    variant: "destructive",
-                    type: "error",
-                    title: "Error",
-                    message: "Invalid email or password",
-                });
-            } else {
+            if (!response?.error) {
                 setAlert({
                     variant: "default",
                     type: "success",
                     title: "Success!",
-                    message: "Successfully signed in",
+                    message: "Successfully signed in. Redirecting...",
                 });
             }
         } catch (error: unknown) {
@@ -72,18 +94,21 @@ export function SignInForm({
         }
     }
 
+    const SignInError = ({ error }: { error?: string }) => {
+        const errorMessage = error && (errors[error] ?? errors.default);
+        return <div>{errorMessage}</div>;
+    };
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            {alert && (
-                <Alert variant={alert.variant}>
-                    {alert.type === "success" ? (
-                        <CheckCheck />
-                    ) : alert.type === "error" ? (
-                        <AlertCircle />
-                    ) : null}
+            {error && (
+                <Alert variant="destructive">
+                    <AlertCircle />
                     <div className="ml-2 mt-1">
-                        <AlertTitle>{alert.title}</AlertTitle>
-                        <AlertDescription>{alert.message}</AlertDescription>
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {<SignInError error={error} />}
+                        </AlertDescription>
                     </div>
                 </Alert>
             )}
