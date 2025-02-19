@@ -75,7 +75,7 @@ const Navbar = () => {
                 {navbarList.map((item, index) => (
                     <a
                         href={`#${item.toLowerCase().replace(/\s+/g, "")}`}
-                        className={`text-accent-foreground font-semibold hover:transition-all hover:underline text-sm lg:text-base`}
+                        className={`text-accent-foreground font-semibold transition-all hover:underline text-sm lg:text-base`}
                         key={index}
                         onClick={(e) => {
                             e.preventDefault();

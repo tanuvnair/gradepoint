@@ -3,6 +3,7 @@
 import FAQSection from "@/components/faq-section";
 import FeatureSection from "@/components/feature-section";
 import Navbar from "@/components/navbar";
+import ReportABugSection from "@/components/report-a-bug-section";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { FlipWords } from "@/components/ui/flip-words";
@@ -116,11 +117,12 @@ export default function LandingPage() {
             >
                 <FAQSection />
             </section>
+            <Separator className=" w-1/2" />
             <section
                 id="reportabug"
                 className="min-h-screen w-full bg-blue-400 flex items-center justify-center text-white text-2xl"
             >
-                Report a Bug Section
+                <ReportABugSection />
             </section>
 
             <div className="flex flex-col gap-3 items-center fixed bottom-8 right-8">
