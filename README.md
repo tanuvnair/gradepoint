@@ -38,7 +38,7 @@
 1. **Clone the repository**:  
    ```bash  
    git clone https://github.com/tanuvnair/gradepoint.git  
-   cd GradePoint  
+   cd gradepoint  
    ```  
 
 2. **Install dependencies**:  
