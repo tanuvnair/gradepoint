@@ -14,13 +14,7 @@ import { useEffect, useState } from "react";
 
 const Navbar = () => {
     const router = useRouter();
-    const navbarList = [
-        "Features",
-        "About Us",
-        "FAQs",
-        "Contact Us",
-        "Report A Bug",
-    ];
+    const navbarList = ["Features", "FAQs", "Report A Bug"];
 
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -77,7 +71,7 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-4 lg:gap-8 xl:gap-24 text-card-foreground scroll-smooth">
+            <div className="hidden md:flex items-center gap-6 lg:gap-8 xl:gap-24 text-card-foreground scroll-smooth">
                 {navbarList.map((item, index) => (
                     <a
                         href={`#${item.toLowerCase().replace(/\s+/g, "")}`}

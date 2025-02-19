@@ -1,18 +1,12 @@
 "use client";
-import {
-    AppWindow,
-    ChartNoAxesCombined,
-    Lock,
-    MessageCircleQuestion,
-    Presentation,
-    Star,
-} from "lucide-react";
 
-import FeatureCard from "@/components/feature-card";
+import FAQSection from "@/components/faq-section";
+import FeatureSection from "@/components/feature-section";
 import Navbar from "@/components/navbar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { FlipWords } from "@/components/ui/flip-words";
+import { Separator } from "@/components/ui/separator";
 import { ArrowUp } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -54,47 +48,8 @@ export default function LandingPage() {
         return null;
     }
 
-    const features = [
-        {
-            icon: AppWindow,
-            title: "Modern Exam Interface",
-            description:
-                "Experience a sleek and intuitive interface designed to make taking exams seamless and stress-free.",
-        },
-        {
-            icon: MessageCircleQuestion,
-            title: "Real-Time Feedback",
-            description:
-                "Get instant feedback on your performance to help you improve and stay on track.",
-        },
-        {
-            icon: Presentation,
-            title: "Interactive Learning",
-            description:
-                "Engage with interactive questions to enhance your learning experience.",
-        },
-        {
-            icon: Star,
-            title: "Customizable Exams",
-            description:
-                "Create and customize exams tailored to your specific needs and preferences.",
-        },
-        {
-            icon: ChartNoAxesCombined,
-            title: "Progress Tracking",
-            description:
-                "Track your  progress over time with detailed analytics and insights.",
-        },
-        {
-            icon: Lock,
-            title: "Secure & Reliable",
-            description:
-                "Rest assured with our secure and reliable platform, ensuring your data is always safe.",
-        },
-    ];
-
     return (
-        <div>
+        <div className="flex flex-col items-center">
             <Navbar />
 
             {/* Hero Section */}
@@ -152,37 +107,14 @@ export default function LandingPage() {
                 id="features"
                 className="min-h-screen w-full flex flex-col items-center justify-center bg-background py-20"
             >
-                <div className="container mx-auto px-4">
-                    {/* Section Title */}
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-primary mb-16">
-                        Features
-                    </h2>
-
-                    {/* Features Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {features.map((feature, index) => (
-                            <FeatureCard key={index} {...feature} />
-                        ))}
-                    </div>
-                </div>
+                <FeatureSection />
             </section>
-            <section
-                id="aboutus"
-                className="min-h-screen w-full bg-gray-800 flex items-center justify-center text-white text-2xl"
-            >
-                About Section
-            </section>
+            <Separator className=" w-1/2" />
             <section
                 id="faqs"
-                className="min-h-screen w-full bg-purple-500 flex items-center justify-center text-white text-2xl"
+                className="min-h-screen w-full flex flex-col items-center justify-center bg-background py-20"
             >
-                FAQs Section
-            </section>
-            <section
-                id="contactus"
-                className="min-h-screen w-full bg-green-500 flex items-center justify-center text-white text-2xl"
-            >
-                Contact Section
+                <FAQSection />
             </section>
             <section
                 id="reportabug"
