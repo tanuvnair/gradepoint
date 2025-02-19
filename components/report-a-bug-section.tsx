@@ -55,7 +55,7 @@ export default function ReportABugSection() {
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-4">
-                        Report a Bug
+                        Report A Bug
                     </h2>
                     <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
                         Found something not working as expected? Help us improve

@@ -78,7 +78,7 @@ export default function LandingPage() {
                 <div className="flex flex-col gap-24 lg:flex-row lg:gap-8 items-center justify-evenly w-full ">
                     {/* Left Section */}
                     <div className="flex flex-col items-left justify-center gap-6">
-                        <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-primary">
+                        <h1 className="text-6xl md:text-6xl lg:text-7xl font-bold text-primary">
                             GradePoint
                         </h1>
 
