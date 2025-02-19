@@ -1,7 +1,11 @@
 "use client";
 
 import Navbar from "@/components/navbar";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 export default function LandingPage() {
@@ -13,11 +17,7 @@ export default function LandingPage() {
             if (heroSectionRef.current) {
                 const heroSectionBottom =
                     heroSectionRef.current.getBoundingClientRect().bottom;
-                if (heroSectionBottom <= 0) {
-                    setShowScrollToTop(true);
-                } else {
-                    setShowScrollToTop(false);
-                }
+                setShowScrollToTop(heroSectionBottom <= 0);
             }
         };
 
@@ -32,20 +32,48 @@ export default function LandingPage() {
         });
     };
 
+    const { theme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return null;
+    }
+
     return (
         <div>
             <Navbar />
+
             {/* Hero Section */}
             <section
                 id="top"
                 ref={heroSectionRef}
-                className="min-h-screen w-full flex items-center justify-center bg-purple-500"
+                className="min-h-screen w-full flex items-center justify-center relative overflow-hidden"
             >
-                <div className="text-center">
-                    <h1 className="text-4xl md:text-6xl font-bold text-white">
+                <div className="absolute inset-0 -z-10">
+                    {mounted && (
+                        <Image
+                            src={
+                                theme === "dark"
+                                    ? "/landing-bg-dark.svg"
+                                    : "/landing-bg.svg"
+                            }
+                            alt="Background"
+                            fill
+                            style={{ objectFit: "cover" }}
+                            priority
+                        />
+                    )}
+                </div>
+
+                <div className="text-center z-10">
+                    <h1 className="text-4xl md:text-6xl font-bold text-accent-foreground">
                         Welcome to GradePoint
                     </h1>
-                    <p className="mt-4 text-lg md:text-xl text-purple-100">
+                    <p className="mt-4 text-lg md:text-xl text-accent-foreground">
                         Your ultimate solution for academic success.
                     </p>
                 </div>
@@ -83,17 +111,21 @@ export default function LandingPage() {
                 Report a Bug Section
             </section>
 
-            {/* Scroll-to-Top Button */}
-            <button
-                onClick={scrollToTop}
-                className={`fixed bottom-8 right-8 p-6 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-all duration-300 ${
-                    showScrollToTop
-                        ? "opacity-100"
-                        : "opacity-0 pointer-events-none"
-                }`}
-            >
-                <ArrowUp className="h-8 w-8" />
-            </button>
+            <div className="flex flex-col gap-4 items-center fixed bottom-8 right-8">
+                {/* Scroll-to-Top Button */}
+                <Button
+                    variant={"default"}
+                    onClick={scrollToTop}
+                    className={`px-6 py-8 rounded-full transition-all duration-300 ${
+                        showScrollToTop
+                            ? "opacity-100"
+                            : "opacity-0 pointer-events-none"
+                    }`}
+                >
+                    <ArrowUp className="h-8 w-8" />
+                </Button>
+                <ThemeToggle />
+            </div>
         </div>
     );
 }

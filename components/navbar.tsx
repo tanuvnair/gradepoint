@@ -22,7 +22,6 @@ const Navbar = () => {
         "Report A Bug",
     ];
 
-    const [selectedNavItem, setSelectedNavItem] = useState(navbarList[0]);
     const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
@@ -67,7 +66,7 @@ const Navbar = () => {
             <div>
                 <a
                     href="#top"
-                    className="text-xl md:text-2xl lg:text-3xl font-bold text-primary hover:text-foreground hover:transition-all"
+                    className="text-xl md:text-2xl lg:text-3xl font-bold text-accent-foreground hover:opacity-75 hover:transition-all"
                     onClick={(e) => {
                         e.preventDefault();
                         scrollToTop();
@@ -82,13 +81,12 @@ const Navbar = () => {
                 {navbarList.map((item, index) => (
                     <a
                         href={`#${item.toLowerCase().replace(/\s+/g, "")}`}
-                        className={`font-semibold hover:transition-all hover:underline text-sm lg:text-base`}
+                        className={`text-accent-foreground font-semibold hover:transition-all hover:underline text-sm lg:text-base`}
                         key={index}
                         onClick={(e) => {
                             e.preventDefault();
                             const id = item.toLowerCase().replace(/\s+/g, "");
                             smoothScroll(id);
-                            setSelectedNavItem(item);
                         }}
                     >
                         {item}
@@ -97,8 +95,11 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Buttons */}
-            <div className="hidden md:flex items-center gap-2">
-                <Button variant={"link"} onClick={() => router.push("/signin")}>
+            <div className="hidden md:flex items-center gap-8">
+                <Button
+                    variant={"ghost"}
+                    onClick={() => router.push("/signin")}
+                >
                     Sign In
                 </Button>
                 <Button
@@ -131,7 +132,6 @@ const Navbar = () => {
                                             .toLowerCase()
                                             .replace(/\s+/g, "");
                                         smoothScroll(id);
-                                        setSelectedNavItem(item);
                                     }}
                                 >
                                     {item}
