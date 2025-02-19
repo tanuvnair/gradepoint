@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 export default function LandingPage() {
     const [showScrollToTop, setShowScrollToTop] = useState(false);
     const heroSectionRef = useRef<HTMLElement>(null);
-    const words = ["better", "cute", "beautiful", "modern"];
+    const words = ["better", "fun", "modern", "interactive"];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -73,12 +73,12 @@ export default function LandingPage() {
 
                 <div className="flex flex-col gap-24 lg:flex-row lg:gap-0 items-center justify-evenly w-full ">
                     {/* Left Section */}
-                    <div className="flex flex-col items-left justify-center gap-3">
-                        <h1 className="text-4xl md:text-6xl font-bold text-accent-foreground">
+                    <div className="flex flex-col items-left justify-center gap-6">
+                        <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-primary">
                             GradePoint
                         </h1>
 
-                        <div className="text-4xl font-normal text-neutral-600 dark:text-neutral-400">
+                        <div className="text-5xl font-normal text-neutral-600 dark:text-neutral-400">
                             The
                             <FlipWords words={words} /> <br />
                             way to take exams

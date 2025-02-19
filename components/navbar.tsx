@@ -66,7 +66,7 @@ const Navbar = () => {
             <div>
                 <a
                     href="#top"
-                    className="text-xl md:text-2xl lg:text-3xl font-bold text-accent-foreground hover:opacity-75 hover:transition-all"
+                    className="text-xl md:text-2xl lg:text-3xl font-bold text-primary hover:opacity-75 hover:transition-all"
                     onClick={(e) => {
                         e.preventDefault();
                         scrollToTop();
