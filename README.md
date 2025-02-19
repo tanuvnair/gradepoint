@@ -37,7 +37,7 @@
 ### Installation  
 1. **Clone the repository**:  
    ```bash  
-   git clone https://github.com/your-username/GradePoint.git  
+   git clone https://github.com/tanuvnair/gradepoint.git  
    cd GradePoint  
    ```  
 
