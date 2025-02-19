@@ -111,7 +111,7 @@ export default function LandingPage() {
                 Report a Bug Section
             </section>
 
-            <div className="flex flex-col gap-4 items-center fixed bottom-8 right-8">
+            <div className="flex flex-col gap-3 items-center fixed bottom-8 right-8">
                 {/* Scroll-to-Top Button */}
                 <Button
                     variant={"default"}

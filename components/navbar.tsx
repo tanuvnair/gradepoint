@@ -95,7 +95,7 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Buttons */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-6">
                 <Button
                     variant={"ghost"}
                     onClick={() => router.push("/signin")}
