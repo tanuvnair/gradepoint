@@ -75,7 +75,7 @@ export default function LandingPage() {
                     )}
                 </div>
 
-                <div className="flex flex-col gap-24 lg:flex-row lg:gap-0 items-center justify-evenly w-full ">
+                <div className="flex flex-col gap-24 lg:flex-row lg:gap-8 items-center justify-evenly w-full ">
                     {/* Left Section */}
                     <div className="flex flex-col items-left justify-center gap-6">
                         <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-primary">
@@ -94,7 +94,7 @@ export default function LandingPage() {
                         <Image
                             src="/landing-image.svg"
                             alt="landing-image"
-                            className="transition-all -rotate-3 hover:scale-105 hover:-rotate-6 max-w-xs md:max-w-sm lg:max-w-lg"
+                            className="transition-all -rotate-3 hover:scale-105 hover:-rotate-6 max-w-xs md:max-w-md lg:max-w-md"
                             width={800}
                             height={800}
                             priority
