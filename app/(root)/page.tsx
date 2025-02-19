@@ -3,14 +3,6 @@
 import Navbar from "@/components/navbar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
 import { FlipWords } from "@/components/ui/flip-words";
 import { ArrowUp } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -79,7 +71,7 @@ export default function LandingPage() {
                     )}
                 </div>
 
-                <div className="flex flex-col gap-16 lg:flex-row lg:gap-0 items-center justify-evenly w-full ">
+                <div className="flex flex-col gap-24 lg:flex-row lg:gap-0 items-center justify-evenly w-full ">
                     {/* Left Section */}
                     <div className="flex flex-col items-left justify-center gap-3">
                         <h1 className="text-4xl md:text-6xl font-bold text-accent-foreground">
@@ -95,25 +87,14 @@ export default function LandingPage() {
 
                     {/* Right Section */}
                     <div className="flex items-center justify-center">
-                        <Carousel className="w-full max-w-xs md:max-w-s lg:max-w-lg">
-                            <CarouselContent>
-                                {Array.from({ length: 5 }).map((_, index) => (
-                                    <CarouselItem key={index}>
-                                        <div className="p-1">
-                                            <Card>
-                                                <CardContent className="flex aspect-square items-center justify-center p-6">
-                                                    <span className="text-4xl font-semibold">
-                                                        {index + 1}
-                                                    </span>
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious />
-                            <CarouselNext />
-                        </Carousel>
+                        <Image
+                            src="/landing-image.svg"
+                            alt="landing-image"
+                            className="transition-all -rotate-3 hover:scale-105 hover:-rotate-6 max-w-xs md:max-w-sm lg:max-w-lg"
+                            width={800}
+                            height={800}
+                            priority
+                        />
                     </div>
                 </div>
             </section>
