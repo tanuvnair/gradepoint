@@ -50,7 +50,7 @@ export function SignInForm({
             const password = formData.get("password") as string;
 
             const response = await signIn("credentials", {
-                redirectTo: "/dashboard",
+                redirectTo: "/dashboard/overview/",
                 email,
                 password,
             });
@@ -128,6 +128,7 @@ export function SignInForm({
                                     type="button"
                                     variant="outline"
                                     className="w-full"
+                                    onClick={() => signIn("google")}
                                 >
                                     <FaGoogle />
                                     Sign In with Google

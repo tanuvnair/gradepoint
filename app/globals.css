@@ -24,6 +24,15 @@
         --input: 171 30% 18%;
         --ring: 171 60% 23%;
         --radius: 0.75rem;
+        /* Updated sidebar theme to match main theme */
+        --sidebar-background: 171 69% 95%;
+        --sidebar-foreground: 171 5% 26%;
+        --sidebar-primary: 171 60% 23%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 133 30% 80%;
+        --sidebar-accent-foreground: 171 5% 10%;
+        --sidebar-border: 171 30% 50%;
+        --sidebar-ring: 171 60% 23%;
     }
     .dark {
         --background: 171 50% 5%;
@@ -46,15 +55,15 @@
         --input: 171 30% 18%;
         --ring: 171 60% 23%;
         --radius: 0.75rem;
-    }
-}
-
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
+        /* Updated dark sidebar theme to match main dark theme */
+        --sidebar-background: 171 50% 5%;
+        --sidebar-foreground: 171 5% 90%;
+        --sidebar-primary: 171 60% 23%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 133 30% 15%;
+        --sidebar-accent-foreground: 171 5% 90%;
+        --sidebar-border: 171 30% 18%;
+        --sidebar-ring: 171 60% 23%;
     }
 }
 

@@ -76,7 +76,7 @@ export function SignUpForm({
                 });
             } else {
                 await signIn("credentials", {
-                    redirectTo: "/dashboard",
+                    redirectTo: "/dashboard/overview",
                     email: values.email,
                     password: values.password,
                 });
@@ -180,8 +180,10 @@ export function SignUpForm({
                                         Sign Up
                                     </Button>
                                     <Button
+                                        type="button"
                                         variant="outline"
                                         className="w-full"
+                                        onClick={() => signIn("google")}
                                     >
                                         <FaGoogle />
                                         Sign Up with Google
