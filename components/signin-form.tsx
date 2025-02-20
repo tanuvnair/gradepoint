@@ -51,7 +51,6 @@ export function SignInForm({
 
             const response = await signIn("credentials", {
                 redirectTo: "/dashboard",
-                // redirect: false,
                 email,
                 password,
             });
