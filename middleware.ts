@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export default auth((req) => {
     const { pathname } = req.nextUrl;
-    const protectedRoutes = ["/dashboard", "/classes"];
+    const protectedRoutes = ["/dashboard", "/exams"];
 
     const isOnProtectedRoute = protectedRoutes.some((route) =>
         pathname.startsWith(route)
@@ -18,5 +18,5 @@ export default auth((req) => {
 });
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/classes/:path*"],
+    matcher: ["/dashboard/:path*", "/exams/:path*"],
 };

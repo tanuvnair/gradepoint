@@ -4,10 +4,7 @@ import {
     BarChart2,
     BookOpen,
     Building2,
-    Calendar,
-    ClipboardList,
     GraduationCap,
-    MessagesSquare,
     School,
     Settings2,
     Users,
@@ -15,7 +12,6 @@ import {
 import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
@@ -53,38 +49,39 @@ const data = {
             title: "Dashboard",
             url: "/dashboard",
             icon: BarChart2,
-            isActive: true,
+            isActive: false,
             items: [
                 {
                     title: "Overview",
                     url: "/dashboard/overview",
+                    isActive: false,
                 },
                 {
                     title: "Analytics",
                     url: "/dashboard/analytics",
+                    isActive: false,
                 },
                 {
                     title: "Reports",
                     url: "/dashboard/reports",
+                    isActive: false,
                 },
             ],
         },
         {
-            title: "Classes",
-            url: "/classes",
+            title: "Exams",
+            url: "/exams",
             icon: GraduationCap,
             items: [
                 {
-                    title: "All Classes",
-                    url: "/classes/all",
+                    title: "All Exams",
+                    url: "/exams/all",
+                    isActive: false,
                 },
                 {
-                    title: "Grade Books",
-                    url: "/classes/gradebooks",
-                },
-                {
-                    title: "Assignments",
-                    url: "/classes/assignments",
+                    title: "Exam History",
+                    url: "/exams/history",
+                    isActive: false,
                 },
             ],
         },
@@ -96,33 +93,17 @@ const data = {
                 {
                     title: "Directory",
                     url: "/students/directory",
+                    isActive: false,
                 },
                 {
                     title: "Performance",
                     url: "/students/performance",
+                    isActive: false,
                 },
                 {
                     title: "Attendance",
                     url: "/students/attendance",
-                },
-            ],
-        },
-        {
-            title: "Calendar",
-            url: "/calendar",
-            icon: Calendar,
-            items: [
-                {
-                    title: "Schedule",
-                    url: "/calendar/schedule",
-                },
-                {
-                    title: "Events",
-                    url: "/calendar/events",
-                },
-                {
-                    title: "Academic Year",
-                    url: "/calendar/academic-year",
+                    isActive: false,
                 },
             ],
         },
@@ -134,14 +115,17 @@ const data = {
                 {
                     title: "Library",
                     url: "/resources/library",
+                    isActive: false,
                 },
                 {
                     title: "Materials",
                     url: "/resources/materials",
+                    isActive: false,
                 },
                 {
                     title: "Help Center",
                     url: "/resources/help",
+                    isActive: false,
                 },
             ],
         },
@@ -153,33 +137,19 @@ const data = {
                 {
                     title: "General",
                     url: "/settings/general",
+                    isActive: false,
                 },
                 {
                     title: "Organization",
                     url: "/settings/organization",
+                    isActive: false,
                 },
                 {
                     title: "Permissions",
                     url: "/settings/permissions",
+                    isActive: false,
                 },
             ],
-        },
-    ],
-    quickAccess: [
-        {
-            name: "Grade Entry",
-            url: "/quick/grades",
-            icon: ClipboardList,
-        },
-        {
-            name: "Messages",
-            url: "/quick/messages",
-            icon: MessagesSquare,
-        },
-        {
-            name: "Reports",
-            url: "/quick/reports",
-            icon: BarChart2,
         },
     ],
 };
@@ -194,7 +164,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={data.navMain} />
-                <NavProjects projects={data.quickAccess} />
             </SidebarContent>
             <SidebarFooter>
                 {status === "loading" ? (

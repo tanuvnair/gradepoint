@@ -1,4 +1,4 @@
-export default function DashboardOverview() {
+export default function DashboardReports() {
     return (
         <div>
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
