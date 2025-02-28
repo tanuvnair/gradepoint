@@ -30,6 +30,11 @@ model User {
   password           String?
   organizations      UserOrganization[]
   ownedOrganizations Organization[]
+
+  // Exam relationships
+  createdExams       Exam[]              @relation("ExamCreator")
+  examAttempts       ExamAttempt[]
+  examResponses      ExamResponse[]
 }
 
 model Account {
@@ -94,6 +99,7 @@ model Organization {
   owner     User               @relation(fields: [ownerId], references: [id])
   users     UserOrganization[]
   invites   Invite[]
+  exams     Exam[]
   createdAt DateTime           @default(now())
 }
 
@@ -125,4 +131,130 @@ model Invite {
   expiresAt      DateTime
   used           Boolean      @default(false)
   createdAt      DateTime     @default(now())
+}
+
+// Exam models
+model Exam {
+  id              String          @id @default(uuid())
+  title           String
+  description     String?
+  instructions    String?
+  timeLimit       Int?            // Time limit in minutes (null for no limit)
+  passingScore    Float?          // Minimum score to pass (null for no passing score)
+  randomizeOrder  Boolean         @default(false)
+  publishedAt     DateTime?       // Null if draft
+
+  // Access control
+  accessCode      String?         // Optional access code for the exam
+  startDate       DateTime?       // When the exam becomes available (null for immediately)
+  endDate         DateTime?       // When the exam expires (null for never)
+  allowedAttempts Int?            // Maximum number of attempts (null for unlimited)
+
+  // Relationships
+  creatorId       String
+  creator         User            @relation("ExamCreator", fields: [creatorId], references: [id])
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+
+  sections        ExamSection[]
+  attempts        ExamAttempt[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([organizationId])
+}
+
+model ExamSection {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  order       Int        // For ordering sections within an exam
+
+  examId      String
+  exam        Exam       @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  questions   Question[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([examId])
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  MULTIPLE_ANSWER
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+  MATCHING
+  FILL_IN_BLANK
+  NUMERIC
+}
+
+model Question {
+  id           String        @id @default(uuid())
+  content      String        // The question text
+  type         QuestionType
+  points       Float         @default(1.0)
+  order        Int           // For ordering questions within a section
+
+  // Question-specific data stored as JSON
+  options      Json?         // For multiple choice, multiple answer, matching
+  correctAnswer Json?         // The correct answer(s), format depends on question type
+  explanation  String?       // Explanation of the correct answer
+
+  sectionId    String
+  section      ExamSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  responses    ExamResponse[]
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([sectionId])
+}
+
+model ExamAttempt {
+  id           String         @id @default(uuid())
+  startedAt    DateTime       @default(now())
+  submittedAt  DateTime?      // Null if not submitted yet
+  score        Float?         // Null until graded
+  graded       Boolean        @default(false)
+
+  userId       String
+  user         User           @relation(fields: [userId], references: [id])
+  examId       String
+  exam         Exam           @relation(fields: [examId], references: [id])
+
+  responses    ExamResponse[]
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([examId])
+}
+
+model ExamResponse {
+  id           String       @id @default(uuid())
+  response     Json         // The student's answer(s)
+  isCorrect    Boolean?     // Null until graded
+  score        Float?       // Points awarded (null until graded)
+  feedback     String?      // Feedback on the response
+
+  questionId   String
+  question     Question     @relation(fields: [questionId], references: [id])
+  attemptId    String
+  attempt      ExamAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+  @@index([userId])
 }

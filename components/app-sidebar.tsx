@@ -24,24 +24,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"; // Import a skeleton component
 import { useSession } from "next-auth/react";
 
-// This is sample data.
-
 const data = {
     organizations: [
         {
             name: "Lincoln High School",
             logo: School,
-            plan: "Institution",
+            owner: "Tanuv Nair",
         },
         {
             name: "Springfield Academy",
             logo: Building2,
-            plan: "Institution",
-        },
-        {
-            name: "Central District",
-            logo: School,
-            plan: "District",
+            owner: "Vunat Rian",
         },
     ],
     navMain: [

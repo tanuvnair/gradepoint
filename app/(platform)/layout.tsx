@@ -29,7 +29,10 @@ export default function DashboardLayout({
                             <Separator className="mr-2 h-4" />
                             <Breadcrumb>
                                 <BreadcrumbList>
-                                    <BreadcrumbItem className="hidden md:block">
+                                    <BreadcrumbItem
+                                        className="hidden md:block"
+                                        title="dashboard"
+                                    >
                                         Dashboard
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
