@@ -101,12 +101,6 @@ GradePoint/
 
 ---
 
-## 📜 License  
-
-GradePoint is a proprietary software. All rights reserved. Unauthorized use, reproduction, or distribution is strictly prohibited.  
-
----
-
 ## 📞 Support  
 
 For inquiries or support, please contact me at **tanuvnair@gmail.com**.  
