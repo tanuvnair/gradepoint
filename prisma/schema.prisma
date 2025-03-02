@@ -88,8 +88,9 @@ model Authenticator {
 
 model Organization {
   id        String             @id @default(uuid())
+  icon      String
   name      String             @unique
-  ownerId   String             // If you intend to allow a user to own multiple organizations, consider removing @unique.
+  ownerId   String
   owner     User               @relation(fields: [ownerId], references: [id])
   users     UserOrganization[]
   invites   Invite[]

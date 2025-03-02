@@ -52,6 +52,7 @@ export function TeamSwitcher({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    logo: "School",
                     name: organizationName,
                 }),
             });

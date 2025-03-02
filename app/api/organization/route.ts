@@ -2,120 +2,154 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-// Create organization
+function getErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
 export async function POST(req: Request) {
-    const logs = [];
-
     try {
-        logs.push("Request received");
-
-        // Parse request body
         let requestBody;
         try {
             requestBody = await req.json();
-            logs.push(`Request body parsed: ${JSON.stringify(requestBody)}`);
-        } catch (error) {
-            logs.push(`Error parsing request body: ${error.message}`);
+        } catch (error: unknown) {
+            console.error(
+                "Error parsing request body:",
+                getErrorMessage(error)
+            );
             return NextResponse.json(
-                { error: "Invalid request body", logs },
+                { error: "Invalid request body" },
                 { status: 400 }
             );
         }
 
-        const { name } = requestBody;
-        logs.push(`Organization name: ${name}`);
-
+        const { icon, name  } = requestBody;
         if (!name) {
-            logs.push("Missing required field: name");
             return NextResponse.json(
-                { error: "Name is required", logs },
+                { error: "Name is required" },
                 { status: 400 }
             );
         }
 
-        // Check authentication
         let session;
         try {
             session = await auth();
-            logs.push(`Session retrieved: ${JSON.stringify(session)}`);
-        } catch (error) {
-            logs.push(`Error getting session: ${error.message}`);
+        } catch (error: unknown) {
+            console.error(
+                "Error during authentication:",
+                getErrorMessage(error)
+            );
             return NextResponse.json(
-                { error: "Authentication error", logs },
+                { error: "Authentication error" },
                 { status: 500 }
             );
         }
 
         if (!session?.user?.id) {
-            logs.push("No authenticated user found");
             return NextResponse.json(
-                { error: "Unauthorized", logs },
+                { error: "Unauthorized" },
                 { status: 401 }
             );
         }
 
-        logs.push(`User ID: ${session.user.id}`);
-
-        // Database operations
         let organization;
         try {
-            logs.push("Creating organization...");
             organization = await prisma.organization.create({
                 data: {
                     name,
+                    icon: icon as string,
                     ownerId: session.user.id,
                 },
             });
-            logs.push(`Organization created: ${JSON.stringify(organization)}`);
-        } catch (error) {
-            logs.push(`Error creating organization: ${error.message}`);
+        } catch (error: unknown) {
+            console.error(
+                "Error creating organization:",
+                getErrorMessage(error)
+            );
             return NextResponse.json(
-                { error: "Failed to create organization", details: error.message, logs },
+                { error: "Failed to create organization" },
                 { status: 500 }
             );
         }
 
         try {
-            logs.push("Creating user organization relation...");
-            const userOrg = await prisma.userOrganization.create({
+            await prisma.userOrganization.create({
                 data: {
                     userId: session.user.id,
                     organizationId: organization.id,
-                    role: "OWNER"
+                    role: "OWNER",
                 },
             });
-            logs.push(`UserOrganization created: ${JSON.stringify(userOrg)}`);
-        } catch (error) {
-            logs.push(`Error creating user organization relation: ${error.message}`);
-
-            // Attempt to roll back the organization creation
+        } catch (error: unknown) {
+            console.error(
+                "Error creating user organization relation:",
+                getErrorMessage(error)
+            );
             try {
-                logs.push(`Attempting to delete organization ${organization.id} due to failed user relation...`);
                 await prisma.organization.delete({
-                    where: { id: organization.id }
+                    where: { id: organization.id },
                 });
-                logs.push("Organization deleted successfully");
-            } catch (rollbackError) {
-                logs.push(`Failed to roll back organization: ${rollbackError.message}`);
+            } catch (rollbackError: unknown) {
+                console.error(
+                    "Failed to rollback organization:",
+                    getErrorMessage(rollbackError)
+                );
             }
-
             return NextResponse.json(
-                { error: "Failed to create user organization relation", details: error.message, logs },
+                { error: "Failed to create user organization relation" },
                 { status: 500 }
             );
         }
 
-        logs.push("Operation completed successfully");
-        return NextResponse.json({
-            success: true,
-            organization,
-            logs
-        }, { status: 201 });
-
-    } catch (error) {
-        logs.push(`Unexpected error: ${error.message}`);
         return NextResponse.json(
-            { error: "Failed to process request", details: error.message, logs },
+            { success: true, organization },
+            { status: 201 }
+        );
+    } catch (error: unknown) {
+        console.error("Unexpected error:", getErrorMessage(error));
+        return NextResponse.json(
+            { error: "Failed to process request" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function GET() {
+    try {
+        let session;
+        try {
+            session = await auth();
+        } catch (error: unknown) {
+            console.error("Authentication error:", getErrorMessage(error));
+            return NextResponse.json(
+                { error: "Authentication error" },
+                { status: 500 }
+            );
+        }
+
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
+        const memberships = await prisma.userOrganization.findMany({
+            where: { userId: session.user.id },
+            include: { organization: true },
+        });
+
+        const organizations = memberships.map(
+            (memberships) => memberships.organization
+        );
+
+        return NextResponse.json(
+            { success: true, organizations },
+            { status: 200 }
+        );
+    } catch (error: unknown) {
+        console.error("Unexpected error:", getErrorMessage(error));
+        return NextResponse.json(
+            { error: "Failed to retrieve organizations" },
             { status: 500 }
         );
     }
