@@ -60,7 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
-            const protectedRoutes = ["/dashboard", "/exams"]
+            const protectedRoutes = ["/dashboard", "/exams"];
 
             const isOnProtectedRoute = protectedRoutes.some((route) =>
                 nextUrl.pathname.startsWith(route)
@@ -77,9 +77,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id;
                 token.name = user.name;
                 token.email = user.email;
+                token.emailVerified = user.emailVerified;
                 token.image = user.image;
             }
             return token;
+        },
+        async session({ session, token }) {
+            session.user.id = token.id as string;
+            session.user.name = token.name as string;
+            session.user.email = token.email as string;
+            session.user.emailVerified = token.emailVerified as Date;
+            session.user.image = token.picture as string;
+
+            return session;
         },
     },
     session: {

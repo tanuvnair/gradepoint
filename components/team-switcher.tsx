@@ -46,7 +46,7 @@ export function TeamSwitcher({
     async function handleCreateOrganization() {
         console.log(organizationName);
         try {
-            const response = await fetch("/api/organization", {
+            fetch("/api/organization", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -55,15 +55,8 @@ export function TeamSwitcher({
                     name: organizationName,
                 }),
             });
-            const data = await response.json();
-
-            if (!response.ok) {
-                console.error(data);
-            }
-
-            setIsDialogOpen(false);
-        } catch {
-            console.error("Something went wrong :(");
+        } catch (error) {
+            console.log("Something went wrong: ", error);
         }
     }
 
@@ -152,7 +145,7 @@ export function TeamSwitcher({
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="name">Organization Name</Label>
                             <Input
-                                id="name"
+                                id="organizationName"
                                 className="col-span-3"
                                 onChange={(
                                     event: React.ChangeEvent<HTMLInputElement>
