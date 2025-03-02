@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -95,12 +89,15 @@ model Authenticator {
 model Organization {
   id        String             @id @default(uuid())
   name      String             @unique
-  ownerId   String             @unique // Each organization must have only one owner
+  ownerId   String             // If you intend to allow a user to own multiple organizations, consider removing @unique.
   owner     User               @relation(fields: [ownerId], references: [id])
   users     UserOrganization[]
   invites   Invite[]
   exams     Exam[]
   createdAt DateTime           @default(now())
+  updatedAt DateTime           @default(now()) @updatedAt
+
+  @@index([ownerId]) // Faster lookups by owner
 }
 
 model UserOrganization {
@@ -112,14 +109,15 @@ model UserOrganization {
   user         User         @relation(fields: [userId], references: [id])
   organization Organization @relation(fields: [organizationId], references: [id])
 
-  @@unique([userId, organizationId]) // Prevents duplicate memberships
+  @@unique([userId, organizationId]) // Prevent duplicate memberships
+  @@index([role]) // Optimize queries filtering by role
 }
 
 enum Role {
-  OWNER // Creator of the organization
-  ADMIN // Can manage users, roles, and exams
-  INSTRUCTOR // Can create and manage exams
-  STUDENT // Can take exams
+  OWNER
+  ADMIN
+  INSTRUCTOR
+  STUDENT
 }
 
 model Invite {
@@ -131,9 +129,11 @@ model Invite {
   expiresAt      DateTime
   used           Boolean      @default(false)
   createdAt      DateTime     @default(now())
+
+  @@index([organizationId]) // Speeds up lookups for invites by organization
+  @@index([expiresAt]) // Useful if filtering by expiration time
 }
 
-// Exam models
 model Exam {
   id              String          @id @default(uuid())
   title           String
@@ -144,13 +144,11 @@ model Exam {
   randomizeOrder  Boolean         @default(false)
   publishedAt     DateTime?       // Null if draft
 
-  // Access control
   accessCode      String?         // Optional access code for the exam
   startDate       DateTime?       // When the exam becomes available (null for immediately)
   endDate         DateTime?       // When the exam expires (null for never)
   allowedAttempts Int?            // Maximum number of attempts (null for unlimited)
 
-  // Relationships
   creatorId       String
   creator         User            @relation("ExamCreator", fields: [creatorId], references: [id])
   organizationId  String
@@ -163,6 +161,9 @@ model Exam {
   updatedAt       DateTime        @updatedAt
 
   @@index([organizationId])
+  @@index([creatorId]) // Added to optimize filtering by exam creator
+  @@index([publishedAt]) // Useful when querying for published exams
+  @@index([startDate, endDate]) // Composite index for exam availability queries
 }
 
 model ExamSection {
@@ -179,7 +180,7 @@ model ExamSection {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  @@index([examId])
+  @@index([examId, order]) // Optimizes retrieving and ordering sections for an exam
 }
 
 enum QuestionType {
@@ -194,32 +195,32 @@ enum QuestionType {
 }
 
 model Question {
-  id           String        @id @default(uuid())
-  content      String        // The question text
-  type         QuestionType
-  points       Float         @default(1.0)
-  order        Int           // For ordering questions within a section
+  id            String        @id @default(uuid())
+  content       String        // The question text
+  type          QuestionType
+  points        Float         @default(1.0)
+  order         Int           // Ordering within the section
 
-  // Question-specific data stored as JSON
-  options      Json?         // For multiple choice, multiple answer, matching
-  correctAnswer Json?         // The correct answer(s), format depends on question type
-  explanation  String?       // Explanation of the correct answer
+  options       Json?         // For multiple choice, multiple answer, matching, etc.
+  correctAnswer Json?         // Correct answer(s); format depends on question type
+  explanation   String?       // Explanation for the correct answer
 
-  sectionId    String
-  section      ExamSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId     String
+  section       ExamSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
-  responses    ExamResponse[]
+  responses     ExamResponse[]
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  @@index([sectionId])
+  @@index([sectionId, order]) // Composite index to quickly fetch questions in order within a section
+  @@index([type]) // Optional index if filtering by question type is common
 }
 
 model ExamAttempt {
   id           String         @id @default(uuid())
   startedAt    DateTime       @default(now())
-  submittedAt  DateTime?      // Null if not submitted yet
+  submittedAt  DateTime?      // Null if not yet submitted
   score        Float?         // Null until graded
   graded       Boolean        @default(false)
 
@@ -235,6 +236,7 @@ model ExamAttempt {
 
   @@index([userId])
   @@index([examId])
+  @@index([submittedAt]) // Helps when filtering for completed (submitted) attempts
 }
 
 model ExamResponse {
@@ -257,4 +259,5 @@ model ExamResponse {
   @@unique([attemptId, questionId])
   @@index([questionId])
   @@index([userId])
+  @@index([isCorrect]) // Optional index if you often query responses by correctness
 }
