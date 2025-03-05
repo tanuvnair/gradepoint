@@ -77,11 +77,6 @@ function getNavItems(organizationId: string) {
             icon: BookOpen,
             items: [
                 {
-                    title: "Library",
-                    url: `/organization/${organizationId}/resources/library`,
-                    isActive: false,
-                },
-                {
                     title: "Materials",
                     url: `/organization/${organizationId}/resources/materials`,
                     isActive: false,
