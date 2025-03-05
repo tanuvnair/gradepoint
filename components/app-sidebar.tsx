@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { OrganizationSwitcher } from "@/components/organization-switcher";
 import {
     Sidebar,
     SidebarContent,
@@ -133,16 +133,25 @@ const navMain = [
     },
 ];
 
+type organization = {
+    id: string;
+    icon: string;
+    name: string;
+    ownerId: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { data: session, status } = useSession();
-    const [organizations, setOrganizations] = useState<any>(null);
+    const [organizations, setOrganizations] = useState<organization[]>([]);
     const [isLoading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch("/api/organization")
             .then((res) => res.json())
             .then((data) => {
-                setOrganizations(data);
+                setOrganizations(data.organizations);
                 setLoading(false);
             })
             .catch((error) => {
@@ -157,8 +166,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {isLoading ? (
                     <Skeleton className="h-10 w-10 rounded-full" />
                 ) : organizations ? (
-                    <TeamSwitcher teams={organizations} />
+                    <OrganizationSwitcher organizations={organizations} />
                 ) : (
+                    // <div>{JSON.stringify(organizations)}</div>
                     <p>No organizations data</p>
                 )}
             </SidebarHeader>

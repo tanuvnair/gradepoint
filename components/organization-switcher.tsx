@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronsUpDown, Plus, UserPlus } from "lucide-react";
+import {
+    Building,
+    ChevronsUpDown,
+    Home,
+    Plus,
+    UserPlus,
+    Users,
+} from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -21,27 +28,38 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar";
-import { Label } from "@radix-ui/react-label";
 
-export function TeamSwitcher({
-    teams,
+export function OrganizationSwitcher({
+    organizations,
 }: {
-    teams: {
+    organizations: {
+        id: string;
+        icon: string;
         name: string;
-        logo: React.ElementType;
-        owner: string;
+        ownerId: string;
+        createdAt: Date;
+        updatedAt: Date;
     }[];
 }) {
     const { isMobile } = useSidebar();
-    const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+    const [activeOrganization, setactiveOrganization] = React.useState(
+        organizations[0]
+    );
     const [isDialogOpen, setIsDialogOpen] = React.useState(false); // State to control Dialog visibility
     const [organizationName, setOrganizationName] = React.useState("");
+    const iconMap: Record<string, React.ElementType> = {
+        Home: Home,
+        Building: Building,
+        Users: Users,
+    };
+    const IconComponent = iconMap[activeOrganization.icon] || Home;
 
     async function handleCreateOrganization() {
         console.log(organizationName);
@@ -52,7 +70,7 @@ export function TeamSwitcher({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    logo: "School",
+                    icon: "School",
                     name: organizationName,
                 }),
             });
@@ -72,15 +90,15 @@ export function TeamSwitcher({
                                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                             >
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                    <activeTeam.logo className="size-4" />
+                                    <IconComponent className="size-4" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">
-                                        {activeTeam.name}
+                                        {activeOrganization.name}
                                     </span>
-                                    <span className="truncate text-xs">
-                                        Created by {activeTeam.owner}
-                                    </span>
+                                    {/* <span className="truncate text-xs">
+                                        Created by {activeOrganization.owner}
+                                    </span> */}
                                 </div>
                                 <ChevronsUpDown className="ml-auto" />
                             </SidebarMenuButton>
@@ -94,16 +112,18 @@ export function TeamSwitcher({
                             <DropdownMenuLabel className="text-xs text-muted-foreground">
                                 Organizations
                             </DropdownMenuLabel>
-                            {teams.map((team) => (
+                            {organizations.map((organization) => (
                                 <DropdownMenuItem
-                                    key={team.name}
-                                    onClick={() => setActiveTeam(team)}
+                                    key={organization.name}
+                                    onClick={() =>
+                                        setactiveOrganization(organization)
+                                    }
                                     className="gap-2 p-2"
                                 >
                                     <div className="flex size-6 items-center justify-center rounded-sm border">
-                                        <team.logo className="size-4 shrink-0" />
+                                        <IconComponent className="size-4 shrink-0" />
                                     </div>
-                                    {team.name}
+                                    {organization.name}
                                 </DropdownMenuItem>
                             ))}
                             <DropdownMenuSeparator />
