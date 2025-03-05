@@ -1,14 +1,17 @@
 "use client";
 
+import { Toaster } from "@/components/ui/sonner";
 import {
     Building,
     ChevronsUpDown,
     Home,
+    Loader2,
     Plus,
     UserPlus,
     Users,
 } from "lucide-react";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +38,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar";
+import { ORGANIZATION_ICONS } from "@/lib/types";
 
 export function OrganizationSwitcher({
     organizations,
@@ -49,11 +53,15 @@ export function OrganizationSwitcher({
     }[];
 }) {
     const { isMobile } = useSidebar();
-    const [activeOrganization, setactiveOrganization] = React.useState(
+    const [activeOrganization, setActiveOrganization] = React.useState(
         organizations[0]
     );
-    const [isDialogOpen, setIsDialogOpen] = React.useState(false); // State to control Dialog visibility
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [organizationName, setOrganizationName] = React.useState("");
+    const [selectedIcon, setSelectedIcon] = React.useState("Building");
+    const [isCreating, setIsCreating] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
+
     const iconMap: Record<string, React.ElementType> = {
         Home: Home,
         Building: Building,
@@ -61,23 +69,86 @@ export function OrganizationSwitcher({
     };
     const IconComponent = iconMap[activeOrganization.icon] || Home;
 
-    async function handleCreateOrganization() {
-        console.log(organizationName);
+    const handleCreateOrganization = async () => {
+        if (!organizationName.trim()) {
+            setError("Organization name is required");
+            return;
+        }
+
         try {
-            fetch("/api/organization", {
+            setIsCreating(true);
+            const response = await fetch("/api/organization", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    icon: "School",
                     name: organizationName,
+                    icon: selectedIcon,
                 }),
             });
-        } catch (error) {
-            console.log("Something went wrong: ", error);
+
+            if (!response.ok) {
+                throw new Error("Failed to create organization");
+            }
+
+            const newOrgResponse = await response.json();
+            const createdOrg =
+                newOrgResponse.organization ||
+                newOrgResponse.data ||
+                newOrgResponse;
+
+            if (!createdOrg || !createdOrg.id || !createdOrg.name) {
+                throw new Error("Invalid organization response");
+            }
+
+            // Update the organizations list (you might need to pass a callback or use a state management solution)
+            // For now, we'll just log the new organization
+            console.log("New organization created:", createdOrg);
+
+            setOrganizationName("");
+            setError(null);
+            setIsDialogOpen(false);
+
+            toast.success("Organization Created", {
+                description: `"${createdOrg.name}" has been successfully created.`,
+            });
+        } catch (err) {
+            console.error("Create org error:", err);
+            setError(
+                err instanceof Error ? err.message : "An unknown error occurred"
+            );
+            toast.error("Error Creating Organization", {
+                description: error || "An unexpected error occurred",
+            });
+        } finally {
+            setIsCreating(false);
         }
-    }
+    };
+
+    const renderIconGrid = () => (
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {ORGANIZATION_ICONS.map((iconItem) => {
+                const Icon = iconItem.icon;
+                return (
+                    <Button
+                        key={iconItem.name}
+                        type="button"
+                        variant={
+                            selectedIcon === iconItem.name
+                                ? "default"
+                                : "outline"
+                        }
+                        size="icon"
+                        className="aspect-square w-full p-0"
+                        onClick={() => setSelectedIcon(iconItem.name)}
+                    >
+                        <Icon className="h-5 w-5" />
+                    </Button>
+                );
+            })}
+        </div>
+    );
 
     return (
         <div>
@@ -96,9 +167,6 @@ export function OrganizationSwitcher({
                                     <span className="truncate font-semibold">
                                         {activeOrganization.name}
                                     </span>
-                                    {/* <span className="truncate text-xs">
-                                        Created by {activeOrganization.owner}
-                                    </span> */}
                                 </div>
                                 <ChevronsUpDown className="ml-auto" />
                             </SidebarMenuButton>
@@ -116,7 +184,7 @@ export function OrganizationSwitcher({
                                 <DropdownMenuItem
                                     key={organization.name}
                                     onClick={() =>
-                                        setactiveOrganization(organization)
+                                        setActiveOrganization(organization)
                                     }
                                     className="gap-2 p-2"
                                 >
@@ -130,8 +198,8 @@ export function OrganizationSwitcher({
                             <DropdownMenuItem
                                 className="gap-2 p-2"
                                 onSelect={(e) => {
-                                    e.preventDefault(); // Prevent default behavior
-                                    setIsDialogOpen(true); // Open the Dialog
+                                    e.preventDefault();
+                                    setIsDialogOpen(true);
                                 }}
                             >
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">
@@ -164,23 +232,47 @@ export function OrganizationSwitcher({
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="name">Organization Name</Label>
+                            <Label htmlFor="organizationName">
+                                Organization Name
+                            </Label>
                             <Input
                                 id="organizationName"
                                 className="col-span-3"
-                                onChange={(
-                                    event: React.ChangeEvent<HTMLInputElement>
-                                ) => setOrganizationName(event.target.value)}
+                                value={organizationName}
+                                onChange={(e) =>
+                                    setOrganizationName(e.target.value)
+                                }
                             />
                         </div>
+                        <div className="flex flex-col gap-2">
+                            <Label>Select Icon</Label>
+                            {renderIconGrid()}
+                        </div>
+                        {error && (
+                            <p className="text-red-500 text-sm text-center">
+                                {error}
+                            </p>
+                        )}
                     </div>
                     <DialogFooter>
-                        <Button onClick={() => handleCreateOrganization()}>
-                            Create Organization
+                        <Button
+                            onClick={handleCreateOrganization}
+                            disabled={isCreating}
+                        >
+                            {isCreating ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create Organization"
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <Toaster />
         </div>
     );
 }

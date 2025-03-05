@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -17,22 +18,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Toaster } from "@/components/ui/sonner";
+import { ORGANIZATION_ICONS } from "@/lib/types";
 import {
+    AlertCircle,
     ArrowRight,
-    Briefcase,
     Building2,
-    Coffee,
-    Factory,
     GalleryVerticalEnd,
-    Globe,
-    Heart,
-    Leaf,
     Loader2,
     Plus,
-    Rocket,
-    Ship,
-    Star,
-    Target,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -51,21 +44,6 @@ interface OrganizationResponse {
     organizations?: Organization[];
     data?: Organization[];
 }
-
-// Available icons
-const ORGANIZATION_ICONS = [
-    { name: "Building", icon: Building2 },
-    { name: "Factory", icon: Factory },
-    { name: "Briefcase", icon: Briefcase },
-    { name: "Ship", icon: Ship },
-    { name: "Rocket", icon: Rocket },
-    { name: "Globe", icon: Globe },
-    { name: "Heart", icon: Heart },
-    { name: "Star", icon: Star },
-    { name: "Coffee", icon: Coffee },
-    { name: "Leaf", icon: Leaf },
-    { name: "Target", icon: Target },
-];
 
 export default function OrganizationSelection() {
     const router = useRouter();
@@ -366,6 +344,7 @@ export default function OrganizationSelection() {
                                 Organization
                             </Button>
                         </DialogTrigger>
+
                         <DialogContent className="w-[95%] max-w-md rounded-lg">
                             <DialogHeader>
                                 <DialogTitle>Create Organization</DialogTitle>
@@ -378,10 +357,16 @@ export default function OrganizationSelection() {
                                 />
                                 {renderIconGrid()}
                                 {error && (
-                                    <p className="text-red-500 text-sm text-center">
-                                        {error}
-                                    </p>
-                                )}
+                                    <Alert variant="destructive">
+                                        <AlertCircle />
+                                        <div className="ml-2 mt-1">
+                                            <AlertTitle>Error</AlertTitle>
+                                            <AlertDescription>
+                                                {error}
+                                            </AlertDescription>
+                                        </div>
+                                    </Alert>
+                                )}{" "}
                                 <Button
                                     onClick={handleCreateOrganization}
                                     disabled={isCreating}
