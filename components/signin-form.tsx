@@ -49,15 +49,10 @@ export function SignInForm({
             const email = formData.get("email") as string;
             const password = formData.get("password") as string;
 
-            const response = await signIn("credentials", {
-                redirectTo: "/dashboard/overview/",
+            await signIn("credentials", {
                 email,
                 password,
             });
-
-            if (!response?.error) {
-                console.log(response?.error);
-            }
         } catch (error: unknown) {
             console.log(error);
         }

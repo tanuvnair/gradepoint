@@ -90,7 +90,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             session.user.image = token.picture as string;
 
             return session;
-        },
+        }
     },
     session: {
         strategy: "jwt",

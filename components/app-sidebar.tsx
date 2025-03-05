@@ -7,7 +7,7 @@ import {
     Settings2,
     Users,
 } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 import { useEffect, useState } from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -22,116 +22,101 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
 
-// Static navigation data remains unchanged
-const navMain = [
-    {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: BarChart2,
-        isActive: false,
-        items: [
-            {
-                title: "Overview",
-                url: "/dashboard/overview",
-                isActive: false,
-            },
-            {
-                title: "Analytics",
-                url: "/dashboard/analytics",
-                isActive: false,
-            },
-            {
-                title: "Reports",
-                url: "/dashboard/reports",
-                isActive: false,
-            },
-        ],
-    },
-    {
-        title: "Exams",
-        url: "/exams",
-        icon: GraduationCap,
-        items: [
-            {
-                title: "All Exams",
-                url: "/exams/all",
-                isActive: false,
-            },
-            {
-                title: "Exam History",
-                url: "/exams/history",
-                isActive: false,
-            },
-        ],
-    },
-    {
-        title: "Students",
-        url: "/students",
-        icon: Users,
-        items: [
-            {
-                title: "Directory",
-                url: "/students/directory",
-                isActive: false,
-            },
-            {
-                title: "Performance",
-                url: "/students/performance",
-                isActive: false,
-            },
-            {
-                title: "Attendance",
-                url: "/students/attendance",
-                isActive: false,
-            },
-        ],
-    },
-    {
-        title: "Resources",
-        url: "/resources",
-        icon: BookOpen,
-        items: [
-            {
-                title: "Library",
-                url: "/resources/library",
-                isActive: false,
-            },
-            {
-                title: "Materials",
-                url: "/resources/materials",
-                isActive: false,
-            },
-            {
-                title: "Help Center",
-                url: "/resources/help",
-                isActive: false,
-            },
-        ],
-    },
-    {
-        title: "Settings",
-        url: "/settings",
-        icon: Settings2,
-        items: [
-            {
-                title: "General",
-                url: "/settings/general",
-                isActive: false,
-            },
-            {
-                title: "Organization",
-                url: "/settings/organization",
-                isActive: false,
-            },
-            {
-                title: "Permissions",
-                url: "/settings/permissions",
-                isActive: false,
-            },
-        ],
-    },
-];
+function getNavItems(organizationId: string) {
+    return [
+        {
+            title: "Dashboard",
+            url: `/organization/${organizationId}/dashboard`,
+            icon: BarChart2,
+            isActive: false,
+        },
+        {
+            title: "Exams",
+            url: `/organization/${organizationId}/exams`,
+            icon: GraduationCap,
+            items: [
+                {
+                    title: "All Exams",
+                    url: `/organization/${organizationId}/exams/all`,
+                    isActive: false,
+                },
+                {
+                    title: "Exam History",
+                    url: `/organization/${organizationId}/exams/history`,
+                    isActive: false,
+                },
+            ],
+        },
+        {
+            title: "Students",
+            url: `/organization/${organizationId}/students`,
+            icon: Users,
+            items: [
+                {
+                    title: "Directory",
+                    url: `/organization/${organizationId}/students/directory`,
+                    isActive: false,
+                },
+                {
+                    title: "Performance",
+                    url: `/organization/${organizationId}/students/performance`,
+                    isActive: false,
+                },
+                {
+                    title: "Attendance",
+                    url: `/organization/${organizationId}/students/attendance`,
+                    isActive: false,
+                },
+            ],
+        },
+        {
+            title: "Resources",
+            url: `/organization/${organizationId}/resources`,
+            icon: BookOpen,
+            items: [
+                {
+                    title: "Library",
+                    url: `/organization/${organizationId}/resources/library`,
+                    isActive: false,
+                },
+                {
+                    title: "Materials",
+                    url: `/organization/${organizationId}/resources/materials`,
+                    isActive: false,
+                },
+                {
+                    title: "Help Center",
+                    url: `/organization/${organizationId}/resources/help`,
+                    isActive: false,
+                },
+            ],
+        },
+        {
+            title: "Settings",
+            url: `/organization/${organizationId}/settings`,
+            icon: Settings2,
+            items: [
+                {
+                    title: "General",
+                    url: `/organization/${organizationId}/settings/general`,
+                    isActive: false,
+                },
+                {
+                    title: "Organization",
+                    url: `/organization/${organizationId}/settings/organization`,
+                    isActive: false,
+                },
+                {
+                    title: "Permissions",
+                    url: `/organization/${organizationId}/settings/permissions`,
+                    isActive: false,
+                },
+            ],
+        },
+    ];
+}
 
 type organization = {
     id: string;
@@ -146,6 +131,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { data: session, status } = useSession();
     const [organizations, setOrganizations] = useState<organization[]>([]);
     const [isLoading, setLoading] = useState(true);
+    const params = useParams();
+    const organizationId = params?.organizationId as string;
+    const router = useRouter();
 
     useEffect(() => {
         fetch("/api/organization")
@@ -160,20 +148,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             });
     }, []);
 
+    // Generate dynamic navigation items based on the current organization
+    const navItems = organizationId ? getNavItems(organizationId) : [];
+
     return (
-        <Sidebar collapsible="icon" {...props}>
+        <Sidebar collapsible="icon" variant="inset" {...props}>
             <SidebarHeader>
                 {isLoading ? (
                     <Skeleton className="h-10 w-10 rounded-full" />
                 ) : organizations ? (
-                    <OrganizationSwitcher organizations={organizations} />
+                    <OrganizationSwitcher
+                        organizations={organizations}
+                        currentOrganizationId={organizationId}
+                        onOrganizationChange={(id) => {
+                            router.push(`/organization/${id}/dashboard`);
+                        }}
+                    />
                 ) : (
-                    // <div>{JSON.stringify(organizations)}</div>
-                    <p>No organizations data</p>
+                    <p>Create an organization</p>
                 )}
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={navMain} />
+                {organizationId ? (
+                    <NavMain items={navItems} />
+                ) : (
+                    <div className="p-4 text-sm text-muted-foreground">
+                        Please select an organization
+                    </div>
+                )}
             </SidebarContent>
             <SidebarFooter>
                 {status === "loading" ? (

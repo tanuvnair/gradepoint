@@ -76,7 +76,6 @@ export function SignUpForm({
                 });
             } else {
                 await signIn("credentials", {
-                    redirectTo: "/dashboard/overview",
                     email: values.email,
                     password: values.password,
                 });
