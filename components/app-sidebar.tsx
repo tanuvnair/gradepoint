@@ -143,14 +143,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             });
     }, []);
 
-    // Generate dynamic navigation items based on the current organization
     const navItems = organizationId ? getNavItems(organizationId) : [];
 
     return (
         <Sidebar collapsible="icon" variant="inset" {...props}>
             <SidebarHeader>
                 {isLoading ? (
-                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="flex items-center gap-2 p-1">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="flex flex-col">
+                            <Skeleton className="h-4 w-32" />
+                        </div>
+                    </div>
                 ) : organizations ? (
                     <OrganizationSwitcher
                         organizations={organizations}
