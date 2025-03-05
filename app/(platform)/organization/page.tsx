@@ -165,7 +165,7 @@ export default function OrganizationSelection() {
 
             // Show toast notification
             toast.success("Organization Created", {
-                description: `${createdOrg.name} has been successfully created.`,
+                description: `"${createdOrg.name}" has been successfully created.`,
             });
         } catch (err) {
             console.error("Create org error:", err);
