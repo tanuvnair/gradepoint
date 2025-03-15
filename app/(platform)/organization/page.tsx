@@ -54,7 +54,9 @@ export default function OrganizationSelection() {
     const [error, setError] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
+    // Runs everytime the page is loaded
     useEffect(() => {
+        // Gets all the organizations the user is part of for the sidebar
         async function fetchOrganizations() {
             try {
                 const response = await fetch("/api/organization");
@@ -93,6 +95,7 @@ export default function OrganizationSelection() {
         fetchOrganizations();
     }, []);
 
+    // Create a new organization when the user clicks the create button in the dialog
     const handleCreateOrganization = async () => {
         if (!orgName.trim()) {
             setError("Organization name is required");
@@ -149,12 +152,14 @@ export default function OrganizationSelection() {
         }
     };
 
+    // Redirect to the dashboard of the selected organization
     const handleGoToDashboard = () => {
         if (selectedOrg) {
             router.push(`/organization/${selectedOrg.id}/dashboard`);
         }
     };
 
+    // Renders the icons for the user to select in the organization creation dialog
     const renderIconGrid = () => (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {ORGANIZATION_ICONS.map((iconItem) => {
@@ -207,8 +212,8 @@ export default function OrganizationSelection() {
                         Create Your Organization
                     </h2>
                     <p className="text-muted-foreground text-sm sm:text-base">
-                        You don't have any organizations yet. Let's create your
-                        first one.
+                        {`You don't have any organizations yet. Let's create your
+                        first one.`}
                     </p>
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>

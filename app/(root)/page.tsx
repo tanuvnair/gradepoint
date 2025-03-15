@@ -18,6 +18,7 @@ export default function LandingPage() {
     const heroSectionRef = useRef<HTMLElement>(null);
     const words = ["better", "fun", "modern", "interactive"];
 
+    // Show the scroll-to-top button when hero section is out of view
     useEffect(() => {
         const handleScroll = () => {
             if (heroSectionRef.current) {

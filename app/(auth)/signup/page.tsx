@@ -6,6 +6,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function SignIn() {
+    // Gets the session from authjs and redirects user if they are already logged in
     const session = await auth();
     if (session) {
         redirect("/organization");
