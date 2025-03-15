@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 
 function getNavItems(organizationId: string) {
     return [
@@ -128,7 +128,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [isLoading, setLoading] = useState(true);
     const params = useParams();
     const organizationId = params?.organizationId as string;
-    const router = useRouter();
 
     useEffect(() => {
         fetch("/api/organization")
