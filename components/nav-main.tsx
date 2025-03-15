@@ -40,10 +40,8 @@ export function NavMain({
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => {
-                    // Check if the item has sub-items
                     const hasSubItems = item.items && item.items.length > 0;
 
-                    // If there are no sub-items, render a simple menu item
                     if (!hasSubItems) {
                         return (
                             <SidebarMenuItem key={item.title}>
@@ -61,7 +59,6 @@ export function NavMain({
                         );
                     }
 
-                    // Otherwise, render a collapsible menu item
                     return (
                         <Collapsible
                             key={item.title}

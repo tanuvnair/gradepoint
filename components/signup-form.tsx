@@ -1,6 +1,5 @@
 "use client";
 
-// Icons
 import { AlertCircle, CheckCheck } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 

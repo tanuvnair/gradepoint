@@ -32,7 +32,6 @@ export default function ReportABugSection() {
         }
         setLoading(true);
         try {
-            // Simulate API call
             await new Promise((resolve) => setTimeout(resolve, 1000));
             toast({ title: "Success", description: "Bug report submitted!" });
             setFormData({ name: "", email: "", description: "" });

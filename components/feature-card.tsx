@@ -3,7 +3,7 @@
 import { LucideIcon } from "lucide-react";
 
 interface FeatureCardProps {
-    icon: LucideIcon; // Expecting a Lucide icon component
+    icon: LucideIcon;
     title: string;
     description: string;
 }

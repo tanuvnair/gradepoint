@@ -32,14 +32,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-// Define Organization type
 interface Organization {
     id: string;
     name: string;
     icon: string;
 }
 
-// Define API response types
 interface OrganizationResponse {
     organizations?: Organization[];
     data?: Organization[];
@@ -56,7 +54,6 @@ export default function OrganizationSelection() {
     const [error, setError] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    // Fetch organizations
     useEffect(() => {
         async function fetchOrganizations() {
             try {
@@ -67,12 +64,10 @@ export default function OrganizationSelection() {
 
                 const data: OrganizationResponse = await response.json();
 
-                // Extract organizations with type checking
                 const orgs: Organization[] = Array.isArray(data)
                     ? data
                     : data.organizations || data.data || [];
 
-                // Validate organization structure
                 const validOrgs = orgs.filter(
                     (org) =>
                         org &&
@@ -98,7 +93,6 @@ export default function OrganizationSelection() {
         fetchOrganizations();
     }, []);
 
-    // Create organization handler
     const handleCreateOrganization = async () => {
         if (!orgName.trim()) {
             setError("Organization name is required");
@@ -124,13 +118,11 @@ export default function OrganizationSelection() {
 
             const newOrgResponse = await response.json();
 
-            // Extract new organization with type checking
             const createdOrg: Organization =
                 newOrgResponse.organization ||
                 newOrgResponse.data ||
                 newOrgResponse;
 
-            // Validate new organization
             if (!createdOrg || !createdOrg.id || !createdOrg.name) {
                 throw new Error("Invalid organization response");
             }
@@ -141,7 +133,6 @@ export default function OrganizationSelection() {
             setError(null);
             setIsDialogOpen(false);
 
-            // Show toast notification
             toast.success("Organization Created", {
                 description: `"${createdOrg.name}" has been successfully created.`,
             });
@@ -158,14 +149,12 @@ export default function OrganizationSelection() {
         }
     };
 
-    // Handle dashboard navigation
     const handleGoToDashboard = () => {
         if (selectedOrg) {
             router.push(`/organization/${selectedOrg.id}/dashboard`);
         }
     };
 
-    // Render icon grid
     const renderIconGrid = () => (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {ORGANIZATION_ICONS.map((iconItem) => {
@@ -190,7 +179,6 @@ export default function OrganizationSelection() {
         </div>
     );
 
-    // Loading state
     if (isLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen w-full p-4">
@@ -199,7 +187,6 @@ export default function OrganizationSelection() {
         );
     }
 
-    // No organizations state
     if (organizations.length === 0) {
         return (
             <div className="flex flex-col gap-4 justify-center items-center min-h-screen w-full p-4">
@@ -269,7 +256,6 @@ export default function OrganizationSelection() {
         );
     }
 
-    // Organizations exist - selection view
     return (
         <div className="flex flex-col gap-4 justify-center items-center min-h-screen w-full p-4">
             <Link

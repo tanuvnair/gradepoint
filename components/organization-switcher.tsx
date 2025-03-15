@@ -103,7 +103,10 @@ export function OrganizationSwitcher({
             });
 
             if (!response.ok) {
-                throw new Error("Failed to create organization");
+                const errorResponse = await response.json();
+                const errorMessage =
+                    errorResponse.error || "Failed to create organization";
+                throw new Error(errorMessage);
             }
 
             const newOrgResponse = await response.json();
@@ -116,8 +119,6 @@ export function OrganizationSwitcher({
                 throw new Error("Invalid organization response");
             }
 
-            // Update the organizations list (you might need to pass a callback or use a state management solution)
-            // For now, we'll just log the new organization
             console.log("New organization created:", createdOrg);
 
             setOrganizationName("");
@@ -128,13 +129,11 @@ export function OrganizationSwitcher({
                 description: `"${createdOrg.name}" has been successfully created.`,
             });
         } catch (err) {
-            console.error("Create org error:", err);
-            setError(
-                err instanceof Error ? err.message : "An unknown error occurred"
-            );
-            toast.error("Error Creating Organization", {
-                description: error || "An unexpected error occurred",
-            });
+            const errorMessage =
+                err instanceof Error
+                    ? err.message
+                    : "An unknown error occurred";
+            setError(errorMessage);
         } finally {
             setIsCreating(false);
         }
@@ -264,9 +263,7 @@ export function OrganizationSwitcher({
                             {renderIconGrid()}
                         </div>
                         {error && (
-                            <p className="text-red-500 text-sm text-center">
-                                {error}
-                            </p>
+                            <p className="text-red-500 text-sm">{error}</p>
                         )}
                     </div>
                     <DialogFooter>

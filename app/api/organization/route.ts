@@ -8,9 +8,12 @@ function getErrorMessage(error: unknown): string {
 
 export async function POST(req: Request) {
     try {
+        console.log("Received request to create organization");
+
         let requestBody;
         try {
             requestBody = await req.json();
+            console.log("Request body:", requestBody);
         } catch (error: unknown) {
             console.error(
                 "Error parsing request body:",
@@ -22,8 +25,9 @@ export async function POST(req: Request) {
             );
         }
 
-        const { icon, name  } = requestBody;
+        const { icon, name } = requestBody;
         if (!name) {
+            console.error("Name is required");
             return NextResponse.json(
                 { error: "Name is required" },
                 { status: 400 }
@@ -33,6 +37,7 @@ export async function POST(req: Request) {
         let session;
         try {
             session = await auth();
+            console.log("Authenticated user:", session?.user);
         } catch (error: unknown) {
             console.error(
                 "Error during authentication:",
@@ -45,14 +50,50 @@ export async function POST(req: Request) {
         }
 
         if (!session?.user?.id) {
+            console.error("Unauthorized: No user ID found in session");
             return NextResponse.json(
                 { error: "Unauthorized" },
                 { status: 401 }
             );
         }
 
+        try {
+            console.log("Checking for existing organization with name:", name);
+            const existingOrganization = await prisma.organization.findFirst({
+                where: {
+                    name,
+                },
+            });
+
+            if (existingOrganization) {
+                console.error(
+                    "Organization with this name already exists:",
+                    existingOrganization
+                );
+                return NextResponse.json(
+                    { error: "An organization with this name already exists" },
+                    { status: 409 }
+                );
+            }
+        } catch (error: unknown) {
+            console.error(
+                "Error checking for existing organization:",
+                getErrorMessage(error)
+            );
+            return NextResponse.json(
+                { error: "Failed to check for existing organization" },
+                { status: 500 }
+            );
+        }
+
         let organization;
         try {
+            console.log(
+                "Creating organization with name:",
+                name,
+                "and icon:",
+                icon
+            );
             organization = await prisma.organization.create({
                 data: {
                     name,
@@ -60,6 +101,7 @@ export async function POST(req: Request) {
                     ownerId: session.user.id,
                 },
             });
+            console.log("Organization created successfully:", organization);
         } catch (error: unknown) {
             console.error(
                 "Error creating organization:",
@@ -72,6 +114,12 @@ export async function POST(req: Request) {
         }
 
         try {
+            console.log(
+                "Creating user-organization relationship for user:",
+                session.user.id,
+                "and organization:",
+                organization.id
+            );
             await prisma.userOrganization.create({
                 data: {
                     userId: session.user.id,
@@ -79,15 +127,18 @@ export async function POST(req: Request) {
                     role: "OWNER",
                 },
             });
+            console.log("User-organization relationship created successfully");
         } catch (error: unknown) {
             console.error(
                 "Error creating user organization relation:",
                 getErrorMessage(error)
             );
             try {
+                console.log("Attempting to rollback organization creation");
                 await prisma.organization.delete({
                     where: { id: organization.id },
                 });
+                console.log("Organization rollback successful");
             } catch (rollbackError: unknown) {
                 console.error(
                     "Failed to rollback organization:",
@@ -100,6 +151,7 @@ export async function POST(req: Request) {
             );
         }
 
+        console.log("Organization creation process completed successfully");
         return NextResponse.json(
             { success: true, organization },
             { status: 201 }
