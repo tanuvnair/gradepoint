@@ -42,6 +42,8 @@ import { ORGANIZATION_ICONS } from "@/lib/types";
 
 export function OrganizationSwitcher({
     organizations,
+    currentOrganizationId,
+    onOrganizationChange,
 }: {
     organizations: {
         id: string;
@@ -51,10 +53,13 @@ export function OrganizationSwitcher({
         createdAt: Date;
         updatedAt: Date;
     }[];
+    currentOrganizationId: string;
+    onOrganizationChange: (id: string) => void;
 }) {
     const { isMobile } = useSidebar();
     const [activeOrganization, setActiveOrganization] = React.useState(
-        organizations[0]
+        organizations.find((org) => org.id === currentOrganizationId) ||
+            organizations[0]
     );
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [organizationName, setOrganizationName] = React.useState("");
@@ -68,6 +73,15 @@ export function OrganizationSwitcher({
         Users: Users,
     };
     const IconComponent = iconMap[activeOrganization.icon] || Home;
+
+    React.useEffect(() => {
+        const newActiveOrg = organizations.find(
+            (org) => org.id === currentOrganizationId
+        );
+        if (newActiveOrg) {
+            setActiveOrganization(newActiveOrg);
+        }
+    }, [currentOrganizationId, organizations]);
 
     const handleCreateOrganization = async () => {
         if (!organizationName.trim()) {
@@ -182,10 +196,11 @@ export function OrganizationSwitcher({
                             </DropdownMenuLabel>
                             {organizations.map((organization) => (
                                 <DropdownMenuItem
-                                    key={organization.name}
-                                    onClick={() =>
-                                        setActiveOrganization(organization)
-                                    }
+                                    key={organization.id}
+                                    onClick={() => {
+                                        setActiveOrganization(organization);
+                                        onOrganizationChange(organization.id);
+                                    }}
                                     className="gap-2 p-2"
                                 >
                                     <div className="flex size-6 items-center justify-center rounded-sm border">

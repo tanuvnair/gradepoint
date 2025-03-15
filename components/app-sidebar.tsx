@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 
 function getNavItems(organizationId: string) {
     return [
@@ -160,7 +160,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         organizations={organizations}
                         currentOrganizationId={organizationId}
                         onOrganizationChange={(id) => {
-                            router.push(`/organization/${id}/dashboard`);
+                            redirect(`/organization/${id}/dashboard`);
                         }}
                     />
                 ) : (
