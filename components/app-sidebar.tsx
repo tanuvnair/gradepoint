@@ -92,23 +92,6 @@ function getNavItems(organizationId: string) {
             title: "Settings",
             url: `/organization/${organizationId}/settings`,
             icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: `/organization/${organizationId}/settings/general`,
-                    isActive: false,
-                },
-                {
-                    title: "Organization",
-                    url: `/organization/${organizationId}/settings/organization`,
-                    isActive: false,
-                },
-                {
-                    title: "Permissions",
-                    url: `/organization/${organizationId}/settings/permissions`,
-                    isActive: false,
-                },
-            ],
         },
     ];
 }
