@@ -1,6 +1,5 @@
 "use client";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -10,23 +9,9 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Toaster } from "@/components/ui/sonner";
 import { ORGANIZATION_ICONS } from "@/lib/types";
-import {
-    AlertCircle,
-    ArrowRight,
-    Building2,
-    GalleryVerticalEnd,
-    Loader2,
-    Plus,
-} from "lucide-react";
+import { Building2, GalleryVerticalEnd, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -152,6 +137,22 @@ export default function OrganizationSelection() {
         }
     };
 
+    async function getFirstOrganization() {
+        try {
+            const response = await fetch("/api/organization");
+            if (!response.ok) {
+                throw new Error("Failed to fetch organizations");
+            }
+
+            const data = await response.json();
+
+            return data.organizations.length > 0 ? data.organizations[0] : null;
+        } catch (error) {
+            console.error("Error fetching organization:", error);
+            return null;
+        }
+    }
+
     // Redirect to the dashboard of the selected organization
     const handleGoToDashboard = () => {
         if (selectedOrg) {
@@ -259,133 +260,11 @@ export default function OrganizationSelection() {
                 </div>
             </div>
         );
+    } else {
+        getFirstOrganization()
+            .then((org) => router.push(`/organization/${org.id}/dashboard`))
+            .catch((error) =>
+                console.error("Error fetching organization:", error)
+            );
     }
-
-    return (
-        <div className="flex flex-col gap-4 justify-center items-center min-h-screen w-full p-4">
-            <Link
-                href="/"
-                className="flex items-center gap-2 self-center font-medium"
-            >
-                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                    <GalleryVerticalEnd className="size-4" />
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-primary">
-                    GradePoint
-                </h1>
-            </Link>
-            <div className="space-y-6 w-full max-w-md p-4 sm:p-6">
-                <h2 className="text-xl sm:text-2xl font-semibold text-center">
-                    Select Organization
-                </h2>
-                <Select
-                    value={selectedOrg?.id}
-                    onValueChange={(value) => {
-                        const org = organizations.find((o) => o.id === value);
-                        setSelectedOrg(org || null);
-                    }}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select organization">
-                            {selectedOrg ? (
-                                <div className="flex items-center">
-                                    {(() => {
-                                        const IconComponent =
-                                            ORGANIZATION_ICONS.find(
-                                                (i) =>
-                                                    i.name === selectedOrg.icon
-                                            )?.icon || Building2;
-                                        return (
-                                            <IconComponent className="h-4 w-4 mr-2" />
-                                        );
-                                    })()}
-                                    {selectedOrg.name}
-                                </div>
-                            ) : (
-                                "Select organization"
-                            )}
-                        </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                        {organizations.map((org) => {
-                            const IconComponent =
-                                ORGANIZATION_ICONS.find(
-                                    (i) => i.name === org.icon
-                                )?.icon || Building2;
-                            return (
-                                <SelectItem
-                                    key={org.id}
-                                    value={org.id}
-                                    className="flex items-center"
-                                >
-                                    <div className="flex items-center">
-                                        <IconComponent className="h-4 w-4 mr-2" />
-                                        {org.name}
-                                    </div>
-                                </SelectItem>
-                            );
-                        })}
-                    </SelectContent>
-                </Select>
-                <div className="flex flex-col space-y-4 mt-4">
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full">
-                                <Plus className="mr-2 h-4 w-4" /> Create
-                                Organization
-                            </Button>
-                        </DialogTrigger>
-
-                        <DialogContent className="w-[95%] max-w-md rounded-lg">
-                            <DialogHeader>
-                                <DialogTitle>Create Organization</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                                <Input
-                                    placeholder="Organization Name"
-                                    value={orgName}
-                                    onChange={(e) => setOrgName(e.target.value)}
-                                />
-                                {renderIconGrid()}
-                                {error && (
-                                    <Alert variant="destructive">
-                                        <AlertCircle />
-                                        <div className="ml-2 mt-1">
-                                            <AlertTitle>Error</AlertTitle>
-                                            <AlertDescription>
-                                                {error}
-                                            </AlertDescription>
-                                        </div>
-                                    </Alert>
-                                )}{" "}
-                                <Button
-                                    onClick={handleCreateOrganization}
-                                    disabled={isCreating}
-                                    className="w-full"
-                                >
-                                    {isCreating ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Creating...
-                                        </>
-                                    ) : (
-                                        "Create"
-                                    )}
-                                </Button>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                    <Button
-                        onClick={handleGoToDashboard}
-                        disabled={!selectedOrg}
-                        className="w-full"
-                    >
-                        Go to Dashboard
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    <Toaster />
-                </div>
-            </div>
-        </div>
-    );
 }
