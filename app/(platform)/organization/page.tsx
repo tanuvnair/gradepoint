@@ -31,7 +31,6 @@ interface OrganizationResponse {
 export default function OrganizationSelection() {
     const router = useRouter();
     const [organizations, setOrganizations] = useState<Organization[]>([]);
-    const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [orgName, setOrgName] = useState<string>("");
@@ -116,7 +115,6 @@ export default function OrganizationSelection() {
             }
 
             setOrganizations((prev) => [...prev, createdOrg]);
-            setSelectedOrg(createdOrg);
             setOrgName("");
             setError(null);
             setIsDialogOpen(false);
@@ -152,13 +150,6 @@ export default function OrganizationSelection() {
             return null;
         }
     }
-
-    // Redirect to the dashboard of the selected organization
-    const handleGoToDashboard = () => {
-        if (selectedOrg) {
-            router.push(`/organization/${selectedOrg.id}/dashboard`);
-        }
-    };
 
     // Renders the icons for the user to select in the organization creation dialog
     const renderIconGrid = () => (
