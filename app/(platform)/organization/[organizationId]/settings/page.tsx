@@ -12,7 +12,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CircleAlert, CircleCheck, PencilIcon, Trash } from "lucide-react";
+import {
+    CircleAlert,
+    CircleCheck,
+    Link,
+    PencilIcon,
+    Trash,
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -168,12 +174,24 @@ export default function OrganizationSettings() {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col gap-4 w-full p-8">
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
-                <div className="flex gap-4">
-                    <Skeleton className="h-10 w-32" />
-                    <Skeleton className="h-10 w-36" />
+            <div className="flex flex-col gap-6 p-8 w-full max-w-2xl mx-auto">
+                <Skeleton className="h-9 w-72 mb-4" />{" "}
+                <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4">
+                        <Skeleton className="h-5 w-32" />{" "}
+                        <div className="flex gap-3">
+                            <Skeleton className="h-10 w-full" />{" "}
+                            <Skeleton className="h-10 w-24" />{" "}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                        <Skeleton className="h-5 w-32" />{" "}
+                        <div className="flex gap-3">
+                            <Skeleton className="h-10 w-full" />{" "}
+                            <Skeleton className="h-10 w-24" />{" "}
+                        </div>
+                    </div>
+                    <Skeleton className="h-10 w-full" />{" "}
                 </div>
             </div>
         );
@@ -228,7 +246,7 @@ export default function OrganizationSettings() {
                 </div>
             </div>
             <div className="flex flex-col gap-4">
-                <Label>Invite by Email</Label>
+                <Label>Invite Users</Label>
                 <div className="flex gap-3">
                     <Input
                         className="w-full"
@@ -238,6 +256,7 @@ export default function OrganizationSettings() {
                         onChange={(e) => setInviteEmail(e.target.value)}
                     />
                     <Button variant="secondary" onClick={handleInviteByEmail}>
+                        <Link />
                         Invite
                     </Button>
                 </div>
