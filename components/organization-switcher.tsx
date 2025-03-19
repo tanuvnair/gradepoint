@@ -277,6 +277,8 @@ export function OrganizationSwitcher({
                                 onSelect={(e) => {
                                     e.preventDefault();
                                     setIsDialogOpen(true);
+                                    setError(null);
+                                    setOrganizationName("");
                                 }}
                             >
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">
@@ -291,6 +293,8 @@ export function OrganizationSwitcher({
                                 onSelect={(e) => {
                                     e.preventDefault();
                                     setIsJoinDialogOpen(true);
+                                    setError(null);
+                                    setJoinCode("");
                                 }}
                             >
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">

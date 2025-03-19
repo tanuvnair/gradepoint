@@ -44,7 +44,7 @@ export default function OrganizationSelection() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [isJoining, setIsJoining] = useState<boolean>(false);
-    const [orgName, setOrgName] = useState<string>("");
+    const [organizationName, setOrganizationName] = useState<string>("");
     const [joinCode, setJoinCode] = useState<string>("");
     const [selectedIcon, setSelectedIcon] = useState<string>("Building");
     const [error, setError] = useState<string | null>(null);
@@ -92,7 +92,7 @@ export default function OrganizationSelection() {
     }, []);
 
     const handleCreateOrganization = async () => {
-        if (!orgName.trim()) {
+        if (!organizationName.trim()) {
             setError("Organization name is required");
             return;
         }
@@ -105,7 +105,7 @@ export default function OrganizationSelection() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    name: orgName,
+                    name: organizationName,
                     icon: selectedIcon,
                 }),
             });
@@ -126,7 +126,7 @@ export default function OrganizationSelection() {
             }
 
             setOrganizations((prev) => [...prev, createdOrg]);
-            setOrgName("");
+            setOrganizationName("");
             setError(null);
             setIsCreateDialogOpen(false);
         } catch (err) {
@@ -264,7 +264,10 @@ export default function OrganizationSelection() {
                             <DialogTrigger asChild>
                                 <Button
                                     className="w-full"
-                                    onClick={() => setError(null)}
+                                    onClick={() => {
+                                        setError(null);
+                                        setOrganizationName("");
+                                    }}
                                 >
                                     <Plus /> Create Organization
                                 </Button>
@@ -281,9 +284,9 @@ export default function OrganizationSelection() {
                                     )}
                                     <Input
                                         placeholder="Organization Name"
-                                        value={orgName}
+                                        value={organizationName}
                                         onChange={(e) =>
-                                            setOrgName(e.target.value)
+                                            setOrganizationName(e.target.value)
                                         }
                                     />
                                     {renderIconGrid()}
@@ -313,7 +316,10 @@ export default function OrganizationSelection() {
                                 <Button
                                     className="w-full"
                                     variant="outline"
-                                    onClick={() => setError(null)}
+                                    onClick={() => {
+                                        setError(null);
+                                        setJoinCode("");
+                                    }}
                                 >
                                     <UserPlus />
                                     Join Organization
