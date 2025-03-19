@@ -9,13 +9,17 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Toaster } from "@/components/ui/sonner";
 import { ORGANIZATION_ICONS } from "@/lib/types";
-import { Building2, GalleryVerticalEnd, Loader2, Plus } from "lucide-react";
+import {
+    Building2,
+    GalleryVerticalEnd,
+    Loader2,
+    Plus,
+    UserPlus,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface Organization {
     id: string;
@@ -33,14 +37,16 @@ export default function OrganizationSelection() {
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCreating, setIsCreating] = useState<boolean>(false);
+    const [isJoining, setIsJoining] = useState<boolean>(false);
     const [orgName, setOrgName] = useState<string>("");
+    const [joinCode, setJoinCode] = useState<string>("");
     const [selectedIcon, setSelectedIcon] = useState<string>("Building");
     const [error, setError] = useState<string | null>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [isCreateDialogOpen, setIsCreateDialogOpen] =
+        useState<boolean>(false);
+    const [isJoinDialogOpen, setIsJoinDialogOpen] = useState<boolean>(false);
 
-    // Runs everytime the page is loaded
     useEffect(() => {
-        // Gets all the organizations the user is part of for the sidebar
         async function fetchOrganizations() {
             try {
                 const response = await fetch("/api/organization");
@@ -79,7 +85,6 @@ export default function OrganizationSelection() {
         fetchOrganizations();
     }, []);
 
-    // Create a new organization when the user clicks the create button in the dialog
     const handleCreateOrganization = async () => {
         if (!orgName.trim()) {
             setError("Organization name is required");
@@ -117,21 +122,61 @@ export default function OrganizationSelection() {
             setOrganizations((prev) => [...prev, createdOrg]);
             setOrgName("");
             setError(null);
-            setIsDialogOpen(false);
-
-            toast.success("Organization Created", {
-                description: `"${createdOrg.name}" has been successfully created.`,
-            });
+            setIsCreateDialogOpen(false);
         } catch (err) {
             console.error("Create org error:", err);
             setError(
                 err instanceof Error ? err.message : "An unknown error occurred"
             );
-            toast.error("Error Creating Organization", {
-                description: error || "An unexpected error occurred",
-            });
         } finally {
             setIsCreating(false);
+        }
+    };
+
+    const handleJoinOrganization = async () => {
+        if (!joinCode.trim()) {
+            setError("Join code is required");
+            return;
+        }
+
+        try {
+            setIsJoining(true);
+            const response = await fetch("/api/organization/join", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    joinCode: joinCode,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to join organization");
+            }
+
+            const joinedOrgResponse = await response.json();
+
+            const joinedOrg: Organization =
+                joinedOrgResponse.organization ||
+                joinedOrgResponse.data ||
+                joinedOrgResponse;
+
+            if (!joinedOrg || !joinedOrg.id || !joinedOrg.name) {
+                throw new Error("Invalid organization response");
+            }
+
+            setOrganizations((prev) => [...prev, joinedOrg]);
+            setJoinCode("");
+            setError(null);
+            setIsJoinDialogOpen(false);
+        } catch (err) {
+            console.error("Join org error:", err);
+            setError(
+                err instanceof Error ? err.message : "An unknown error occurred"
+            );
+        } finally {
+            setIsJoining(false);
         }
     };
 
@@ -151,7 +196,6 @@ export default function OrganizationSelection() {
         }
     }
 
-    // Renders the icons for the user to select in the organization creation dialog
     const renderIconGrid = () => (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {ORGANIZATION_ICONS.map((iconItem) => {
@@ -201,53 +245,109 @@ export default function OrganizationSelection() {
                 <div className="text-center space-y-6 max-w-md w-full p-4 sm:p-6">
                     <Building2 className="h-16 w-16 sm:h-20 sm:w-20 mx-auto opacity-50" />
                     <h2 className="text-2xl sm:text-3xl font-semibold">
-                        Create Your Organization
+                        Create/Join an Organization
                     </h2>
                     <p className="text-muted-foreground text-sm sm:text-base">
-                        {`You don't have any organizations yet. Let's create your
-                        first one.`}
+                        {`You are not part of any organizations yet. You may create one or join one.`}
                     </p>
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="w-full">
-                                <Plus className="mr-2 h-4 w-4" /> Create
-                                Organization
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="w-[95%] max-w-md rounded-lg">
-                            <DialogHeader>
-                                <DialogTitle>New Organization</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                                <Input
-                                    placeholder="Organization Name"
-                                    value={orgName}
-                                    onChange={(e) => setOrgName(e.target.value)}
-                                />
-                                {renderIconGrid()}
-                                {error && (
-                                    <p className="text-red-500 text-sm text-center">
-                                        {error}
-                                    </p>
-                                )}
+                    <div className="space-y-4">
+                        <Dialog
+                            open={isCreateDialogOpen}
+                            onOpenChange={setIsCreateDialogOpen}
+                        >
+                            <DialogTrigger asChild>
                                 <Button
-                                    onClick={handleCreateOrganization}
-                                    disabled={isCreating}
                                     className="w-full"
+                                    onClick={() => setError(null)}
                                 >
-                                    {isCreating ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Creating...
-                                        </>
-                                    ) : (
-                                        "Create"
-                                    )}
+                                    <Plus /> Create Organization
                                 </Button>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                    <Toaster />
+                            </DialogTrigger>
+                            <DialogContent className="w-[95%] max-w-md rounded-lg">
+                                <DialogHeader>
+                                    <DialogTitle>New Organization</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    {error && (
+                                        <p className="text-red-500 text-sm">
+                                            {error}
+                                        </p>
+                                    )}
+                                    <Input
+                                        placeholder="Organization Name"
+                                        value={orgName}
+                                        onChange={(e) =>
+                                            setOrgName(e.target.value)
+                                        }
+                                    />
+                                    {renderIconGrid()}
+
+                                    <Button
+                                        onClick={handleCreateOrganization}
+                                        disabled={isCreating}
+                                        className="w-full"
+                                    >
+                                        {isCreating ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Creating...
+                                            </>
+                                        ) : (
+                                            "Create"
+                                        )}
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                        <Dialog
+                            open={isJoinDialogOpen}
+                            onOpenChange={setIsJoinDialogOpen}
+                        >
+                            <DialogTrigger asChild>
+                                <Button
+                                    className="w-full"
+                                    variant="outline"
+                                    onClick={() => setError(null)}
+                                >
+                                    <UserPlus />
+                                    Join Organization
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="w-[95%] max-w-md rounded-lg">
+                                <DialogHeader>
+                                    <DialogTitle>Join Organization</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    {error && (
+                                        <p className="text-red-500 text-sm ">
+                                            {error}
+                                        </p>
+                                    )}
+                                    <Input
+                                        placeholder="Join Code"
+                                        value={joinCode}
+                                        onChange={(e) =>
+                                            setJoinCode(e.target.value)
+                                        }
+                                    />
+                                    <Button
+                                        onClick={handleJoinOrganization}
+                                        disabled={isJoining}
+                                        className="w-full"
+                                    >
+                                        {isJoining ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Joining...
+                                            </>
+                                        ) : (
+                                            "Join"
+                                        )}
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                 </div>
             </div>
         );
