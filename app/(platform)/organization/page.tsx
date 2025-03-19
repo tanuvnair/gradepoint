@@ -45,7 +45,7 @@ export default function OrganizationSelection() {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [isJoining, setIsJoining] = useState<boolean>(false);
     const [organizationName, setOrganizationName] = useState<string>("");
-    const [joinCode, setJoinCode] = useState<string>("");
+    const [inviteCode, setInviteCode] = useState<string>("");
     const [selectedIcon, setSelectedIcon] = useState<string>("Building");
     const [error, setError] = useState<string | null>(null);
     const [isCreateDialogOpen, setIsCreateDialogOpen] =
@@ -140,7 +140,7 @@ export default function OrganizationSelection() {
     };
 
     const handleJoinOrganization = async () => {
-        if (!joinCode.trim() || joinCode.length !== 6) {
+        if (!inviteCode.trim() || inviteCode.length !== 6) {
             setError("Please enter a valid 6-digit join code");
             return;
         }
@@ -153,7 +153,7 @@ export default function OrganizationSelection() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    joinCode: joinCode,
+                    code: inviteCode,
                 }),
             });
 
@@ -173,7 +173,7 @@ export default function OrganizationSelection() {
             }
 
             setOrganizations((prev) => [...prev, joinedOrg]);
-            setJoinCode("");
+            setInviteCode("");
             setError(null);
             setIsJoinDialogOpen(false);
         } catch (err) {
@@ -318,7 +318,7 @@ export default function OrganizationSelection() {
                                     variant="outline"
                                     onClick={() => {
                                         setError(null);
-                                        setJoinCode("");
+                                        setInviteCode("");
                                     }}
                                 >
                                     <UserPlus />
@@ -340,9 +340,9 @@ export default function OrganizationSelection() {
                                     <div className="flex flex-col gap-4">
                                         <InputOTP
                                             maxLength={6}
-                                            value={joinCode}
+                                            value={inviteCode}
                                             onChange={(value) =>
-                                                setJoinCode(value)
+                                                setInviteCode(value)
                                             }
                                             pattern={
                                                 REGEXP_ONLY_DIGITS_AND_CHARS

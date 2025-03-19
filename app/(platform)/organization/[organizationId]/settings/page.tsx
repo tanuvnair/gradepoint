@@ -188,6 +188,8 @@ export default function OrganizationSettings() {
         }
     }
 
+    async function handleLeave() {}
+
     if (isLoading) {
         return (
             <div className="flex flex-col gap-6 p-8 w-full max-w-2xl mx-auto">
@@ -213,110 +215,190 @@ export default function OrganizationSettings() {
         );
     }
 
-    return (
-        <div className="flex flex-col gap-6 p-8 w-full max-w-2xl mx-auto">
-            <h2 className="text-3xl font-semibold border-b pb-4">
-                Organization Settings
-            </h2>
-            {alertMessage.type && (
-                <Alert
-                    variant={
-                        alertMessage.type === "success"
-                            ? "default"
-                            : "destructive"
-                    }
-                >
-                    <div className="flex items-center gap-3">
-                        {alertMessage.type === "success" ? (
-                            <CircleCheck />
-                        ) : (
-                            <CircleAlert />
-                        )}
-                        <div>
-                            <AlertTitle>
-                                {alertMessage.type === "success"
-                                    ? "Success"
-                                    : "Error"}
-                            </AlertTitle>
-                            <AlertDescription>
-                                {alertMessage.message}
-                            </AlertDescription>
+    if (
+        userOrganizationData?.userOrganizationInfo[0].role === "OWNER" ||
+        userOrganizationData?.userOrganizationInfo[0].role === "ADMIN"
+    ) {
+        return (
+            <div className="flex flex-col gap-6 p-8 w-full max-w-2xl mx-auto">
+                <h2 className="text-3xl font-semibold border-b pb-4">
+                    Organization Settings
+                </h2>
+                {alertMessage.type && (
+                    <Alert
+                        variant={
+                            alertMessage.type === "success"
+                                ? "default"
+                                : "destructive"
+                        }
+                    >
+                        <div className="flex items-center gap-3">
+                            {alertMessage.type === "success" ? (
+                                <CircleCheck />
+                            ) : (
+                                <CircleAlert />
+                            )}
+                            <div>
+                                <AlertTitle>
+                                    {alertMessage.type === "success"
+                                        ? "Success"
+                                        : "Error"}
+                                </AlertTitle>
+                                <AlertDescription>
+                                    {alertMessage.message}
+                                </AlertDescription>
+                            </div>
                         </div>
-                    </div>
-                </Alert>
-            )}
-            <div className="flex flex-col gap-4">
-                <Label>Organization Name</Label>
-                <div className="flex gap-3">
-                    <Input
-                        className="w-full"
-                        value={organizationName}
-                        onChange={(e) => setOrganizationName(e.target.value)}
-                    />
-                    <Button
-                        variant="secondary"
-                        onClick={handleOrganizationNameChange}
-                    >
-                        <PencilIcon /> Change
-                    </Button>
-                </div>
-            </div>
-            <div className="flex flex-col gap-4">
-                <Label>Invite Users</Label>
-                <div className="flex gap-3">
-                    <Input
-                        className="w-full"
-                        type="email"
-                        placeholder="Enter email to invite"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                    />
-                    <Select
-                        value={selectedRole}
-                        onValueChange={setSelectedRole}
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="INSTRUCTOR">
-                                Instructor
-                            </SelectItem>
-                            <SelectItem value="STUDENT">Student</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Button variant="secondary" onClick={handleInviteByEmail}>
-                        <Link />
-                        Invite
-                    </Button>
-                </div>
-            </div>
-            <Button variant="destructive" onClick={() => setIsDialogOpen(true)}>
-                <Trash /> Delete Organization
-            </Button>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Are you sure?</DialogTitle>
-                    </DialogHeader>
-                    <p>
-                        This action cannot be undone. Do you really want to
-                        delete this organization?
-                    </p>
-                    <DialogFooter>
+                    </Alert>
+                )}
+                <div className="flex flex-col gap-4">
+                    <Label>Organization Name</Label>
+                    <div className="flex gap-3">
+                        <Input
+                            className="w-full"
+                            value={organizationName}
+                            onChange={(e) =>
+                                setOrganizationName(e.target.value)
+                            }
+                        />
                         <Button
-                            variant="outline"
-                            onClick={() => setIsDialogOpen(false)}
+                            variant="secondary"
+                            onClick={handleOrganizationNameChange}
                         >
-                            Cancel
+                            <PencilIcon /> Change
                         </Button>
-                        <Button variant="destructive" onClick={handleDelete}>
-                            Delete
+                    </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                    <Label>Invite Users</Label>
+                    <div className="flex gap-3">
+                        <Input
+                            className="w-full"
+                            type="email"
+                            placeholder="Enter email to invite"
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                        />
+                        <Select
+                            value={selectedRole}
+                            onValueChange={setSelectedRole}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ADMIN">Admin</SelectItem>
+                                <SelectItem value="INSTRUCTOR">
+                                    Instructor
+                                </SelectItem>
+                                <SelectItem value="STUDENT">Student</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            variant="secondary"
+                            onClick={handleInviteByEmail}
+                        >
+                            <Link />
+                            Invite
                         </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
-    );
+                    </div>
+                </div>
+                <Button
+                    variant="destructive"
+                    onClick={() => setIsDialogOpen(true)}
+                >
+                    <Trash /> Delete Organization
+                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Are you sure?</DialogTitle>
+                        </DialogHeader>
+                        <p>
+                            This action cannot be undone. Do you really want to
+                            delete this organization?
+                        </p>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                            >
+                                Delete
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
+    } else {
+        return (
+            <div className="flex flex-col gap-6 p-8 w-full max-w-2xl mx-auto">
+                <h2 className="text-3xl font-semibold border-b pb-4">
+                    Organization Settings
+                </h2>
+                {alertMessage.type && (
+                    <Alert
+                        variant={
+                            alertMessage.type === "success"
+                                ? "default"
+                                : "destructive"
+                        }
+                    >
+                        <div className="flex items-center gap-3">
+                            {alertMessage.type === "success" ? (
+                                <CircleCheck />
+                            ) : (
+                                <CircleAlert />
+                            )}
+                            <div>
+                                <AlertTitle>
+                                    {alertMessage.type === "success"
+                                        ? "Success"
+                                        : "Error"}
+                                </AlertTitle>
+                                <AlertDescription>
+                                    {alertMessage.message}
+                                </AlertDescription>
+                            </div>
+                        </div>
+                    </Alert>
+                )}
+
+                <Button
+                    variant="destructive"
+                    onClick={() => setIsDialogOpen(true)}
+                >
+                    <Trash /> Leave Organization
+                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Are you sure?</DialogTitle>
+                        </DialogHeader>
+                        <p>
+                            This action cannot be undone. Do you really want to
+                            delete this organization?
+                        </p>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" onClick={handleLeave}>
+                                Delete
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
+    }
 }
