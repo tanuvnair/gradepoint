@@ -29,6 +29,8 @@ export default function OrganizationSettings() {
         useState<Organization | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [organizationName, setOrganizationName] = useState("");
+
     const pathname = usePathname();
     const pathSegments = pathname.split("/");
     const organizationId = pathSegments[2];
@@ -38,7 +40,6 @@ export default function OrganizationSettings() {
         try {
             const res = await fetch(`/api/userOrganization/${organizationId}`);
             const data = await res.json();
-            console.log(data);
             setUserOrganizationData(data);
         } catch (error) {
             console.error("Error fetching user organizations:", error);
@@ -54,8 +55,6 @@ export default function OrganizationSettings() {
         try {
             const res = await fetch(`/api/organization`);
             const data = await res.json();
-
-            console.log("Fetched organization data:", data); // Debugging
 
             // Ensure the response structure is correct
             if (!data?.success || !Array.isArray(data.organizations)) {
@@ -88,9 +87,17 @@ export default function OrganizationSettings() {
         }
     }, [userOrganizationData]);
 
-    async function handleDelete() {
-        console.log("DELETING");
+    useEffect(() => {
+        if (organizationData?.name) {
+            setOrganizationName(organizationData.name);
+        }
+    }, [organizationData]);
 
+    function handleOrganizationNameChange() {
+        console.log(organizationName);
+    }
+
+    async function handleDelete() {
         try {
             const res = await fetch(`/api/organization/${organizationId}`, {
                 method: "DELETE",
@@ -132,8 +139,18 @@ export default function OrganizationSettings() {
             </div>
             {userOrganizationData?.userOrganizationInfo[0]?.role === "OWNER" ? (
                 <div className="flex gap-4">
-                    <Input />
-                    <Button variant={"outline"}>Change Name</Button>
+                    <Input
+                        value={organizationName}
+                        onChange={(
+                            event: React.ChangeEvent<HTMLInputElement>
+                        ) => setOrganizationName(event.target.value)}
+                    />
+                    <Button
+                        variant={"outline"}
+                        onClick={handleOrganizationNameChange}
+                    >
+                        Change Name
+                    </Button>
                     <Button variant={"destructive"} onClick={handleDelete}>
                         Delete Organization
                     </Button>
