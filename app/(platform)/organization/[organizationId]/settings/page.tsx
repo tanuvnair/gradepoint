@@ -11,6 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     CircleAlert,
@@ -46,6 +53,7 @@ export default function OrganizationSettings() {
     const [isLoading, setIsLoading] = useState(true);
     const [organizationName, setOrganizationName] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
+    const [selectedRole, setSelectedRole] = useState("STUDENT"); // Default role
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const pathname = usePathname();
@@ -136,16 +144,24 @@ export default function OrganizationSettings() {
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: inviteEmail }),
+                    body: JSON.stringify({
+                        email: inviteEmail,
+                        role: selectedRole,
+                    }),
                 }
             );
 
-            if (!res.ok) throw new Error("Failed to send invitation");
-
-            setAlertMessage({
-                type: "success",
-                message: "Invitation sent successfully.",
-            });
+            if (!res.ok) {
+                setAlertMessage({
+                    type: "error",
+                    message: "Failed to send invitation",
+                });
+            } else {
+                setAlertMessage({
+                    type: "success",
+                    message: "Invitation sent successfully.",
+                });
+            }
             setInviteEmail(""); // Clear the input field after successful invitation
         } catch (error) {
             setAlertMessage({
@@ -255,6 +271,21 @@ export default function OrganizationSettings() {
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
                     />
+                    <Select
+                        value={selectedRole}
+                        onValueChange={setSelectedRole}
+                    >
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                            <SelectItem value="INSTRUCTOR">
+                                Instructor
+                            </SelectItem>
+                            <SelectItem value="STUDENT">Student</SelectItem>
+                        </SelectContent>
+                    </Select>
                     <Button variant="secondary" onClick={handleInviteByEmail}>
                         <Link />
                         Invite
