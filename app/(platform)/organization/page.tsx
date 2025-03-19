@@ -9,7 +9,13 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { ORGANIZATION_ICONS } from "@/lib/types";
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import {
     Building2,
     GalleryVerticalEnd,
@@ -134,8 +140,8 @@ export default function OrganizationSelection() {
     };
 
     const handleJoinOrganization = async () => {
-        if (!joinCode.trim()) {
-            setError("Join code is required");
+        if (!joinCode.trim() || joinCode.length !== 6) {
+            setError("Please enter a valid 6-digit join code");
             return;
         }
 
@@ -289,7 +295,7 @@ export default function OrganizationSelection() {
                                     >
                                         {isCreating ? (
                                             <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                <Loader2 className="h-4 w-4 animate-spin" />
                                                 Creating...
                                             </>
                                         ) : (
@@ -315,21 +321,38 @@ export default function OrganizationSelection() {
                             </DialogTrigger>
                             <DialogContent className="w-[95%] max-w-md rounded-lg">
                                 <DialogHeader>
-                                    <DialogTitle>Join Organization</DialogTitle>
+                                    <DialogTitle>
+                                        Enter Invitation Code
+                                    </DialogTitle>
                                 </DialogHeader>
-                                <div className="space-y-4">
+                                <div className="space-y-8">
                                     {error && (
                                         <p className="text-red-500 text-sm ">
                                             {error}
                                         </p>
                                     )}
-                                    <Input
-                                        placeholder="Join Code"
-                                        value={joinCode}
-                                        onChange={(e) =>
-                                            setJoinCode(e.target.value)
-                                        }
-                                    />
+                                    <div className="flex flex-col gap-4">
+                                        <InputOTP
+                                            maxLength={6}
+                                            value={joinCode}
+                                            onChange={(value) =>
+                                                setJoinCode(value)
+                                            }
+                                            pattern={
+                                                REGEXP_ONLY_DIGITS_AND_CHARS
+                                            }
+                                        >
+                                            <InputOTPGroup>
+                                                <InputOTPSlot index={0} />
+                                                <InputOTPSlot index={1} />
+                                                <InputOTPSlot index={2} />
+                                                <InputOTPSlot index={3} />
+                                                <InputOTPSlot index={4} />
+                                                <InputOTPSlot index={5} />
+                                            </InputOTPGroup>
+                                        </InputOTP>
+                                    </div>
+
                                     <Button
                                         onClick={handleJoinOrganization}
                                         disabled={isJoining}
@@ -337,7 +360,7 @@ export default function OrganizationSelection() {
                                     >
                                         {isJoining ? (
                                             <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                <Loader2 className="h-4 w-4 animate-spin" />
                                                 Joining...
                                             </>
                                         ) : (

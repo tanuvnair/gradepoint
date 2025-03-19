@@ -59,7 +59,7 @@ export async function POST(
             );
         }
 
-        const code = Math.random().toString(36).substring(2, 10).toUpperCase(); // Example: "ABC123"
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
 
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);

@@ -31,6 +31,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import {
     SidebarMenu,
@@ -66,6 +71,11 @@ export function OrganizationSwitcher({
     const [selectedIcon, setSelectedIcon] = React.useState("Building");
     const [isCreating, setIsCreating] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
+
+    // Join Organization State
+    const [isJoinDialogOpen, setIsJoinDialogOpen] = React.useState(false);
+    const [joinCode, setJoinCode] = React.useState("");
+    const [isJoining, setIsJoining] = React.useState(false);
 
     const iconMap: Record<string, React.ElementType> = {
         Home: Home,
@@ -136,6 +146,59 @@ export function OrganizationSwitcher({
             setError(errorMessage);
         } finally {
             setIsCreating(false);
+        }
+    };
+
+    const handleJoinOrganization = async () => {
+        if (!joinCode.trim() || joinCode.length !== 6) {
+            setError("Please enter a valid 6-digit join code");
+            return;
+        }
+
+        try {
+            setIsJoining(true);
+            const response = await fetch("/api/organization/join", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    joinCode: joinCode,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorResponse = await response.json();
+                const errorMessage =
+                    errorResponse.error || "Failed to join organization";
+                throw new Error(errorMessage);
+            }
+
+            const joinedOrgResponse = await response.json();
+            const joinedOrg =
+                joinedOrgResponse.organization ||
+                joinedOrgResponse.data ||
+                joinedOrgResponse;
+
+            if (!joinedOrg || !joinedOrg.id || !joinedOrg.name) {
+                throw new Error("Invalid organization response");
+            }
+
+            setJoinCode("");
+            setError(null);
+            setIsJoinDialogOpen(false);
+
+            toast.success("Organization Joined", {
+                description: `You have successfully joined "${joinedOrg.name}".`,
+            });
+        } catch (err) {
+            const errorMessage =
+                err instanceof Error
+                    ? err.message
+                    : "An unknown error occurred";
+            setError(errorMessage);
+        } finally {
+            setIsJoining(false);
         }
     };
 
@@ -223,7 +286,13 @@ export function OrganizationSwitcher({
                                     Create Organization
                                 </div>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 p-2">
+                            <DropdownMenuItem
+                                className="gap-2 p-2"
+                                onSelect={(e) => {
+                                    e.preventDefault();
+                                    setIsJoinDialogOpen(true);
+                                }}
+                            >
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                                     <UserPlus className="size-4" />
                                 </div>
@@ -236,6 +305,7 @@ export function OrganizationSwitcher({
                 </SidebarMenuItem>
             </SidebarMenu>
 
+            {/* Create Organization Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -273,7 +343,7 @@ export function OrganizationSwitcher({
                         >
                             {isCreating ? (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                     Creating...
                                 </>
                             ) : (
@@ -281,6 +351,51 @@ export function OrganizationSwitcher({
                             )}
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Join Organization Dialog */}
+            <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
+                <DialogContent className="w-[95%] max-w-md rounded-lg">
+                    <DialogHeader>
+                        <DialogTitle>Enter Invitation Code</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-8">
+                        {error && (
+                            <p className="text-red-500 text-sm ">{error}</p>
+                        )}
+                        <div className="flex flex-col gap-4">
+                            <InputOTP
+                                maxLength={6}
+                                value={joinCode}
+                                onChange={(value) => setJoinCode(value)}
+                            >
+                                <InputOTPGroup>
+                                    <InputOTPSlot index={0} />
+                                    <InputOTPSlot index={1} />
+                                    <InputOTPSlot index={2} />
+                                    <InputOTPSlot index={3} />
+                                    <InputOTPSlot index={4} />
+                                    <InputOTPSlot index={5} />
+                                </InputOTPGroup>
+                            </InputOTP>
+                        </div>
+
+                        <Button
+                            onClick={handleJoinOrganization}
+                            disabled={isJoining}
+                            className="w-full"
+                        >
+                            {isJoining ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Joining...
+                                </>
+                            ) : (
+                                "Join"
+                            )}
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 
