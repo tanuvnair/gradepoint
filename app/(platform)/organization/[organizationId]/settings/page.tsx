@@ -1,8 +1,18 @@
 "use client";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CircleAlert, CircleCheck, PencilIcon, Trash } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -28,73 +38,116 @@ export default function OrganizationSettings() {
     const [organizationData, setOrganizationData] =
         useState<Organization | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-
     const [organizationName, setOrganizationName] = useState("");
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const pathname = usePathname();
     const pathSegments = pathname.split("/");
     const organizationId = pathSegments[2];
 
-    async function getUserOrganizationData() {
-        setIsLoading(true);
+    const [alertMessage, setAlertMessage] = useState<{
+        type: "success" | "error" | null;
+        message: string | null;
+    }>({
+        type: null,
+        message: null,
+    });
+
+    useEffect(() => {
+        async function fetchData() {
+            setIsLoading(true);
+            try {
+                const userRes = await fetch(
+                    `/api/userOrganization/${organizationId}`
+                );
+                const userData = await userRes.json();
+                setUserOrganizationData(userData);
+
+                if (userData?.userOrganizationInfo?.length) {
+                    const orgRes = await fetch(`/api/organization`);
+                    const orgData = await orgRes.json();
+
+                    if (
+                        orgData?.success &&
+                        Array.isArray(orgData.organizations)
+                    ) {
+                        const targetOrg = orgData.organizations.find(
+                            (org: Organization) =>
+                                org.id ===
+                                userData.userOrganizationInfo[0]?.organizationId
+                        );
+
+                        if (targetOrg) {
+                            setOrganizationData(targetOrg);
+                            setOrganizationName(targetOrg.name);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchData();
+    }, [organizationId]);
+
+    async function handleOrganizationNameChange() {
         try {
-            const res = await fetch(`/api/userOrganization/${organizationId}`);
-            const data = await res.json();
-            setUserOrganizationData(data);
+            const res = await fetch(`/api/organization/${organizationId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: organizationName }),
+            });
+            if (!res.ok) throw new Error("Failed to update organization name");
+            setAlertMessage({
+                type: "success",
+                message: "Organization name updated successfully.",
+            });
         } catch (error) {
-            console.error("Error fetching user organizations:", error);
-        } finally {
-            setIsLoading(false);
+            setAlertMessage({
+                type: "error",
+                message: error as string,
+            });
+            console.error("Error updating organization name:", error);
         }
     }
 
-    async function getOrganizationData() {
-        if (!userOrganizationData) return;
+    async function handleInviteByEmail() {
+        if (!inviteEmail) {
+            setAlertMessage({
+                type: "error",
+                message: "Please enter a valid email address.",
+            });
+            return;
+        }
 
-        setIsLoading(true);
         try {
-            const res = await fetch(`/api/organization`);
-            const data = await res.json();
-
-            // Ensure the response structure is correct
-            if (!data?.success || !Array.isArray(data.organizations)) {
-                console.error("Unexpected API response:", data);
-                return;
-            }
-
-            // Find the organization that matches the user's organizationId
-            const targetOrg = data.organizations.find(
-                (org: Organization) =>
-                    org.id ===
-                    userOrganizationData.userOrganizationInfo[0]?.organizationId
+            const res = await fetch(
+                `/api/organization/${organizationId}/invite`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: inviteEmail }),
+                }
             );
 
-            setOrganizationData(targetOrg || null);
+            if (!res.ok) throw new Error("Failed to send invitation");
+
+            setAlertMessage({
+                type: "success",
+                message: "Invitation sent successfully.",
+            });
+            setInviteEmail(""); // Clear the input field after successful invitation
         } catch (error) {
-            console.error("Error fetching organizations:", error);
-        } finally {
-            setIsLoading(false);
+            setAlertMessage({
+                type: "error",
+                message: error as string,
+            });
+            console.error("Error sending invitation:", error);
         }
-    }
-
-    useEffect(() => {
-        getUserOrganizationData();
-    }, []);
-
-    useEffect(() => {
-        if (userOrganizationData) {
-            getOrganizationData();
-        }
-    }, [userOrganizationData]);
-
-    useEffect(() => {
-        if (organizationData?.name) {
-            setOrganizationName(organizationData.name);
-        }
-    }, [organizationData]);
-
-    function handleOrganizationNameChange() {
-        console.log(organizationName);
     }
 
     async function handleDelete() {
@@ -103,7 +156,6 @@ export default function OrganizationSettings() {
                 method: "DELETE",
             });
             const data = await res.json();
-
             if (data.redirectTo) {
                 router.replace(`/organization/${data.redirectTo}/dashboard`);
             } else {
@@ -117,10 +169,8 @@ export default function OrganizationSettings() {
     if (isLoading) {
         return (
             <div className="flex flex-col gap-4 w-full p-8">
-                <div className="flex flex-col gap-2">
-                    <Skeleton className="h-8 w-full" />
-                    <Skeleton className="h-8 w-full" />
-                </div>
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
                 <div className="flex gap-4">
                     <Skeleton className="h-10 w-32" />
                     <Skeleton className="h-10 w-36" />
@@ -130,36 +180,93 @@ export default function OrganizationSettings() {
     }
 
     return (
-        <div className="flex flex-col gap-4 p-8">
+        <div className="flex flex-col gap-6 p-8 w-full max-w-2xl mx-auto">
+            <h2 className="text-3xl font-semibold border-b pb-4">
+                Organization Settings
+            </h2>
+            {alertMessage.type && (
+                <Alert
+                    variant={
+                        alertMessage.type === "success"
+                            ? "default"
+                            : "destructive"
+                    }
+                >
+                    <div className="flex items-center gap-3">
+                        {alertMessage.type === "success" ? (
+                            <CircleCheck />
+                        ) : (
+                            <CircleAlert />
+                        )}
+                        <div>
+                            <AlertTitle>
+                                {alertMessage.type === "success"
+                                    ? "Success"
+                                    : "Error"}
+                            </AlertTitle>
+                            <AlertDescription>
+                                {alertMessage.message}
+                            </AlertDescription>
+                        </div>
+                    </div>
+                </Alert>
+            )}
             <div className="flex flex-col gap-4">
-                {JSON.stringify(userOrganizationData)}
-                <br />
-                <br />
-                {JSON.stringify(organizationData)}
-            </div>
-            {userOrganizationData?.userOrganizationInfo[0]?.role === "OWNER" ? (
-                <div className="flex gap-4">
+                <Label>Organization Name</Label>
+                <div className="flex gap-3">
                     <Input
+                        className="w-full"
                         value={organizationName}
-                        onChange={(
-                            event: React.ChangeEvent<HTMLInputElement>
-                        ) => setOrganizationName(event.target.value)}
+                        onChange={(e) => setOrganizationName(e.target.value)}
                     />
                     <Button
-                        variant={"outline"}
+                        variant="secondary"
                         onClick={handleOrganizationNameChange}
                     >
-                        Change Name
-                    </Button>
-                    <Button variant={"destructive"} onClick={handleDelete}>
-                        Delete Organization
+                        <PencilIcon /> Change
                     </Button>
                 </div>
-            ) : (
-                <div className="flex gap-4">
-                    <Button variant={"destructive"}>Leave Organization</Button>
+            </div>
+            <div className="flex flex-col gap-4">
+                <Label>Invite by Email</Label>
+                <div className="flex gap-3">
+                    <Input
+                        className="w-full"
+                        type="email"
+                        placeholder="Enter email to invite"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                    />
+                    <Button variant="secondary" onClick={handleInviteByEmail}>
+                        Invite
+                    </Button>
                 </div>
-            )}
+            </div>
+            <Button variant="destructive" onClick={() => setIsDialogOpen(true)}>
+                <Trash /> Delete Organization
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Are you sure?</DialogTitle>
+                    </DialogHeader>
+                    <p>
+                        This action cannot be undone. Do you really want to
+                        delete this organization?
+                    </p>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
