@@ -103,15 +103,24 @@ export async function DELETE(
         });
 
         if (!organizationInfo || organizationInfo[0].role !== "OWNER") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            await prisma.userOrganization.delete({
+                where: {
+                    userId_organizationId: {
+                        userId: session.user.id,
+                        organizationId: organizationId,
+                    },
+                },
+            });
+        } else {
+            await prisma.$transaction([
+                prisma.invite.deleteMany({ where: { organizationId } }),
+                prisma.exam.deleteMany({ where: { organizationId } }),
+                prisma.userOrganization.deleteMany({ where: { organizationId } }),
+                prisma.organization.delete({ where: { id: organizationId } }),
+            ]);
         }
 
-        await prisma.$transaction([
-            prisma.invite.deleteMany({ where: { organizationId } }),
-            prisma.exam.deleteMany({ where: { organizationId } }),
-            prisma.userOrganization.deleteMany({ where: { organizationId } }),
-            prisma.organization.delete({ where: { id: organizationId } }),
-        ]);
+
 
         const otherOrganization = await prisma.userOrganization.findFirst({
             where: { userId: session.user.id },

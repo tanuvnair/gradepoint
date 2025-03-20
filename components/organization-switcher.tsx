@@ -72,9 +72,8 @@ export function OrganizationSwitcher({
     const [isCreating, setIsCreating] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
 
-    // Join Organization State
     const [isJoinDialogOpen, setIsJoinDialogOpen] = React.useState(false);
-    const [joinCode, setJoinCode] = React.useState("");
+    const [inviteCode, setInviteCode] = React.useState("");
     const [isJoining, setIsJoining] = React.useState(false);
 
     const iconMap: Record<string, React.ElementType> = {
@@ -150,7 +149,7 @@ export function OrganizationSwitcher({
     };
 
     const handleJoinOrganization = async () => {
-        if (!joinCode.trim() || joinCode.length !== 6) {
+        if (!inviteCode.trim() || inviteCode.length !== 6) {
             setError("Please enter a valid 6-digit join code");
             return;
         }
@@ -163,7 +162,7 @@ export function OrganizationSwitcher({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    joinCode: joinCode,
+                    code: inviteCode,
                 }),
             });
 
@@ -184,7 +183,7 @@ export function OrganizationSwitcher({
                 throw new Error("Invalid organization response");
             }
 
-            setJoinCode("");
+            setInviteCode("");
             setError(null);
             setIsJoinDialogOpen(false);
 
@@ -294,7 +293,7 @@ export function OrganizationSwitcher({
                                     e.preventDefault();
                                     setIsJoinDialogOpen(true);
                                     setError(null);
-                                    setJoinCode("");
+                                    setInviteCode("");
                                 }}
                             >
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">
@@ -371,8 +370,8 @@ export function OrganizationSwitcher({
                         <div className="flex flex-col gap-4">
                             <InputOTP
                                 maxLength={6}
-                                value={joinCode}
-                                onChange={(value) => setJoinCode(value)}
+                                value={inviteCode}
+                                onChange={(value) => setInviteCode(value)}
                             >
                                 <InputOTPGroup>
                                     <InputOTPSlot index={0} />

@@ -188,7 +188,21 @@ export default function OrganizationSettings() {
         }
     }
 
-    async function handleLeave() {}
+    async function handleLeave() {
+        try {
+            const res = await fetch(`/api/organization/${organizationId}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+            if (data.redirectTo) {
+                router.replace(`/organization/${data.redirectTo}/dashboard`);
+            } else {
+                router.replace(`/organization/`);
+            }
+        } catch (error) {
+            console.error("Error deleting organization:", error);
+        }
+    }
 
     if (isLoading) {
         return (
@@ -382,8 +396,8 @@ export default function OrganizationSettings() {
                             <DialogTitle>Are you sure?</DialogTitle>
                         </DialogHeader>
                         <p>
-                            This action cannot be undone. Do you really want to
-                            delete this organization?
+                            You will have to be invited back in. Do you really
+                            want to leave this organization?
                         </p>
                         <DialogFooter>
                             <Button
@@ -393,7 +407,7 @@ export default function OrganizationSettings() {
                                 Cancel
                             </Button>
                             <Button variant="destructive" onClick={handleLeave}>
-                                Delete
+                                Leave
                             </Button>
                         </DialogFooter>
                     </DialogContent>
