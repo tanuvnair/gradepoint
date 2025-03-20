@@ -321,8 +321,14 @@ export default function OrganizationSettings() {
                     variant="destructive"
                     onClick={() => setIsDialogOpen(true)}
                 >
-                    <Trash /> Delete Organization
+                    <Trash />{" "}
+                    {userOrganizationData?.userOrganizationInfo[0].role ===
+                    "OWNER"
+                        ? "Delete"
+                        : "Leave"}{" "}
+                    Organization
                 </Button>
+
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
@@ -343,7 +349,10 @@ export default function OrganizationSettings() {
                                 variant="destructive"
                                 onClick={handleDelete}
                             >
-                                Delete
+                                {userOrganizationData?.userOrganizationInfo[0]
+                                    .role === "OWNER"
+                                    ? "Delete"
+                                    : "Leave"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
