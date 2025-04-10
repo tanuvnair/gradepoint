@@ -9,4 +9,8 @@ export const signUpSchema = z.object({
     name: z.string().nonempty("Name field cannot be empty"),
     email: z.string().email(),
     password: z.string().min(8, "Password must contain atleast 8 characters"),
+    confirmPassword: z.string().min(8, "Password must contain atleast 8 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
 });

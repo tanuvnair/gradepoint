@@ -49,6 +49,7 @@ export function SignUpForm({
             name: "",
             email: "",
             password: "",
+            confirmPassword: "",
         },
     });
 
@@ -57,12 +58,13 @@ export function SignUpForm({
         console.log();
 
         try {
+            const { confirmPassword, ...signUpData } = values;
             const response = await fetch("/api/auth/signup", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(values),
+                body: JSON.stringify(signUpData),
             });
 
             if (!response.ok) {
@@ -163,6 +165,25 @@ export function SignUpForm({
                                                 <FormControl>
                                                     <Input
                                                         placeholder="Password"
+                                                        type="password"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="confirmPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Confirm Password</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="Confirm Password"
                                                         type="password"
                                                         {...field}
                                                     />
