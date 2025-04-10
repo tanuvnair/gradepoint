@@ -103,6 +103,7 @@ type organization = {
     ownerId: string;
     createdAt: Date;
     updatedAt: Date;
+    role: "OWNER" | "ADMIN" | "INSTRUCTOR" | "STUDENT";
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

@@ -68,6 +68,7 @@ export function OrganizationSwitcher({
         ownerId: string;
         createdAt: Date;
         updatedAt: Date;
+        role: "OWNER" | "ADMIN" | "INSTRUCTOR" | "STUDENT";
     }[];
     currentOrganizationId: string;
     onOrganizationChange: (id: string) => void;
@@ -88,6 +89,10 @@ export function OrganizationSwitcher({
     const [isJoinDialogOpen, setIsJoinDialogOpen] = React.useState(false);
     const [inviteCode, setInviteCode] = React.useState("");
     const [isJoining, setIsJoining] = React.useState(false);
+
+    // Categorize organizations
+    const yourOrganizations = organizations.filter(org => org.role === "OWNER");
+    const joinedOrganizations = organizations.filter(org => org.role !== "OWNER");
 
     const iconMap: Record<string, React.ElementType> = {
         Home: Home,
@@ -282,27 +287,58 @@ export function OrganizationSwitcher({
                             side={isMobile ? "bottom" : "right"}
                             sideOffset={4}
                         >
-                            <DropdownMenuLabel className="text-xs text-muted-foreground">
-                                Organizations
-                            </DropdownMenuLabel>
-                            {organizations.map((organization) => {
-                                const OrgIcon = iconMap[organization.icon] || Home;
-                                return (
-                                    <DropdownMenuItem
-                                        key={organization.id}
-                                        onClick={() => {
-                                            setActiveOrganization(organization);
-                                            onOrganizationChange(organization.id);
-                                        }}
-                                        className="gap-2 p-2"
-                                    >
-                                        <div className="flex size-6 items-center justify-center rounded-sm border">
-                                            <OrgIcon className="size-4 shrink-0" />
-                                        </div>
-                                        {organization.name}
-                                    </DropdownMenuItem>
-                                );
-                            })}
+                            {yourOrganizations.length > 0 && (
+                                <>
+                                    <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                        Your Organizations
+                                    </DropdownMenuLabel>
+                                    {yourOrganizations.map((organization) => {
+                                        const OrgIcon = iconMap[organization.icon] || Home;
+                                        return (
+                                            <DropdownMenuItem
+                                                key={organization.id}
+                                                onClick={() => {
+                                                    setActiveOrganization(organization);
+                                                    onOrganizationChange(organization.id);
+                                                }}
+                                                className="gap-2 p-2"
+                                            >
+                                                <div className="flex size-6 items-center justify-center rounded-sm border">
+                                                    <OrgIcon className="size-4 shrink-0" />
+                                                </div>
+                                                {organization.name}
+                                            </DropdownMenuItem>
+                                        );
+                                    })}
+                                </>
+                            )}
+
+                            {joinedOrganizations.length > 0 && (
+                                <>
+                                    {yourOrganizations.length > 0 && <DropdownMenuSeparator />}
+                                    <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                        Joined Organizations
+                                    </DropdownMenuLabel>
+                                    {joinedOrganizations.map((organization) => {
+                                        const OrgIcon = iconMap[organization.icon] || Home;
+                                        return (
+                                            <DropdownMenuItem
+                                                key={organization.id}
+                                                onClick={() => {
+                                                    setActiveOrganization(organization);
+                                                    onOrganizationChange(organization.id);
+                                                }}
+                                                className="gap-2 p-2"
+                                            >
+                                                <div className="flex size-6 items-center justify-center rounded-sm border">
+                                                    <OrgIcon className="size-4 shrink-0" />
+                                                </div>
+                                                {organization.name}
+                                            </DropdownMenuItem>
+                                        );
+                                    })}
+                                </>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 className="gap-2 p-2"

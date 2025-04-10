@@ -190,9 +190,10 @@ export async function GET() {
             include: { organization: true },
         });
 
-        const organizations = memberships.map(
-            (memberships) => memberships.organization
-        );
+        const organizations = memberships.map((membership) => ({
+            ...membership.organization,
+            role: membership.role,
+        }));
 
         return NextResponse.json(
             { success: true, organizations },
