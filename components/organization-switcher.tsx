@@ -172,14 +172,14 @@ export function OrganizationSwitcher({
             setOrganizationName("");
             setError(null);
             setIsDialogOpen(false);
-            await onRefetch();
-
-            setActiveOrganization(createdOrg);
-            onOrganizationChange(createdOrg.id);
 
             toast.success("Organization Created", {
                 description: `"${createdOrg.name}" has been successfully created.`,
             });
+
+            await onRefetch();
+            setActiveOrganization(createdOrg);
+            onOrganizationChange(createdOrg.id);
         } catch (err) {
             const errorMessage =
                 err instanceof Error
@@ -229,14 +229,14 @@ export function OrganizationSwitcher({
             setInviteCode("");
             setError(null);
             setIsJoinDialogOpen(false);
-            await onRefetch();
-
-            setActiveOrganization(joinedOrg);
-            onOrganizationChange(joinedOrg.id);
 
             toast.success("Organization Joined", {
                 description: `You have successfully joined "${joinedOrg.name}".`,
             });
+
+            await onRefetch();
+            setActiveOrganization(joinedOrg);
+            onOrganizationChange(joinedOrg.id);
         } catch (err) {
             const errorMessage =
                 err instanceof Error
