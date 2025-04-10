@@ -50,6 +50,7 @@ export function OrganizationSwitcher({
     organizations,
     currentOrganizationId,
     onOrganizationChange,
+    onRefetch,
 }: {
     organizations: {
         id: string;
@@ -61,6 +62,7 @@ export function OrganizationSwitcher({
     }[];
     currentOrganizationId: string;
     onOrganizationChange: (id: string) => void;
+    onRefetch: () => Promise<void>;
 }) {
     const router = useRouter();
     const { isMobile } = useSidebar();
@@ -135,9 +137,10 @@ export function OrganizationSwitcher({
             setOrganizationName("");
             setError(null);
             setIsDialogOpen(false);
+            await onRefetch();
 
-            // Redirect to the new organization's dashboard
-            router.push(`/organization/${createdOrg.id}/dashboard`);
+            setActiveOrganization(createdOrg);
+            onOrganizationChange(createdOrg.id);
 
             toast.success("Organization Created", {
                 description: `"${createdOrg.name}" has been successfully created.`,
@@ -191,6 +194,10 @@ export function OrganizationSwitcher({
             setInviteCode("");
             setError(null);
             setIsJoinDialogOpen(false);
+            await onRefetch();
+
+            setActiveOrganization(joinedOrg);
+            onOrganizationChange(joinedOrg.id);
 
             toast.success("Organization Joined", {
                 description: `You have successfully joined "${joinedOrg.name}".`,

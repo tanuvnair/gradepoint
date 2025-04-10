@@ -112,17 +112,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams();
     const organizationId = params?.organizationId as string;
 
+    const fetchOrganizations = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch("/api/organization");
+            const data = await res.json();
+            setOrganizations(data.organizations);
+        } catch (error) {
+            console.error("Error fetching organizations:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        fetch("/api/organization")
-            .then((res) => res.json())
-            .then((data) => {
-                setOrganizations(data.organizations);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error("Error fetching organizations:", error);
-                setLoading(false);
-            });
+        fetchOrganizations();
     }, []);
 
     const navItems = organizationId ? getNavItems(organizationId) : [];
@@ -144,6 +148,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         onOrganizationChange={(id) => {
                             redirect(`/organization/${id}/dashboard`);
                         }}
+                        onRefetch={fetchOrganizations}
                     />
                 ) : (
                     <p>Create an organization</p>

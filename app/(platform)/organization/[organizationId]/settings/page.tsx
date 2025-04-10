@@ -110,6 +110,24 @@ export default function OrganizationSettings() {
         role: string;
     } | null>(null);
 
+    const fetchOrganizations = async () => {
+        try {
+            const res = await fetch("/api/organization");
+            const data = await res.json();
+            if (data?.success && Array.isArray(data.organizations)) {
+                const targetOrg = data.organizations.find(
+                    (org: Organization) => org.id === organizationId
+                );
+                if (targetOrg) {
+                    setOrganizationData(targetOrg);
+                    setOrganizationName(targetOrg.name);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching organizations:", error);
+        }
+    };
+
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
@@ -126,24 +144,7 @@ export default function OrganizationSettings() {
                         role: userData.userOrganizationInfo[0].role,
                     });
 
-                    const orgRes = await fetch(`/api/organization`);
-                    const orgData = await orgRes.json();
-
-                    if (
-                        orgData?.success &&
-                        Array.isArray(orgData.organizations)
-                    ) {
-                        const targetOrg = orgData.organizations.find(
-                            (org: Organization) =>
-                                org.id ===
-                                userData.userOrganizationInfo[0]?.organizationId
-                        );
-
-                        if (targetOrg) {
-                            setOrganizationData(targetOrg);
-                            setOrganizationName(targetOrg.name);
-                        }
-                    }
+                    await fetchOrganizations();
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -228,6 +229,7 @@ export default function OrganizationSettings() {
                 body: JSON.stringify({ name: organizationName }),
             });
             if (!res.ok) throw new Error("Failed to update organization name");
+            await fetchOrganizations();
             setAlertMessage({
                 type: "success",
                 message: "Organization name updated successfully.",
