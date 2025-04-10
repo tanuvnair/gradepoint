@@ -10,6 +10,7 @@ import {
     UserPlus,
     Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -61,6 +62,7 @@ export function OrganizationSwitcher({
     currentOrganizationId: string;
     onOrganizationChange: (id: string) => void;
 }) {
+    const router = useRouter();
     const { isMobile } = useSidebar();
     const [activeOrganization, setActiveOrganization] = React.useState(
         organizations.find((org) => org.id === currentOrganizationId) ||
@@ -133,6 +135,9 @@ export function OrganizationSwitcher({
             setOrganizationName("");
             setError(null);
             setIsDialogOpen(false);
+
+            // Redirect to the new organization's dashboard
+            router.push(`/organization/${createdOrg.id}/dashboard`);
 
             toast.success("Organization Created", {
                 description: `"${createdOrg.name}" has been successfully created.`,
