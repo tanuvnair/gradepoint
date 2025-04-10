@@ -20,9 +20,11 @@ import {
     Building2,
     GalleryVerticalEnd,
     Loader2,
+    LogOut,
     Plus,
     UserPlus,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -376,6 +378,16 @@ export default function OrganizationSelection() {
                                 </div>
                             </DialogContent>
                         </Dialog>
+                    </div>
+                    <div className="pt-4">
+                        <Button
+                            variant="ghost"
+                            className="text-muted-foreground hover:text-foreground"
+                            onClick={() => signOut({ callbackUrl: "/signin" })}
+                        >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Sign Out
+                        </Button>
                     </div>
                 </div>
             </div>
