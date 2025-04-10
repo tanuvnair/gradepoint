@@ -2,13 +2,22 @@
 
 import { Toaster } from "@/components/ui/sonner";
 import {
-    Building,
+    Briefcase,
+    Building2,
     ChevronsUpDown,
+    Coffee,
+    Factory,
+    Globe,
+    Heart,
     Home,
+    Leaf,
     Loader2,
     Plus,
+    Rocket,
+    Ship,
+    Star,
+    Target,
     UserPlus,
-    Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -82,8 +91,17 @@ export function OrganizationSwitcher({
 
     const iconMap: Record<string, React.ElementType> = {
         Home: Home,
-        Building: Building,
-        Users: Users,
+        Building: Building2,
+        Factory: Factory,
+        Briefcase: Briefcase,
+        Ship: Ship,
+        Rocket: Rocket,
+        Globe: Globe,
+        Heart: Heart,
+        Star: Star,
+        Coffee: Coffee,
+        Leaf: Leaf,
+        Target: Target,
     };
     const IconComponent = iconMap[activeOrganization.icon] || Home;
 
@@ -267,21 +285,24 @@ export function OrganizationSwitcher({
                             <DropdownMenuLabel className="text-xs text-muted-foreground">
                                 Organizations
                             </DropdownMenuLabel>
-                            {organizations.map((organization) => (
-                                <DropdownMenuItem
-                                    key={organization.id}
-                                    onClick={() => {
-                                        setActiveOrganization(organization);
-                                        onOrganizationChange(organization.id);
-                                    }}
-                                    className="gap-2 p-2"
-                                >
-                                    <div className="flex size-6 items-center justify-center rounded-sm border">
-                                        <IconComponent className="size-4 shrink-0" />
-                                    </div>
-                                    {organization.name}
-                                </DropdownMenuItem>
-                            ))}
+                            {organizations.map((organization) => {
+                                const OrgIcon = iconMap[organization.icon] || Home;
+                                return (
+                                    <DropdownMenuItem
+                                        key={organization.id}
+                                        onClick={() => {
+                                            setActiveOrganization(organization);
+                                            onOrganizationChange(organization.id);
+                                        }}
+                                        className="gap-2 p-2"
+                                    >
+                                        <div className="flex size-6 items-center justify-center rounded-sm border">
+                                            <OrgIcon className="size-4 shrink-0" />
+                                        </div>
+                                        {organization.name}
+                                    </DropdownMenuItem>
+                                );
+                            })}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 className="gap-2 p-2"
