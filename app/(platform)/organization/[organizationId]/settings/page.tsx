@@ -234,6 +234,8 @@ export default function OrganizationSettings() {
                 type: "success",
                 message: "Organization name updated successfully.",
             });
+            // Trigger organization switcher refresh
+            window.dispatchEvent(new CustomEvent('organization-refresh'));
         } catch (error) {
             setAlertMessage({
                 type: "error",

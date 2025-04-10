@@ -119,6 +119,18 @@ export function OrganizationSwitcher({
         }
     }, [currentOrganizationId, organizations]);
 
+    // Add event listener for organization refresh
+    React.useEffect(() => {
+        const handleRefresh = () => {
+            onRefetch();
+        };
+
+        window.addEventListener('organization-refresh', handleRefresh);
+        return () => {
+            window.removeEventListener('organization-refresh', handleRefresh);
+        };
+    }, [onRefetch]);
+
     const handleCreateOrganization = async () => {
         if (!organizationName.trim()) {
             setError("Organization name is required");
