@@ -316,12 +316,38 @@ export default function OrganizationSettings() {
         }
     }
 
-    const handleRoleChange = (userId: string, newRole: string) => {
-        console.log(`Change role for user ${userId} to ${newRole}`);
-        setAlertMessage({
-            type: "success",
-            message: `User role updated to ${newRole}.`,
-        });
+    const handleRoleChange = async (userId: string, newRole: "OWNER" | "ADMIN" | "INSTRUCTOR" | "STUDENT") => {
+        try {
+            const res = await fetch(`/api/userOrganization/${organizationId}/role`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ userId, newRole }),
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || "Failed to update role");
+            }
+
+            // Update the local state to reflect the change
+            setUsers(prevUsers =>
+                prevUsers.map(user =>
+                    user.id === userId ? { ...user, role: newRole } : user
+                )
+            );
+
+            setAlertMessage({
+                type: "success",
+                message: "User role updated successfully.",
+            });
+        } catch (error) {
+            setAlertMessage({
+                type: "error",
+                message: error instanceof Error ? error.message : "Failed to update role",
+            });
+        }
     };
 
     const confirmRemoveUser = (user: OrganizationUser) => {
@@ -329,16 +355,51 @@ export default function OrganizationSettings() {
         setIsRemoveDialogOpen(true);
     };
 
-    const handleRemoveUser = () => {
-        console.log(`Removing user ${userToRemove?.id} from organization`);
-        setIsRemoveDialogOpen(false);
-        setUserToRemove(null);
-        setAlertMessage({
-            type: "success",
-            message: `User ${
-                userToRemove?.name || userToRemove?.email
-            } has been removed from the organization.`,
-        });
+    const handleRemoveUser = async () => {
+        if (!userToRemove) return;
+
+        try {
+            const res = await fetch(`/api/userOrganization/${organizationId}/remove`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: userToRemove.id }),
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || 'Failed to remove user');
+            }
+
+            // If it's a redirect response (status 302)
+            if (res.status === 302) {
+                const redirectUrl = res.headers.get('Location');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                    return;
+                }
+            }
+
+            const data = await res.json();
+
+            // Update the local state to remove the user
+            setUsers(prevUsers => prevUsers.filter(user => user.id !== userToRemove.id));
+            setFilteredUsers(prevUsers => prevUsers.filter(user => user.id !== userToRemove.id));
+
+            setAlertMessage({
+                type: "success",
+                message: `User ${userToRemove.name || userToRemove.email} has been removed from the organization.`,
+            });
+        } catch (error) {
+            setAlertMessage({
+                type: "error",
+                message: error instanceof Error ? error.message : "Failed to remove user",
+            });
+        } finally {
+            setIsRemoveDialogOpen(false);
+            setUserToRemove(null);
+        }
     };
 
     if (isLoading) {
@@ -492,7 +553,7 @@ export default function OrganizationSettings() {
                                                     onValueChange={(value) =>
                                                         handleRoleChange(
                                                             user.id,
-                                                            value
+                                                            value as "OWNER" | "ADMIN" | "INSTRUCTOR" | "STUDENT"
                                                         )
                                                     }
                                                     disabled={

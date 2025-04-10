@@ -13,8 +13,8 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@radix-ui/react-dropdown-menu";
-import { usePathname } from "next/navigation";
-import React, { useMemo } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
 
 export default function DashboardLayout({
     children,
@@ -22,6 +22,41 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasAccess, setHasAccess] = useState(true);
+
+    // Extract organization ID from pathname
+    const organizationId = useMemo(() => {
+        const segments = pathname.split("/");
+        const orgIndex = segments.indexOf("organization");
+        return segments[orgIndex + 1];
+    }, [pathname]);
+
+    useEffect(() => {
+        async function checkAccess() {
+            try {
+                const res = await fetch(`/api/userOrganization/${organizationId}`);
+                const data = await res.json();
+
+                if (!data?.userOrganizationInfo?.length) {
+                    // User doesn't have access to this organization
+                    setHasAccess(false);
+                    window.location.href = '/organization';
+                    return;
+                }
+                setHasAccess(true);
+            } catch (error) {
+                console.error("Error checking organization access:", error);
+                setHasAccess(false);
+                window.location.href = '/organization';
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        checkAccess();
+    }, [organizationId]);
 
     // Extract breadcrumbs from URL path
     const breadcrumbs = useMemo(() => {
@@ -59,6 +94,18 @@ export default function DashboardLayout({
             return { label, href, isCurrentPage };
         });
     }, [pathname]);
+
+    if (isLoading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    if (!hasAccess) {
+        return null; // Will be redirected by the window.location.href
+    }
 
     return (
         <div className="flex h-screen">
