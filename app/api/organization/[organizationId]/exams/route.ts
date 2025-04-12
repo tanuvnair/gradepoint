@@ -20,6 +20,7 @@ const createExamSchema = z.object({
         .min(0, "Passing score cannot be negative")
         .optional(),
     randomizeOrder: z.boolean().default(false),
+    publishedAt: z.string().datetime().optional(),
     sections: z
         .array(
             z.object({
@@ -116,6 +117,7 @@ export async function POST(
                     timeLimit: validation.data.timeLimit,
                     passingScore: validation.data.passingScore,
                     randomizeOrder: validation.data.randomizeOrder,
+                    publishedAt: validation.data.publishedAt ? new Date(validation.data.publishedAt) : null,
                     creatorId: session.user.id,
                     organizationId: organizationId,
                     sections: {
@@ -209,7 +211,7 @@ export async function GET(
             where.publishedAt = null;
         }
 
-        const take = limit ? parseInt(limit) : 10;
+        const take = limit && !isNaN(parseInt(limit)) ? parseInt(limit) : 10;
         const skip = page ? (parseInt(page) - 1) * take : 0;
 
         const [exams, total] = await Promise.all([
