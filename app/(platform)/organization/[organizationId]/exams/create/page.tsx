@@ -79,8 +79,85 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
         const { name, value, type } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value
+            [name]: type === "number" ? parseFloat(value) : value
         }));
+    };
+
+    const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: parseFloat(value) || 0
+        }));
+    };
+
+    const handleDateChange = (name: string, date: Date | undefined) => {
+        setFormData(prev => ({
+            ...prev,
+            [name]: date ? date.toISOString() : null
+        }));
+    };
+
+    const handleQuestionChange = (
+        sectionIndex: number,
+        questionIndex: number,
+        field: keyof Question | 'options' | 'correctAnswer',
+        value: any
+    ) => {
+        setFormData(prev => {
+            const newSections = [...prev.sections];
+            const question = { ...newSections[sectionIndex].questions[questionIndex] };
+
+            if (field === 'points') {
+                question[field] = parseFloat(value) || 0;
+            } else if (field === 'type') {
+                question.type = value;
+                // Clear options and correctAnswer for non-multiple choice questions
+                if (value !== 'MULTIPLE_CHOICE') {
+                    question.options = {};
+                    question.correctAnswer = {};
+                } else {
+                    // Initialize options for multiple choice questions
+                    question.options = question.options || {};
+                    question.correctAnswer = question.correctAnswer || { value: '' };
+                }
+            } else if (field === 'options' || field === 'correctAnswer') {
+                if (field === 'correctAnswer') {
+                    question.correctAnswer = { value };
+                } else {
+                    question[field] = value;
+                }
+            } else {
+                (question as any)[field] = value;
+            }
+
+            newSections[sectionIndex].questions[questionIndex] = question;
+            return { ...prev, sections: newSections };
+        });
+    };
+
+    const handleSectionChange = (sectionIndex: number, field: 'title' | 'description', value: string) => {
+        setFormData(prev => {
+            const newSections = [...prev.sections];
+            newSections[sectionIndex] = {
+                ...newSections[sectionIndex],
+                [field]: value
+            };
+            return { ...prev, sections: newSections };
+        });
+    };
+
+    const handleOptionChange = (sectionIndex: number, questionIndex: number, optionIndex: number, value: string) => {
+        setFormData(prev => {
+            const newSections = [...prev.sections];
+            const question = { ...newSections[sectionIndex].questions[questionIndex] };
+            question.options = {
+                ...question.options,
+                [`option${optionIndex + 1}`]: value
+            };
+            newSections[sectionIndex].questions[questionIndex] = question;
+            return { ...prev, sections: newSections };
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -203,30 +280,51 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                 }
             }
 
+            const requestBody = {
+                ...formData,
+                timeLimit: formData.timeLimit || null,
+                passingScore: formData.passingScore || null,
+                publishedAt: formData.publishedAt || null,
+                startDate: formData.startDate || null,
+                endDate: formData.endDate || null,
+                allowedAttempts: formData.allowedAttempts || null,
+                sections: formData.sections.map((section, index) => ({
+                    ...section,
+                    order: index,
+                    questions: section.questions.map((question, qIndex) => ({
+                        ...question,
+                        order: qIndex,
+                        points: parseFloat(question.points.toString()),
+                        options: question.type === "MULTIPLE_CHOICE" ? question.options || {} : {},
+                        correctAnswer: question.type === "MULTIPLE_CHOICE" ? question.correctAnswer || {} : {}
+                    }))
+                }))
+            };
+
+            console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+
             const response = await fetch(`/api/organization/${organizationId}/exams`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    ...formData,
-                    sections: formData.sections.map((section, index) => ({
-                        ...section,
-                        order: index,
-                        questions: section.questions.map((question, qIndex) => ({
-                            ...question,
-                            order: qIndex,
-                            points: parseFloat(question.points.toString()),
-                            options: question.options || {},
-                            correctAnswer: question.correctAnswer || {}
-                        }))
-                    }))
-                }),
+                body: JSON.stringify(requestBody),
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to create exam');
+                const errorData = await response.json();
+                const errorMessage = JSON.stringify({
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorData
+                }, null, 2);
+                console.error('Exam creation failed:', errorMessage);
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: errorMessage,
+                });
+                return;
             }
 
             const data = await response.json();
@@ -236,12 +334,15 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
             });
             router.push(`/organization/${organizationId}/exams/all`);
         } catch (error) {
-            console.error('Error creating exam:', error);
+            const errorMessage = JSON.stringify({
+                error: error instanceof Error ? error.message : "An unexpected error occurred while creating the exam",
+                stack: error instanceof Error ? error.stack : undefined
+            }, null, 2);
+            console.error('Exam creation error:', errorMessage);
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: error instanceof Error ? error.message : "An unexpected error occurred",
-                action: <ToastAction altText="Try again">Try again</ToastAction>,
+                description: errorMessage,
             });
         }
     };
@@ -292,11 +393,10 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
             });
             router.push(`/organization/${organizationId}/exams/all`);
         } catch (error) {
-            console.error('Error saving exam as draft:', error);
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: error instanceof Error ? error.message : "An unexpected error occurred",
+                description: error instanceof Error ? error.message : "An unexpected error occurred while saving the draft",
                 action: <ToastAction altText="Try again">Try again</ToastAction>,
             });
         }
@@ -370,7 +470,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                             <Calendar
                                                 mode="single"
                                                 selected={formData.startDate ? new Date(formData.startDate) : undefined}
-                                                onSelect={(date) => setFormData(prev => ({ ...prev, startDate: date ? date.toISOString() : null }))}
+                                                onSelect={(date) => handleDateChange('startDate', date)}
                                                 initialFocus
                                             />
                                         </PopoverContent>
@@ -384,7 +484,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                         type="number"
                                         name="timeLimit"
                                         value={formData.timeLimit}
-                                        onChange={handleInputChange}
+                                        onChange={handleNumberInputChange}
                                         placeholder="Duration in minutes"
                                         className="max-w-full sm:max-w-[200px]"
                                     />
@@ -406,7 +506,15 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                 <Switch
                                     id="randomizeOrder"
                                     checked={formData.randomizeOrder}
-                                    onCheckedChange={(checked: boolean) => setFormData(prev => ({ ...prev, randomizeOrder: checked }))}
+                                    onCheckedChange={(checked: boolean) => {
+                                        handleInputChange({
+                                            target: {
+                                                name: 'randomizeOrder',
+                                                type: 'checkbox',
+                                                checked
+                                            }
+                                        } as React.ChangeEvent<HTMLInputElement>);
+                                    }}
                                 />
                                 <Label htmlFor="randomizeOrder" className="text-sm sm:text-base">Randomize question order</Label>
                             </div>
@@ -418,7 +526,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                     type="number"
                                     name="passingScore"
                                     value={formData.passingScore}
-                                    onChange={handleInputChange}
+                                    onChange={handleNumberInputChange}
                                     placeholder="Minimum passing score"
                                     className="max-w-full sm:max-w-[200px]"
                                 />
@@ -431,7 +539,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                     type="number"
                                     name="allowedAttempts"
                                     value={formData.allowedAttempts}
-                                    onChange={handleInputChange}
+                                    onChange={handleNumberInputChange}
                                     placeholder="Number of attempts allowed"
                                     className="max-w-full sm:max-w-[200px]"
                                 />
@@ -480,17 +588,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                 <Input
                                                     placeholder="Section title"
                                                     value={section.title}
-                                                    onChange={(e) => {
-                                                        const newSections = [...formData.sections];
-                                                        newSections[sectionIndex] = {
-                                                            ...section,
-                                                            title: e.target.value
-                                                        };
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            sections: newSections
-                                                        }));
-                                                    }}
+                                                    onChange={(e) => handleSectionChange(sectionIndex, 'title', e.target.value)}
                                                 />
                                             </div>
                                             <div className="flex gap-2">
@@ -563,17 +661,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                             <Textarea
                                                 placeholder="Section description"
                                                 value={section.description}
-                                                onChange={(e) => {
-                                                    const newSections = [...formData.sections];
-                                                    newSections[sectionIndex] = {
-                                                        ...section,
-                                                        description: e.target.value
-                                                    };
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        sections: newSections
-                                                    }));
-                                                }}
+                                                onChange={(e) => handleSectionChange(sectionIndex, 'description', e.target.value)}
                                             />
                                         </div>
                                         <div className="space-y-4">
@@ -632,32 +720,14 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                                             <Input
                                                                                 placeholder="Enter question content"
                                                                                 value={question.content}
-                                                                                onChange={(e) => {
-                                                                                    const newSections = [...formData.sections];
-                                                                                    newSections[sectionIndex].questions[questionIndex] = {
-                                                                                        ...question,
-                                                                                        content: e.target.value
-                                                                                    };
-                                                                                    setFormData(prev => ({
-                                                                                        ...prev,
-                                                                                        sections: newSections
-                                                                                    }));
-                                                                                }}
+                                                                                onChange={(e) => handleQuestionChange(sectionIndex, questionIndex, 'content', e.target.value)}
                                                                             />
                                                                         </div>
                                                                         <div className="flex gap-2">
                                                                             <Select
                                                                                 value={question.type}
                                                                                 onValueChange={(value: Question["type"]) => {
-                                                                                    const newSections = [...formData.sections];
-                                                                                    newSections[sectionIndex].questions[questionIndex] = {
-                                                                                        ...question,
-                                                                                        type: value
-                                                                                    };
-                                                                                    setFormData(prev => ({
-                                                                                        ...prev,
-                                                                                        sections: newSections
-                                                                                    }));
+                                                                                    handleQuestionChange(sectionIndex, questionIndex, 'type', value);
                                                                                 }}
                                                                             >
                                                                                 <SelectTrigger className="w-[180px]">
@@ -675,17 +745,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                                                 placeholder="Points"
                                                                                 className="w-20"
                                                                                 value={question.points}
-                                                                                onChange={(e) => {
-                                                                                    const newSections = [...formData.sections];
-                                                                                    newSections[sectionIndex].questions[questionIndex] = {
-                                                                                        ...question,
-                                                                                        points: parseFloat(e.target.value) || 0
-                                                                                    };
-                                                                                    setFormData(prev => ({
-                                                                                        ...prev,
-                                                                                        sections: newSections
-                                                                                    }));
-                                                                                }}
+                                                                                onChange={(e) => handleQuestionChange(sectionIndex, questionIndex, 'points', e.target.value)}
                                                                             />
                                                                             <Button
                                                                                 variant="ghost"
@@ -761,36 +821,14 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                                                         <Input
                                                                                             placeholder={`Option ${optionIndex + 1}`}
                                                                                             value={question.options?.[`option${optionIndex + 1}`] as string || ""}
-                                                                                            onChange={(e) => {
-                                                                                                const newSections = [...formData.sections];
-                                                                                                newSections[sectionIndex].questions[questionIndex] = {
-                                                                                                    ...question,
-                                                                                                    options: {
-                                                                                                        ...question.options,
-                                                                                                        [`option${optionIndex + 1}`]: e.target.value
-                                                                                                    }
-                                                                                                };
-                                                                                                setFormData(prev => ({
-                                                                                                    ...prev,
-                                                                                                    sections: newSections
-                                                                                                }));
-                                                                                            }}
+                                                                                            onChange={(e) => handleOptionChange(sectionIndex, questionIndex, optionIndex, e.target.value)}
                                                                                         />
                                                                                         <input
                                                                                             type="radio"
                                                                                             name={`correct-answer-${sectionIndex}-${questionIndex}`}
+                                                                                            value={`option${optionIndex + 1}`}
                                                                                             checked={question.correctAnswer?.value === `option${optionIndex + 1}`}
-                                                                                            onChange={() => {
-                                                                                                const newSections = [...formData.sections];
-                                                                                                newSections[sectionIndex].questions[questionIndex] = {
-                                                                                                    ...question,
-                                                                                                    correctAnswer: { value: `option${optionIndex + 1}` }
-                                                                                                };
-                                                                                                setFormData(prev => ({
-                                                                                                    ...prev,
-                                                                                                    sections: newSections
-                                                                                                }));
-                                                                                            }}
+                                                                                            onChange={(e) => handleQuestionChange(sectionIndex, questionIndex, 'correctAnswer', e.target.value)}
                                                                                         />
                                                                                     </div>
                                                                                 ))}
@@ -836,6 +874,12 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                     </Button>
                 </div>
             </form>
+            <div className="mt-8 p-4 bg-gray-100 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Debug Info</h3>
+                <pre className="text-sm overflow-auto text-black">
+                    {JSON.stringify(formData, null, 2)}
+                </pre>
+            </div>
         </div>
     );
 }

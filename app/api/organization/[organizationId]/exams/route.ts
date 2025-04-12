@@ -20,9 +20,9 @@ const createExamSchema = z.object({
         .min(0, "Passing score cannot be negative")
         .optional(),
     randomizeOrder: z.boolean().default(false),
-    publishedAt: z.string().datetime().optional(),
-    startDate: z.string().datetime().optional(),
-    endDate: z.string().datetime().optional(),
+    publishedAt: z.string().datetime().nullable(),
+    startDate: z.string().datetime().nullable(),
+    endDate: z.string().datetime().nullable(),
     allowedAttempts: z.number().min(1, "Allowed attempts must be at least 1").optional(),
     sections: z
         .array(
