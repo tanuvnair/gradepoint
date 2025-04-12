@@ -273,9 +273,6 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                                                 {exam.title}
                                             </CardTitle>
                                         </div>
-                                        <Badge variant="outline" className="text-xs sm:text-sm">
-                                            {exam.publishedAt ? "Published" : "Draft"}
-                                        </Badge>
                                     </div>
                                     <CardDescription className="text-xs line-clamp-2 sm:text-sm md:text-base">
                                         {exam.description || "No description available"}
