@@ -6,64 +6,64 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { ArrowLeft, CalendarIcon, Clock, Plus, Shuffle } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 
-type ExamType = "mcq" | "short-answer" | "code-based" | "open-book";
+type ExamType = "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "OPEN_ENDED" | "CODE_BASED";
 
 interface Question {
-    id: string;
+    content: string;
     type: ExamType;
-    text: string;
-    difficulty: "easy" | "medium" | "hard";
-    timeLimit: number;
     points: number;
-    options?: string[];
-    correctAnswers?: string[];
-    codeTemplate?: string;
-    testCases?: string[];
+    order: number;
+    options?: Record<string, unknown>;
+    correctAnswer?: Record<string, unknown>;
 }
 
 interface ExamFormData {
     title: string;
     description: string;
-    startDate: Date | null;
-    startTime: string;
-    duration: number;
-    allowRetakes: boolean;
-    minScore: boolean;
-    waitPeriod: boolean;
-    timeLimits: {
-        easy: number;
-        medium: number;
-        hard: number;
-    };
-    questions: Question[];
+    timeLimit: number;
+    passingScore: number;
+    randomizeOrder: boolean;
+    publishedAt: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    allowedAttempts: number;
+    sections: {
+        title: string;
+        description?: string;
+        order: number;
+        questions: Question[];
+    }[];
 }
 
 export default function CreateExamForm({ params }: { params: Promise<{ organizationId: string; type: ExamType }> }) {
     const router = useRouter();
     const { organizationId, type } = use(params);
+    const { toast } = useToast();
     const [formData, setFormData] = useState<ExamFormData>({
         title: "",
         description: "",
+        timeLimit: 60,
+        passingScore: 0,
+        randomizeOrder: false,
+        publishedAt: null,
         startDate: null,
-        startTime: "",
-        duration: 60,
-        allowRetakes: false,
-        minScore: false,
-        waitPeriod: false,
-        timeLimits: {
-            easy: 2,
-            medium: 5,
-            hard: 10,
-        },
-        questions: [],
+        endDate: null,
+        allowedAttempts: 1,
+        sections: [{
+            title: "Section 1",
+            order: 0,
+            questions: []
+        }]
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -74,25 +74,37 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
         }));
     };
 
-    const handleTimeLimitChange = (difficulty: keyof ExamFormData["timeLimits"], value: string) => {
-        setFormData(prev => ({
-            ...prev,
-            timeLimits: {
-                ...prev.timeLimits,
-                [difficulty]: parseInt(value) || 0
-            }
-        }));
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            // TODO: Implement exam creation logic
-            console.log("Form submitted:", formData);
-            // After successful creation, redirect to exams list
+            const response = await fetch(`/api/organization/${organizationId}/exams`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                toast({
+                    variant: "destructive",
+                    title: "Failed to create exam",
+                    description: error.message || "An error occurred while creating the exam",
+                });
+                return;
+            }
+
+            const data = await response.json();
             router.push(`/organization/${organizationId}/exams/all`);
         } catch (error) {
-            console.error("Error creating exam:", error);
+            console.error('Error creating exam:', error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "An unexpected error occurred while creating the exam",
+                action: <ToastAction altText="Try again">Try again</ToastAction>,
+            });
         }
     };
 
@@ -102,7 +114,10 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => router.back()}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        router.back();
+                    }}
                     className="h-8 w-8 self-start"
                 >
                     <ArrowLeft className="h-4 w-4" />
@@ -144,7 +159,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                         </div>
                         <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label className="text-sm sm:text-base">Start Date & Time</Label>
+                                <Label className="text-sm sm:text-base">Start Date</Label>
                                 <div className="flex flex-col gap-2 sm:flex-row">
                                     <Popover>
                                         <PopoverTrigger asChild>
@@ -156,41 +171,31 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                 )}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {formData.startDate ? format(formData.startDate, "PPP") : <span>Pick a date</span>}
+                                                {formData.startDate ? format(new Date(formData.startDate), "PPP") : <span>Pick a date</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar
                                                 mode="single"
-                                                selected={formData.startDate || undefined}
-                                                onSelect={(date) => setFormData(prev => ({ ...prev, startDate: date }))}
+                                                selected={formData.startDate ? new Date(formData.startDate) : undefined}
+                                                onSelect={(date) => setFormData(prev => ({ ...prev, startDate: date ? date.toISOString() : null }))}
                                                 initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
-                                    <Input
-                                        type="time"
-                                        className="w-full sm:w-32"
-                                        name="startTime"
-                                        value={formData.startTime}
-                                        onChange={handleInputChange}
-                                    />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm sm:text-base">Duration</Label>
+                                <Label className="text-sm sm:text-base">Time Limit (minutes)</Label>
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                     <Input
                                         type="number"
-                                        name="duration"
-                                        value={formData.duration}
+                                        name="timeLimit"
+                                        value={formData.timeLimit}
                                         onChange={handleInputChange}
                                         placeholder="Duration in minutes"
                                         className="max-w-full sm:max-w-[200px]"
                                     />
-                                    <Button variant="outline" size="icon" className="w-full sm:w-auto">
-                                        <Clock className="h-4 w-4" />
-                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -206,85 +211,41 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                         <div className="space-y-2">
                             <Label className="text-sm sm:text-base">Question Randomization</Label>
                             <div className="flex items-center space-x-2">
-                                <Button variant="outline" className="w-full">
-                                    <Shuffle className="mr-2 h-4 w-4" />
-                                    Randomize Questions
-                                </Button>
+                                <input
+                                    type="checkbox"
+                                    id="randomizeOrder"
+                                    name="randomizeOrder"
+                                    checked={formData.randomizeOrder}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, randomizeOrder: e.target.checked }))}
+                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                />
+                                <Label htmlFor="randomizeOrder" className="text-sm sm:text-base">Randomize question order</Label>
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <Label className="text-sm sm:text-base">Adaptive Time Limits</Label>
-                            <div className="space-y-3">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                    <Label className="w-24 text-sm sm:text-base">Easy:</Label>
-                                    <Input
-                                        type="number"
-                                        className="w-full sm:w-20"
-                                        placeholder="min"
-                                        value={formData.timeLimits.easy}
-                                        onChange={(e) => handleTimeLimitChange("easy", e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                    <Label className="w-24 text-sm sm:text-base">Medium:</Label>
-                                    <Input
-                                        type="number"
-                                        className="w-full sm:w-20"
-                                        placeholder="min"
-                                        value={formData.timeLimits.medium}
-                                        onChange={(e) => handleTimeLimitChange("medium", e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                    <Label className="w-24 text-sm sm:text-base">Hard:</Label>
-                                    <Input
-                                        type="number"
-                                        className="w-full sm:w-20"
-                                        placeholder="min"
-                                        value={formData.timeLimits.hard}
-                                        onChange={(e) => handleTimeLimitChange("hard", e.target.value)}
-                                    />
-                                </div>
+                            <Label className="text-sm sm:text-base">Passing Score</Label>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <Input
+                                    type="number"
+                                    name="passingScore"
+                                    value={formData.passingScore}
+                                    onChange={handleInputChange}
+                                    placeholder="Minimum passing score"
+                                    className="max-w-full sm:max-w-[200px]"
+                                />
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <Label className="text-sm sm:text-base">Retake Policy</Label>
-                            <div className="space-y-3">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="allow-retakes"
-                                        name="allowRetakes"
-                                        checked={formData.allowRetakes}
-                                        onChange={handleInputChange}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                    />
-                                    <Label htmlFor="allow-retakes" className="text-sm sm:text-base">Allow retakes</Label>
-                                </div>
-                                <div className="pl-6 space-y-3">
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            id="min-score"
-                                            name="minScore"
-                                            checked={formData.minScore}
-                                            onChange={handleInputChange}
-                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                        />
-                                        <Label htmlFor="min-score" className="text-sm sm:text-base">Minimum score required</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            id="wait-period"
-                                            name="waitPeriod"
-                                            checked={formData.waitPeriod}
-                                            onChange={handleInputChange}
-                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                        />
-                                        <Label htmlFor="wait-period" className="text-sm sm:text-base">Waiting period between retakes</Label>
-                                    </div>
-                                </div>
+                            <Label className="text-sm sm:text-base">Allowed Attempts</Label>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <Input
+                                    type="number"
+                                    name="allowedAttempts"
+                                    value={formData.allowedAttempts}
+                                    onChange={handleInputChange}
+                                    placeholder="Number of attempts allowed"
+                                    className="max-w-full sm:max-w-[200px]"
+                                />
                             </div>
                         </div>
                     </CardContent>
@@ -298,55 +259,193 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                             <CardTitle className="text-lg sm:text-xl">Questions</CardTitle>
                             <CardDescription className="text-xs sm:text-sm">Add and manage exam questions</CardDescription>
                         </div>
-                        <Button type="button" className="gap-2">
+                        <Button
+                            type="button"
+                            className="gap-2"
+                            onClick={() => {
+                                const newQuestion: Question = {
+                                    content: "",
+                                    type: "MULTIPLE_CHOICE",
+                                    points: 1,
+                                    order: formData.sections[0].questions.length,
+                                };
+                                setFormData(prev => ({
+                                    ...prev,
+                                    sections: [{
+                                        ...prev.sections[0],
+                                        questions: [...prev.sections[0].questions, newQuestion]
+                                    }]
+                                }));
+                            }}
+                        >
                             <Plus className="h-4 w-4" />
                             Add Question
                         </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Tabs defaultValue="questions" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="questions">Questions</TabsTrigger>
-                            <TabsTrigger value="question-bank">Question Bank</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="questions" className="space-y-4">
-                            {formData.questions.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-6 sm:p-8 text-center">
-                                    <div className="rounded-full bg-primary/10 p-3">
-                                        <Plus className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <h3 className="mt-4 text-base font-medium sm:text-lg">No questions added yet</h3>
-                                    <p className="mt-2 text-xs text-muted-foreground sm:text-sm">
-                                        Click the "Add Question" button to get started
-                                    </p>
+                    <div className="space-y-4">
+                        {formData.sections[0].questions.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-6 sm:p-8 text-center">
+                                <div className="rounded-full bg-primary/10 p-3">
+                                    <Plus className="h-6 w-6 text-primary" />
                                 </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {formData.questions.map((question) => (
-                                        <div key={question.id} className="rounded-lg border p-4">
+                                <h3 className="mt-4 text-base font-medium sm:text-lg">No questions added yet</h3>
+                                <p className="mt-2 text-xs text-muted-foreground sm:text-sm">
+                                    Click the "Add Question" button to get started
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {formData.sections[0].questions.map((question, index) => (
+                                    <div key={index} className="rounded-lg border p-4">
+                                        <div className="flex flex-col gap-4">
                                             <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
-                                                <h3 className="font-medium text-sm sm:text-base">{question.text}</h3>
+                                                <div className="flex-1">
+                                                    <Input
+                                                        placeholder="Enter question content"
+                                                        value={question.content}
+                                                        onChange={(e) => {
+                                                            const newQuestions = [...formData.sections[0].questions];
+                                                            newQuestions[index] = {
+                                                                ...question,
+                                                                content: e.target.value
+                                                            };
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                sections: [{
+                                                                    ...prev.sections[0],
+                                                                    questions: newQuestions
+                                                                }]
+                                                            }));
+                                                        }}
+                                                    />
+                                                </div>
                                                 <div className="flex gap-2">
-                                                    <Button variant="ghost" size="sm">Edit</Button>
-                                                    <Button variant="ghost" size="sm">Delete</Button>
+                                                    <Select
+                                                        value={question.type}
+                                                        onValueChange={(value: Question["type"]) => {
+                                                            const newQuestions = [...formData.sections[0].questions];
+                                                            newQuestions[index] = {
+                                                                ...question,
+                                                                type: value
+                                                            };
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                sections: [{
+                                                                    ...prev.sections[0],
+                                                                    questions: newQuestions
+                                                                }]
+                                                            }));
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="w-[180px]">
+                                                            <SelectValue placeholder="Select type" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="MULTIPLE_CHOICE">Multiple Choice</SelectItem>
+                                                            <SelectItem value="SHORT_ANSWER">Short Answer</SelectItem>
+                                                            <SelectItem value="OPEN_ENDED">Open Ended</SelectItem>
+                                                            <SelectItem value="CODE_BASED">Code Based</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Points"
+                                                        className="w-20"
+                                                        value={question.points}
+                                                        onChange={(e) => {
+                                                            const newQuestions = [...formData.sections[0].questions];
+                                                            newQuestions[index] = {
+                                                                ...question,
+                                                                points: parseFloat(e.target.value) || 0
+                                                            };
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                sections: [{
+                                                                    ...prev.sections[0],
+                                                                    questions: newQuestions
+                                                                }]
+                                                            }));
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            const newQuestions = formData.sections[0].questions.filter((_, i) => i !== index);
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                sections: [{
+                                                                    ...prev.sections[0],
+                                                                    questions: newQuestions
+                                                                }]
+                                                            }));
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </Button>
                                                 </div>
                                             </div>
+                                            {question.type === "MULTIPLE_CHOICE" && (
+                                                <div className="space-y-2">
+                                                    <Label>Options</Label>
+                                                    <div className="space-y-2">
+                                                        {Array.from({ length: 4 }).map((_, optionIndex) => (
+                                                            <div key={optionIndex} className="flex items-center gap-2">
+                                                                <Input
+                                                                    placeholder={`Option ${optionIndex + 1}`}
+                                                                    value={question.options?.[`option${optionIndex + 1}`] as string || ""}
+                                                                    onChange={(e) => {
+                                                                        const newQuestions = [...formData.sections[0].questions];
+                                                                        newQuestions[index] = {
+                                                                            ...question,
+                                                                            options: {
+                                                                                ...question.options,
+                                                                                [`option${optionIndex + 1}`]: e.target.value
+                                                                            }
+                                                                        };
+                                                                        setFormData(prev => ({
+                                                                            ...prev,
+                                                                            sections: [{
+                                                                                ...prev.sections[0],
+                                                                                questions: newQuestions
+                                                                            }]
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`correct-answer-${index}`}
+                                                                    checked={question.correctAnswer?.value === `option${optionIndex + 1}`}
+                                                                    onChange={() => {
+                                                                        const newQuestions = [...formData.sections[0].questions];
+                                                                        newQuestions[index] = {
+                                                                            ...question,
+                                                                            correctAnswer: {
+                                                                                value: `option${optionIndex + 1}`
+                                                                            }
+                                                                        };
+                                                                        setFormData(prev => ({
+                                                                            ...prev,
+                                                                            sections: [{
+                                                                                ...prev.sections[0],
+                                                                                questions: newQuestions
+                                                                            }]
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-                        </TabsContent>
-                        <TabsContent value="question-bank">
-                            <div className="space-y-4">
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-                                    <Input placeholder="Search questions..." className="max-w-full sm:max-w-sm" />
-                                    <Button variant="outline" className="w-full sm:w-auto">Filter</Button>
-                                </div>
-                                {/* Question bank table will go here */}
+                                    </div>
+                                ))}
                             </div>
-                        </TabsContent>
-                    </Tabs>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 

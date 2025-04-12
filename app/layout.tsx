@@ -1,5 +1,6 @@
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -38,6 +39,7 @@ export default function RootLayout({
                 >
                     <SessionProvider>
                         {children}
+                        <SonnerToaster />
                         <Toaster />
                     </SessionProvider>
                 </ThemeProvider>
