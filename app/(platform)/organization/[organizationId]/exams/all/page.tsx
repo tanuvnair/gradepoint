@@ -3,9 +3,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, FileText, ListChecks, Plus } from "lucide-react";
+import { Calendar, Clock, FileText, ListChecks, Pencil, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
 
@@ -263,54 +269,78 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                     </div>
                 ) : (
                     filteredExams.map((exam) => (
-                        <Card
-                            key={exam.id}
-                            className="group cursor-pointer transition-all hover:border-primary/50 hover:shadow-md"
-                            onClick={() => router.push(`/organization/${organizationId}/exams/${exam.id}`)}
-                        >
-                            <CardHeader className="space-y-3 sm:space-y-4 md:space-y-6">
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-lg bg-primary/10 p-2 sm:p-2.5 md:p-3">
-                                            <FileText className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+                        <ContextMenu key={exam.id}>
+                            <ContextMenuTrigger asChild>
+                                <Card
+                                    className="group select-none transition-all duration-200 hover:bg-accent/5 hover:shadow-md"
+                                    onClick={() => router.push(`/organization/${organizationId}/exams/${exam.id}`)}
+                                >
+                                    <CardHeader className="space-y-3 sm:space-y-4 md:space-y-6">
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="rounded-lg bg-primary/10 p-2 sm:p-2.5 md:p-3">
+                                                    <FileText className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+                                                </div>
+                                                <CardTitle className="text-base line-clamp-1 sm:text-lg md:text-xl">
+                                                    {exam.title}
+                                                </CardTitle>
+                                            </div>
+                                            <Badge variant="outline" className="text-xs sm:text-sm">
+                                                {exam.publishedAt ? "Published" : "Draft"}
+                                            </Badge>
                                         </div>
-                                        <CardTitle className="text-base line-clamp-1 sm:text-lg md:text-xl">
-                                            {exam.title}
-                                        </CardTitle>
-                                    </div>
-                                    <Badge variant="outline" className="text-xs sm:text-sm">
-                                        {exam.publishedAt ? "Published" : "Draft"}
-                                    </Badge>
-                                </div>
-                                <CardDescription className="text-xs line-clamp-2 sm:text-sm md:text-base">
-                                    {exam.description || "No description available"}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-3 md:space-y-4">
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                                        <div className="flex items-center gap-1.5">
-                                            <Clock className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
-                                            <span className="text-xs sm:text-sm">
-                                                {exam.timeLimit ? `${exam.timeLimit} min` : "No time limit"}
-                                            </span>
+                                        <CardDescription className="text-xs line-clamp-2 sm:text-sm md:text-base">
+                                            {exam.description || "No description available"}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3 md:space-y-4">
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Clock className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
+                                                    <span className="text-xs sm:text-sm">
+                                                        {exam.timeLimit ? `${exam.timeLimit} min` : "No time limit"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <ListChecks className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
+                                                    <span className="text-xs sm:text-sm">
+                                                        {exam.sections.reduce((total, section) => total + section.questions.length, 0)} questions
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
+                                                <span className="text-xs sm:text-sm">
+                                                    {new Date(exam.startDate ? exam.startDate : exam.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <ListChecks className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
-                                            <span className="text-xs sm:text-sm">
-                                                {exam.sections.reduce((total, section) => total + section.questions.length, 0)} questions
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Calendar className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
-                                        <span className="text-xs sm:text-sm">
-                                            {new Date(exam.startDate ? exam.startDate : exam.createdAt).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    </CardContent>
+                                </Card>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent>
+                                <ContextMenuItem
+                                    onClick={(e: React.MouseEvent) => {
+                                        e.stopPropagation();
+                                        router.push(`/organization/${organizationId}/exams/${exam.id}/edit`);
+                                    }}
+                                >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit Exam
+                                </ContextMenuItem>
+                                <ContextMenuItem
+                                    onClick={(e: React.MouseEvent) => {
+                                        e.stopPropagation();
+                                        // TODO: Implement delete functionality
+                                    }}
+                                    className="text-destructive focus:text-destructive"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete Exam
+                                </ContextMenuItem>
+                            </ContextMenuContent>
+                        </ContextMenu>
                     ))
                 )}
             </div>
