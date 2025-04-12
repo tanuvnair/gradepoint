@@ -19,8 +19,9 @@ import {
     ContextMenuItem,
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, FileText, ListChecks, Pencil, Plus, Trash2 } from "lucide-react";
+import { Clock, FileText, ListChecks, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -100,6 +101,7 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
     const [activeTab, setActiveTab] = useState("all");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [examToDelete, setExamToDelete] = useState<Exam | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         async function fetchUserRole() {
@@ -142,8 +144,42 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
     const filteredExams = useMemo(() => {
         let exams = allExams;
 
+        // Filter by search query
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            exams = exams.filter(exam =>
+                exam.title.toLowerCase().includes(query) ||
+                (exam.description?.toLowerCase().includes(query) ?? false)
+            );
+        }
+
         // Filter by tab
         switch (activeTab) {
+            case "all":
+                // Show all published exams for students
+                if (userRole === "STUDENT") {
+                    exams = exams.filter(exam => exam.publishedAt !== null);
+                }
+                break;
+            case "ongoing":
+                // Show exams that are currently active (published and within start/end date)
+                const now = new Date();
+                exams = exams.filter(exam => {
+                    if (!exam.publishedAt) return false;
+                    const startDate = exam.startDate ? new Date(exam.startDate) : null;
+                    const endDate = exam.endDate ? new Date(exam.endDate) : null;
+                    return (!startDate || startDate <= now) && (!endDate || now <= endDate);
+                });
+                break;
+            case "upcoming":
+                // Show exams that are published but haven't started yet
+                const currentDate = new Date();
+                exams = exams.filter(exam => {
+                    if (!exam.publishedAt) return false;
+                    const startDate = exam.startDate ? new Date(exam.startDate) : null;
+                    return startDate && startDate > currentDate;
+                });
+                break;
             case "active":
                 exams = exams.filter(exam => exam.publishedAt !== null);
                 break;
@@ -158,7 +194,7 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
         }
 
         return exams;
-    }, [allExams, activeTab, userRole, userId]);
+    }, [allExams, activeTab, userRole, userId, searchQuery]);
 
     const handleDeleteExam = async () => {
         if (!examToDelete) return;
@@ -208,26 +244,45 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                 </div>
             </div>
 
+            {/* Search Bar */}
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                    placeholder="Search exams..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                />
+            </div>
+
             {/* Tabs and Create Button */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                {(userRole === "OWNER" || userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
-                    <>
-                        <Tabs defaultValue="all" className="w-full sm:w-auto" onValueChange={setActiveTab}>
-                            <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                <Tabs defaultValue={userRole === "STUDENT" ? "all" : "active"} className="w-full sm:w-auto" onValueChange={setActiveTab}>
+                    <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                        {userRole === "STUDENT" ? (
+                            <>
                                 <TabsTrigger value="all" className="text-xs sm:text-sm">All Exams</TabsTrigger>
+                                <TabsTrigger value="ongoing" className="text-xs sm:text-sm">Ongoing</TabsTrigger>
+                                <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
+                            </>
+                        ) : (
+                            <>
                                 <TabsTrigger value="active" className="text-xs sm:text-sm">Active</TabsTrigger>
                                 <TabsTrigger value="draft" className="text-xs sm:text-sm">Drafts</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                        <Button
-                            onClick={() => router.push(`/organization/${organizationId}/exams/create`)}
-                            className="w-full sm:w-auto"
-                            size="sm"
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Exam
-                        </Button>
-                    </>
+                                <TabsTrigger value="all" className="text-xs sm:text-sm">All Exams</TabsTrigger>
+                            </>
+                        )}
+                    </TabsList>
+                </Tabs>
+                {(userRole === "OWNER" || userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
+                    <Button
+                        onClick={() => router.push(`/organization/${organizationId}/exams/create`)}
+                        className="w-full sm:w-auto"
+                        size="sm"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Exam
+                    </Button>
                 )}
             </div>
 
@@ -295,7 +350,7 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-1.5">
-                                            <Calendar className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
+                                            <Clock className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
                                             <span className="text-xs sm:text-sm">
                                                 {new Date(exam.startDate ? exam.startDate : exam.createdAt).toLocaleDateString()}
                                             </span>
@@ -345,7 +400,7 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
-                                                    <Calendar className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
+                                                    <Clock className="h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
                                                     <span className="text-xs sm:text-sm">
                                                         {new Date(exam.startDate ? exam.startDate : exam.createdAt).toLocaleDateString()}
                                                     </span>
