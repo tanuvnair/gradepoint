@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, FileText, Plus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 
 // Mock data for demonstration
 const mockExams = [
@@ -30,15 +30,68 @@ const mockExams = [
     }
 ];
 
+interface UserOrganizationDataResponse {
+    userOrganizationInfo: {
+        id: string;
+        userId: string;
+        organizationId: string;
+        role: string;
+    }[];
+}
+
 export default function AllExamsPage({ params }: { params: Promise<{ organizationId: string }> }) {
     const router = useRouter();
     const { organizationId } = use(params);
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchUserRole() {
+            try {
+                const userRes = await fetch(`/api/userOrganization/${organizationId}`);
+                const userData = await userRes.json();
+
+                if (userData?.userOrganizationInfo?.length) {
+                    setUserRole(userData.userOrganizationInfo[0].role);
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchUserRole();
+    }, [organizationId]);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-1 flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
+                <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-1 flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:p-8">
             <div className="flex flex-col gap-2 sm:gap-3">
-                <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">Exams</h1>
-                <p className="text-sm text-muted-foreground sm:text-base">Manage and create exams for your organization</p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">Exams</h1>
+                        <p className="text-sm text-muted-foreground sm:text-base">
+                            {userRole === "STUDENT"
+                                ? "View and take your available exams"
+                                : "Manage and create exams for your organization"}
+                        </p>
+                    </div>
+                    {userRole && (
+                        <Badge variant="outline" className="text-xs sm:text-sm">
+                            {userRole}
+                        </Badge>
+                    )}
+                </div>
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -49,13 +102,15 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                         <TabsTrigger value="draft" className="text-xs sm:text-sm">Drafts</TabsTrigger>
                     </TabsList>
                 </Tabs>
-                <Button
-                    onClick={() => router.push(`/organization/${organizationId}/exams/create`)}
-                    className="w-full sm:w-auto"
-                >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Exam
-                </Button>
+                {(userRole === "OWNER" || userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
+                    <Button
+                        onClick={() => router.push(`/organization/${organizationId}/exams/create`)}
+                        className="w-full sm:w-auto"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Exam
+                    </Button>
+                )}
             </div>
 
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
