@@ -1,5 +1,15 @@
 "use client";
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, FileText, ListChecks, Pencil, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface Exam {
     id: string;
@@ -86,6 +97,8 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
     const [isLoading, setIsLoading] = useState(true);
     const [allExams, setAllExams] = useState<Exam[]>([]);
     const [activeTab, setActiveTab] = useState("all");
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [examToDelete, setExamToDelete] = useState<Exam | null>(null);
 
     useEffect(() => {
         async function fetchUserRole() {
@@ -134,6 +147,29 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                 return allExams;
         }
     }, [allExams, activeTab]);
+
+    const handleDeleteExam = async () => {
+        if (!examToDelete) return;
+
+        try {
+            const response = await fetch(`/api/organization/${organizationId}/exams/${examToDelete.id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete exam');
+            }
+
+            setAllExams(prevExams => prevExams.filter(exam => exam.id !== examToDelete.id));
+            toast.success(`Exam "${examToDelete.title}" deleted successfully`);
+        } catch (error) {
+            console.error('Error deleting exam:', error);
+            toast.error(`Failed to delete exam "${examToDelete.title}"`);
+        } finally {
+            setDeleteDialogOpen(false);
+            setExamToDelete(null);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -269,7 +305,7 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                     </div>
                 ) : (
                     filteredExams.map((exam) => (
-                        <ContextMenu key={exam.id}>
+                        <ContextMenu key={exam.id} modal={false}>
                             <ContextMenuTrigger asChild>
                                 <Card
                                     className="group select-none transition-all duration-200 hover:bg-accent/5 hover:shadow-md"
@@ -331,8 +367,10 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                                 </ContextMenuItem>
                                 <ContextMenuItem
                                     onClick={(e: React.MouseEvent) => {
+                                        e.preventDefault();
                                         e.stopPropagation();
-                                        // TODO: Implement delete functionality
+                                        setExamToDelete(exam);
+                                        setDeleteDialogOpen(true);
                                     }}
                                     className="text-destructive focus:text-destructive"
                                 >
@@ -344,6 +382,27 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                     ))
                 )}
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the exam "{examToDelete?.title}".
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteExam}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
