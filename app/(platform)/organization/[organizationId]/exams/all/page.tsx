@@ -132,18 +132,20 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
     if (isLoading) {
         return (
             <div className="flex flex-1 flex-col gap-4 p-4 md:gap-6 lg:p-6 xl:p-8">
-                {/* Header Skeleton */}
+                {/* Header */}
                 <div className="flex flex-col gap-2 md:gap-3">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <Skeleton className="h-7 w-48 sm:h-8 md:h-9 md:w-64" />
-                            <Skeleton className="mt-2 h-4 w-64 md:h-5 md:w-80" />
+                            <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">Exams</h1>
+                            <p className="text-sm text-muted-foreground sm:text-base">
+                                Manage and create exams for your organization
+                            </p>
                         </div>
                         <Skeleton className="h-6 w-16" />
                     </div>
                 </div>
 
-                {/* Tabs and Button Skeleton */}
+                {/* Tabs and Create Button */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Tabs defaultValue="all" className="w-full sm:w-auto">
                         <TabsList className="grid w-full grid-cols-3 sm:w-auto">
@@ -152,7 +154,15 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                             <TabsTrigger value="draft" className="text-xs sm:text-sm">Drafts</TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    <Skeleton className="h-9 w-full sm:w-32" />
+                    <Button
+                        onClick={() => router.push(`/organization/${organizationId}/exams/create`)}
+                        className="w-full sm:w-auto"
+                        size="sm"
+                        disabled
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Exam
+                    </Button>
                 </div>
 
                 {/* Exam Cards Skeleton */}
