@@ -9,7 +9,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 const createExamSchema = z.object({
-    title: z.string().min(1, "Title is required"),
+    title: z.string().min(1, "Title is required").max(20, "Title must be less than 20 characters"),
     description: z.string().optional(),
     timeLimit: z
         .number()
@@ -21,6 +21,9 @@ const createExamSchema = z.object({
         .optional(),
     randomizeOrder: z.boolean().default(false),
     publishedAt: z.string().datetime().optional(),
+    startDate: z.string().datetime().optional(),
+    endDate: z.string().datetime().optional(),
+    allowedAttempts: z.number().min(1, "Allowed attempts must be at least 1").optional(),
     sections: z
         .array(
             z.object({
@@ -118,6 +121,9 @@ export async function POST(
                     passingScore: validation.data.passingScore,
                     randomizeOrder: validation.data.randomizeOrder,
                     publishedAt: validation.data.publishedAt ? new Date(validation.data.publishedAt) : null,
+                    startDate: validation.data.startDate ? new Date(validation.data.startDate) : null,
+                    endDate: validation.data.endDate ? new Date(validation.data.endDate) : null,
+                    allowedAttempts: validation.data.allowedAttempts,
                     creatorId: session.user.id,
                     organizationId: organizationId,
                     sections: {
