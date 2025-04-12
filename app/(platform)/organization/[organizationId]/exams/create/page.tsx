@@ -690,6 +690,55 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="sm"
+                                                                                type="button"
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    if (questionIndex > 0) {
+                                                                                        const newSections = [...formData.sections];
+                                                                                        const questions = [...newSections[sectionIndex].questions];
+                                                                                        [questions[questionIndex], questions[questionIndex - 1]] = [questions[questionIndex - 1], questions[questionIndex]];
+                                                                                        newSections[sectionIndex].questions = questions.map((q, i) => ({
+                                                                                            ...q,
+                                                                                            order: i
+                                                                                        }));
+                                                                                        setFormData(prev => ({
+                                                                                            ...prev,
+                                                                                            sections: newSections
+                                                                                        }));
+                                                                                    }
+                                                                                }}
+                                                                                disabled={questionIndex === 0}
+                                                                            >
+                                                                                <ArrowUp className="h-4 w-4" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                type="button"
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    if (questionIndex < section.questions.length - 1) {
+                                                                                        const newSections = [...formData.sections];
+                                                                                        const questions = [...newSections[sectionIndex].questions];
+                                                                                        [questions[questionIndex], questions[questionIndex + 1]] = [questions[questionIndex + 1], questions[questionIndex]];
+                                                                                        newSections[sectionIndex].questions = questions.map((q, i) => ({
+                                                                                            ...q,
+                                                                                            order: i
+                                                                                        }));
+                                                                                        setFormData(prev => ({
+                                                                                            ...prev,
+                                                                                            sections: newSections
+                                                                                        }));
+                                                                                    }
+                                                                                }}
+                                                                                disabled={questionIndex === section.questions.length - 1}
+                                                                            >
+                                                                                <ArrowDown className="h-4 w-4" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                type="button"
                                                                                 onClick={() => {
                                                                                     const newSections = [...formData.sections];
                                                                                     newSections[sectionIndex].questions = newSections[sectionIndex].questions.filter((_, i) => i !== questionIndex);
@@ -699,7 +748,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                                                     }));
                                                                                 }}
                                                                             >
-                                                                                Delete
+                                                                                <Trash2 className="h-4 w-4" />
                                                                             </Button>
                                                                         </div>
                                                                     </div>
