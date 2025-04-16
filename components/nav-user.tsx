@@ -89,12 +89,6 @@ export function NavUser({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
 
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <BadgeCheck />
-                                Account
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
                         <DropdownMenuItem onClick={() => signOut()}>
                             <LogOut />
                             Sign Out
