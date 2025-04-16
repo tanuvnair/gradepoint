@@ -25,12 +25,23 @@ export default function DashboardLayout({
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [hasAccess, setHasAccess] = useState(true);
+    const [examTitle, setExamTitle] = useState<string | null>(null);
 
     // Extract organization ID from pathname
     const organizationId = useMemo(() => {
         const segments = pathname.split("/");
         const orgIndex = segments.indexOf("organization");
         return segments[orgIndex + 1];
+    }, [pathname]);
+
+    // Extract exam ID from pathname if in exam edit route
+    const examId = useMemo(() => {
+        const segments = pathname.split("/");
+        const examIndex = segments.indexOf("exams");
+        if (examIndex !== -1 && segments[examIndex + 2] === "edit") {
+            return segments[examIndex + 1];
+        }
+        return null;
     }, [pathname]);
 
     useEffect(() => {
@@ -57,6 +68,25 @@ export default function DashboardLayout({
 
         checkAccess();
     }, [organizationId]);
+
+    // Fetch exam title when in exam edit route
+    useEffect(() => {
+        async function fetchExamTitle() {
+            if (examId) {
+                try {
+                    const response = await fetch(`/api/organization/${organizationId}/exams/${examId}`);
+                    if (response.ok) {
+                        const exam = await response.json();
+                        setExamTitle(exam.title);
+                    }
+                } catch (error) {
+                    console.error("Error fetching exam title:", error);
+                }
+            }
+        }
+
+        fetchExamTitle();
+    }, [examId, organizationId]);
 
     // Extract breadcrumbs from URL path
     const breadcrumbs = useMemo(() => {
@@ -86,14 +116,19 @@ export default function DashboardLayout({
             const href = `/${segmentPath}`;
 
             // Format label to be more readable (capitalize first letter)
-            const label = segment.charAt(0).toUpperCase() + segment.slice(1);
+            let label = segment.charAt(0).toUpperCase() + segment.slice(1);
+
+            // If this is the exam ID segment and we have the exam title, use it instead
+            if (segment === examId && examTitle) {
+                label = examTitle;
+            }
 
             // Check if this is the current page (last segment)
             const isCurrentPage = index === relevantSegments.length - 1;
 
             return { label, href, isCurrentPage };
         });
-    }, [pathname]);
+    }, [pathname, examId, examTitle]);
 
     if (isLoading) {
         return (
