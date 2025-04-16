@@ -75,8 +75,13 @@ export async function POST(
         const gradedResponses = await Promise.all(
             attempt.responses.map(async (response: ExamResponseWithQuestion) => {
                 if (response.question.type === "MULTIPLE_CHOICE") {
-                    // For multiple choice, we can grade automatically
-                    const isCorrect = response.response === response.question.correctAnswer;
+                    // For multiple choice, we need to handle both option key and value
+                    const correctAnswer = response.question.correctAnswer as { option: string } | null;
+                    const options = response.question.options as Record<string, string> | null;
+                    const isCorrect = correctAnswer && options && 
+                        (response.response === correctAnswer.option || 
+                         response.response === options[correctAnswer.option]);
+                    
                     return {
                         ...response,
                         isCorrect,

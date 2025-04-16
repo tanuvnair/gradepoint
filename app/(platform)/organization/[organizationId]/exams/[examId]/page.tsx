@@ -142,16 +142,30 @@ export default function ExamAttemptPage({
 
                             // Load saved responses
                             const savedResponses: Record<string, any> = {};
-                            data.exam.sections.forEach((section) => {
-                                section.questions.forEach((question) => {
+                            data.exam.sections.forEach((section: Section) => {
+                                section.questions.forEach((question: Question) => {
                                     savedResponses[question.id] = null;
                                 });
                             });
 
                             // Populate with any existing responses
                             if (data.attempt.responses && data.attempt.responses.length > 0) {
-                                data.attempt.responses.forEach((response) => {
-                                    savedResponses[response.questionId] = response.response;
+                                data.attempt.responses.forEach((response: { questionId: string; response: any }) => {
+                                    // For MCQ questions, we need to find the option key that matches the stored value
+                                    if (response.response) {
+                                        const question = data.exam.sections
+                                            .flatMap((s: Section) => s.questions)
+                                            .find((q: Question) => q.id === response.questionId);
+                                        
+                                        if (question?.type === "MULTIPLE_CHOICE" && question.options) {
+                                            // Find the key that matches the stored value
+                                            const matchingKey = Object.entries(question.options)
+                                                .find(([_, val]) => val === response.response)?.[0];
+                                            savedResponses[response.questionId] = matchingKey || response.response;
+                                        } else {
+                                            savedResponses[response.questionId] = response.response;
+                                        }
+                                    }
                                 });
                             }
 
@@ -253,6 +267,19 @@ export default function ExamAttemptPage({
 
     // Handle response changes
     const handleResponseChange = (questionId: string, value: any) => {
+        // For MCQ questions, store the actual option value instead of the key
+        if (examData) {
+            const allQuestions = examData.sections.reduce<Question[]>((acc, section) => {
+                return [...acc, ...section.questions];
+            }, []);
+            
+            const question = allQuestions.find(q => q.id === questionId);
+            
+            if (question?.type === "MULTIPLE_CHOICE" && question.options) {
+                value = question.options[value] || value;
+            }
+        }
+
         setResponses((prev) => ({
             ...prev,
             [questionId]: value,
@@ -271,10 +298,22 @@ export default function ExamAttemptPage({
 
             // Format responses for API
             const responsesToSave = Object.entries(responses)
-                .map(([questionId, response]) => ({
-                    questionId,
-                    response: response !== null ? response : "",
-                }))
+                .map(([questionId, response]) => {
+                    // For MCQ questions, we need to get the actual option value
+                    if (examData) {
+                        const question = examData.sections
+                            .flatMap((s: Section) => s.questions)
+                            .find((q: Question) => q.id === questionId);
+                        
+                        if (question?.type === "MULTIPLE_CHOICE" && question.options && response) {
+                            response = question.options[response] || response;
+                        }
+                    }
+                    return {
+                        questionId,
+                        response: response !== null ? response : "",
+                    };
+                })
                 .filter((r) => r.response !== null);
 
             // Validate that we have at least some responses
@@ -600,9 +639,14 @@ export default function ExamAttemptPage({
                             {question.type === "MULTIPLE_CHOICE" && (
                                 <RadioGroup
                                     value={responses[question.id] || ""}
-                                    onValueChange={(value) =>
-                                        handleResponseChange(question.id, value)
-                                    }
+                                    onValueChange={(value) => {
+                                        // For MCQ questions, we need to store the option key
+                                        setResponses((prev) => ({
+                                            ...prev,
+                                            [question.id]: value,
+                                        }));
+                                        setSaveStatus("saving");
+                                    }}
                                     className="space-y-3"
                                 >
                                     {Object.entries(question.options).map(
@@ -614,6 +658,7 @@ export default function ExamAttemptPage({
                                                 <RadioGroupItem
                                                     value={key}
                                                     id={`${question.id}-${key}`}
+                                                    checked={responses[question.id] === key}
                                                 />
                                                 <Label
                                                     htmlFor={`${question.id}-${key}`}
