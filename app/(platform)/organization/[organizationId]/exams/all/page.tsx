@@ -102,6 +102,8 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [examToDelete, setExamToDelete] = useState<Exam | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+    const [examToPublish, setExamToPublish] = useState<Exam | null>(null);
 
     useEffect(() => {
         async function fetchUserRole() {
@@ -216,6 +218,36 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
         } finally {
             setDeleteDialogOpen(false);
             setExamToDelete(null);
+        }
+    };
+
+    const handlePublishExam = async () => {
+        if (!examToPublish) return;
+
+        try {
+            const response = await fetch(`/api/organization/${organizationId}/exams/${examToPublish.id}/publish`, {
+                method: 'PATCH',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to publish exam');
+            }
+
+            // Update the exam in the local state
+            setAllExams(prevExams =>
+                prevExams.map(exam =>
+                    exam.id === examToPublish.id
+                        ? { ...exam, publishedAt: new Date().toISOString() }
+                        : exam
+                )
+            );
+            toast.success(`Exam "${examToPublish.title}" published successfully`);
+        } catch (error) {
+            console.error('Error publishing exam:', error);
+            toast.error(`Failed to publish exam "${examToPublish.title}"`);
+        } finally {
+            setPublishDialogOpen(false);
+            setExamToPublish(null);
         }
     };
 
@@ -422,6 +454,20 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                                                 <Pencil className="mr-2 h-4 w-4" />
                                                 Edit Exam
                                             </ContextMenuItem>
+                                            {!exam.publishedAt && (
+                                                <ContextMenuItem
+                                                    onClick={(e: React.MouseEvent) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setExamToPublish(exam);
+                                                        setPublishDialogOpen(true);
+                                                    }}
+                                                    className="text-green-600 focus:text-green-600"
+                                                >
+                                                    <FileText className="mr-2 h-4 w-4" />
+                                                    Publish Exam
+                                                </ContextMenuItem>
+                                            )}
                                             <ContextMenuItem
                                                 onClick={(e: React.MouseEvent) => {
                                                     e.preventDefault();
@@ -442,6 +488,27 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                     ))
                 )}
             </div>
+
+            {/* Publish Confirmation Dialog */}
+            <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Publish Exam</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to publish the exam "{examToPublish?.title}"? Once published, students will be able to take this exam.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handlePublishExam}
+                            className="bg-green-600 text-white hover:bg-green-600/90"
+                        >
+                            Publish
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
