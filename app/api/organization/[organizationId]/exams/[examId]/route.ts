@@ -88,6 +88,8 @@ export async function PUT(
             sections,
         } = body;
 
+        console.log("randomizeOrder from request:", randomizeOrder, typeof randomizeOrder);
+
         // Validate required fields
         if (!title) {
             return NextResponse.json(

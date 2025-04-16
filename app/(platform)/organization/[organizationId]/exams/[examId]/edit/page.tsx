@@ -999,13 +999,10 @@ export default function EditExamForm({
                                     id="randomizeOrder"
                                     checked={formData.randomizeOrder}
                                     onCheckedChange={(checked: boolean) => {
-                                        handleInputChange({
-                                            target: {
-                                                name: "randomizeOrder",
-                                                type: "checkbox",
-                                                checked,
-                                            },
-                                        } as React.ChangeEvent<HTMLInputElement>);
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            randomizeOrder: checked,
+                                        }));
                                     }}
                                 />
                                 <Label
