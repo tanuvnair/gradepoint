@@ -11,11 +11,18 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 interface Exam {
-    id: number;
+    id: string;
     title: string;
     description: string;
     timeLimit: number;
@@ -26,14 +33,17 @@ interface Exam {
     allowedAttempts: number;
     sections: {
         title: string;
-        description?: string;
+        description: string;
         questions: {
+            id: string;
             content: string;
             type: string;
             points: number;
         }[];
     }[];
     attempt: {
+        userId: string;
+        studentName: string;
         score: number;
         timeSpent: string;
         submittedAt: string;
@@ -42,96 +52,81 @@ interface Exam {
     };
 }
 
-// Enhanced dummy data based on exam creation form
-const examHistory: Exam[] = [
-    {
-        id: 1,
-        title: "Mathematics Final",
-        description: "Comprehensive mathematics exam covering algebra and calculus",
-        timeLimit: 120,
-        passingScore: 70,
-        randomizeOrder: true,
-        startDate: "2024-04-15T09:00:00Z",
-        endDate: "2024-04-15T11:00:00Z",
-        allowedAttempts: 2,
-        sections: [
-            {
-                title: "Algebra",
-                questions: [
-                    { content: "Solve quadratic equation", type: "SHORT_ANSWER", points: 10 },
-                    { content: "Factor polynomial", type: "SHORT_ANSWER", points: 10 },
-                ]
-            },
-            {
-                title: "Calculus",
-                questions: [
-                    { content: "Find derivative", type: "SHORT_ANSWER", points: 15 },
-                    { content: "Calculate integral", type: "SHORT_ANSWER", points: 15 },
-                ]
-            }
-        ],
-        attempt: {
-            score: 85,
-            timeSpent: "1h 45m",
-            submittedAt: "2024-04-15T10:45:00Z",
-            totalQuestions: 4,
-            correctAnswers: 3
-        }
-    },
-    {
-        id: 2,
-        title: "Physics Midterm",
-        description: "Midterm exam covering mechanics and thermodynamics",
-        timeLimit: 90,
-        passingScore: 60,
-        randomizeOrder: false,
-        startDate: "2024-03-20T10:00:00Z",
-        endDate: "2024-03-20T11:30:00Z",
-        allowedAttempts: 1,
-        sections: [
-            {
-                title: "Mechanics",
-                questions: [
-                    { content: "Calculate force", type: "MULTIPLE_CHOICE", points: 10 },
-                    { content: "Solve kinematics problem", type: "SHORT_ANSWER", points: 15 },
-                ]
-            },
-            {
-                title: "Thermodynamics",
-                questions: [
-                    { content: "Calculate heat transfer", type: "SHORT_ANSWER", points: 15 },
-                    { content: "Explain entropy", type: "OPEN_ENDED", points: 10 },
-                ]
-            }
-        ],
-        attempt: {
-            score: 92,
-            timeSpent: "1h 20m",
-            submittedAt: "2024-03-20T11:20:00Z",
-            totalQuestions: 4,
-            correctAnswers: 4
-        }
-    }
-];
+interface ExamResponse {
+    questionId: string;
+    content: string;
+    type: string;
+    points: number;
+    response: string;
+    isCorrect: boolean;
+    score: number;
+    feedback?: string;
+}
 
 export default function ExamHistory() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortConfig, setSortConfig] = useState<{ key: keyof Exam; direction: 'ascending' | 'descending' } | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: keyof Exam | 'attempt.studentName' | 'attempt.score' | 'attempt.timeSpent'; direction: 'ascending' | 'descending' } | null>(null);
+    const [userRole, setUserRole] = useState<"STUDENT" | "ADMIN" | "INSTRUCTOR" | "OWNER">("STUDENT");
+    const [currentUserId, setCurrentUserId] = useState<string>("");
+    const [exams, setExams] = useState<Exam[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
+    const [examResponses, setExamResponses] = useState<ExamResponse[]>([]);
+    const [isLoadingResponses, setIsLoadingResponses] = useState(false);
+
+    const pathname = usePathname();
+    const pathSegments = pathname.split("/");
+    const organizationId = pathSegments[2];
+
+    useEffect(() => {
+        const fetchExamHistory = async () => {
+            try {
+                const response = await fetch(`/api/organization/${organizationId}/exams/history`);
+                const data = await response.json();
+                
+                if (data.exams) {
+                    setExams(data.exams);
+                }
+                if (data.userRole) {
+                    setUserRole(data.userRole);
+                }
+                if (data.userId) {
+                    setCurrentUserId(data.userId);
+                }
+            } catch (error) {
+                console.error("Error fetching exam history:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchExamHistory();
+    }, [organizationId]);
 
     const filteredAndSortedExams = useMemo(() => {
-        let filtered = [...examHistory];
+        let filtered = [...exams];
 
         if (searchQuery) {
             filtered = filtered.filter(exam =>
                 exam.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                exam.description.toLowerCase().includes(searchQuery.toLowerCase())
+                exam.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (userRole !== "STUDENT" && exam.attempt.studentName.toLowerCase().includes(searchQuery.toLowerCase()))
             );
         }
 
         if (sortConfig) {
             filtered.sort((a, b) => {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
+                let aValue: any;
+                let bValue: any;
+
+                if (sortConfig.key.startsWith('attempt.')) {
+                    const attemptKey = sortConfig.key.split('.')[1] as keyof typeof a.attempt;
+                    aValue = a.attempt[attemptKey];
+                    bValue = b.attempt[attemptKey];
+                } else {
+                    aValue = a[sortConfig.key as keyof Exam];
+                    bValue = b[sortConfig.key as keyof Exam];
+                }
 
                 if (aValue < bValue) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -144,9 +139,9 @@ export default function ExamHistory() {
         }
 
         return filtered;
-    }, [examHistory, searchQuery, sortConfig]);
+    }, [exams, searchQuery, sortConfig, userRole]);
 
-    const requestSort = (key: keyof Exam) => {
+    const requestSort = (key: keyof Exam | 'attempt.studentName' | 'attempt.score' | 'attempt.timeSpent') => {
         let direction: 'ascending' | 'descending' = 'ascending';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
             direction = 'descending';
@@ -155,12 +150,20 @@ export default function ExamHistory() {
     };
 
     // Calculate statistics
-    const averageScore = examHistory.reduce((acc, exam) => acc + exam.attempt.score, 0) / examHistory.length;
-    const totalExams = examHistory.length;
-    const highestScore = Math.max(...examHistory.map(exam => exam.attempt.score));
-    const totalQuestions = examHistory.reduce((acc, exam) => acc + exam.attempt.totalQuestions, 0);
-    const totalCorrectAnswers = examHistory.reduce((acc, exam) => acc + exam.attempt.correctAnswers, 0);
-    const totalTimeSpent = examHistory.reduce((acc, exam) => {
+    const relevantExams = userRole === "STUDENT" 
+        ? exams.filter(exam => exam.attempt.userId === currentUserId)
+        : exams;
+
+    const averageScore = relevantExams.length > 0 
+        ? relevantExams.reduce((acc, exam) => acc + exam.attempt.score, 0) / relevantExams.length 
+        : 0;
+    const totalExams = relevantExams.length;
+    const highestScore = relevantExams.length > 0 
+        ? Math.max(...relevantExams.map(exam => exam.attempt.score)) 
+        : 0;
+    const totalQuestions = relevantExams.reduce((acc, exam) => acc + exam.attempt.totalQuestions, 0);
+    const totalCorrectAnswers = relevantExams.reduce((acc, exam) => acc + exam.attempt.correctAnswers, 0);
+    const totalTimeSpent = relevantExams.reduce((acc, exam) => {
         const [hours, minutes] = exam.attempt.timeSpent.split('h ').map(part =>
             part.includes('m') ? parseInt(part) / 60 : parseInt(part)
         );
@@ -170,7 +173,7 @@ export default function ExamHistory() {
     // Calculate section-wise performance
     const sectionStats = useMemo(() => {
         const stats: Record<string, { total: number; count: number; avgScore: number }> = {};
-        examHistory.forEach(exam => {
+        relevantExams.forEach(exam => {
             exam.sections.forEach(section => {
                 if (!stats[section.title]) {
                     stats[section.title] = { total: 0, count: 0, avgScore: 0 };
@@ -183,7 +186,45 @@ export default function ExamHistory() {
             });
         });
         return stats;
-    }, [examHistory]);
+    }, [relevantExams]);
+
+    const fetchExamResponses = async (examId: string, attemptId: string) => {
+        setIsLoadingResponses(true);
+        try {
+            const response = await fetch(`/api/organization/${organizationId}/exams/${examId}/attempt/${attemptId}/responses`);
+            const data = await response.json();
+            if (data.responses) {
+                setExamResponses(data.responses);
+            }
+        } catch (error) {
+            console.error("Error fetching exam responses:", error);
+        } finally {
+            setIsLoadingResponses(false);
+        }
+    };
+
+    const handleExamClick = async (exam: Exam) => {
+        setSelectedExam(exam);
+        // The attempt ID is not directly available in the exam data, so we need to fetch it
+        try {
+            const response = await fetch(`/api/organization/${organizationId}/exams/${exam.id}/attempts?userId=${exam.attempt.userId}`);
+            const data = await response.json();
+            if (data.attempts && data.attempts.length > 0) {
+                const attempt = data.attempts.find((a: any) => 
+                    new Date(a.submittedAt).toISOString() === exam.attempt.submittedAt
+                );
+                if (attempt) {
+                    await fetchExamResponses(exam.id, attempt.id);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching attempt ID:", error);
+        }
+    };
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -228,10 +269,14 @@ export default function ExamHistory() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {Object.entries(sectionStats).sort((a, b) => b[1].avgScore - a[1].avgScore)[0][0]}
+                            {Object.entries(sectionStats).length > 0 
+                                ? Object.entries(sectionStats).sort((a, b) => b[1].avgScore - a[1].avgScore)[0][0]
+                                : "No data"}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            {Object.entries(sectionStats).sort((a, b) => b[1].avgScore - a[1].avgScore)[0][1].avgScore.toFixed(1)}% average
+                            {Object.entries(sectionStats).length > 0
+                                ? `${Object.entries(sectionStats).sort((a, b) => b[1].avgScore - a[1].avgScore)[0][1].avgScore.toFixed(1)}% average`
+                                : "No attempts yet"}
                         </p>
                     </CardContent>
                 </Card>
@@ -244,7 +289,7 @@ export default function ExamHistory() {
                         <div className="relative w-64">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Search exams..."
+                                placeholder={userRole === "STUDENT" ? "Search your exams..." : "Search all exams..."}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-8"
@@ -259,6 +304,11 @@ export default function ExamHistory() {
                                 <TableHead onClick={() => requestSort('title')} className="cursor-pointer">
                                     Exam
                                 </TableHead>
+                                {userRole !== "STUDENT" && (
+                                    <TableHead onClick={() => requestSort('attempt.studentName')} className="cursor-pointer">
+                                        Student
+                                    </TableHead>
+                                )}
                                 <TableHead onClick={() => requestSort('startDate')} className="cursor-pointer">
                                     Date
                                 </TableHead>
@@ -269,7 +319,7 @@ export default function ExamHistory() {
                                     Passing Score
                                 </TableHead>
                                 <TableHead onClick={() => requestSort('attempt.score')} className="cursor-pointer">
-                                    Your Score
+                                    Score
                                 </TableHead>
                                 <TableHead onClick={() => requestSort('attempt.timeSpent')} className="cursor-pointer">
                                     Time Spent
@@ -278,15 +328,22 @@ export default function ExamHistory() {
                         </TableHeader>
                         <TableBody>
                             {filteredAndSortedExams.map((exam) => (
-                                <TableRow key={exam.id}>
+                                <TableRow 
+                                    key={exam.id} 
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => handleExamClick(exam)}
+                                >
                                     <TableCell className="font-medium">
                                         <div>
                                             {exam.title}
                                             <p className="text-xs text-muted-foreground">{exam.description}</p>
                                         </div>
                                     </TableCell>
+                                    {userRole !== "STUDENT" && (
+                                        <TableCell>{exam.attempt.studentName}</TableCell>
+                                    )}
                                     <TableCell>
-                                        {new Date(exam.startDate).toLocaleDateString()}
+                                        {new Date(exam.attempt.submittedAt).toLocaleDateString()}
                                     </TableCell>
                                     <TableCell>{exam.timeLimit} minutes</TableCell>
                                     <TableCell>{exam.passingScore}%</TableCell>
@@ -303,6 +360,68 @@ export default function ExamHistory() {
                     </Table>
                 </CardContent>
             </Card>
+
+            <Dialog open={!!selectedExam} onOpenChange={() => setSelectedExam(null)}>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {selectedExam?.title} - {selectedExam?.attempt.studentName}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6">
+                        {isLoadingResponses ? (
+                            <div>Loading answers...</div>
+                        ) : (
+                            selectedExam?.sections.map((section, sectionIndex) => (
+                                <div key={sectionIndex} className="space-y-4">
+                                    <h3 className="text-lg font-semibold">{section.title}</h3>
+                                    {section.description && (
+                                        <p className="text-sm text-muted-foreground">{section.description}</p>
+                                    )}
+                                    <div className="space-y-4">
+                                        {section.questions.map((question, questionIndex) => {
+                                            const response = examResponses.find(r => r.questionId === question.id);
+                                            return (
+                                                <div key={questionIndex} className="p-4 border rounded-lg">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <p className="font-medium">{question.content}</p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                Points: {question.points}
+                                                            </p>
+                                                        </div>
+                                                        {response && (
+                                                            <div className={`px-2 py-1 rounded ${
+                                                                response.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                            }`}>
+                                                                {response.score} / {question.points}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {response && (
+                                                        <div className="mt-4 space-y-2">
+                                                            <div>
+                                                                <p className="text-sm font-medium">Answer:</p>
+                                                                <p className="text-sm">{response.response}</p>
+                                                            </div>
+                                                            {response.feedback && (
+                                                                <div>
+                                                                    <p className="text-sm font-medium">Feedback:</p>
+                                                                    <p className="text-sm">{response.feedback}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
