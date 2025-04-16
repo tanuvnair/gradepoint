@@ -103,11 +103,24 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
 
     const handleNumberInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        const numValue = value === "" ? null : parseFloat(value);
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'timeLimit' && numValue === 0 ? null : (numValue || 0)
-        }));
+        const numValue = parseFloat(value);
+
+        if (name === 'timeLimit') {
+            setFormData(prev => ({
+                ...prev,
+                timeLimit: isNaN(numValue) ? 0 : (numValue === 0 ? null : numValue)
+            }));
+        } else if (name === 'passingScore' || name === 'allowedAttempts') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: isNaN(numValue) ? 0 : numValue
+            }));
+        }
     }, []);
 
     const handleDateChange = useCallback((name: string, date: Date | undefined) => {
@@ -128,7 +141,8 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
             const question = { ...newSections[sectionIndex].questions[questionIndex] };
 
             if (field === 'points') {
-                question[field] = parseFloat(value) || 0;
+                const points = parseFloat(value);
+                question[field] = isNaN(points) || points < 1 ? 1 : points;
             } else if (field === 'type') {
                 question.type = value;
                 if (value !== 'MULTIPLE_CHOICE') {
@@ -277,11 +291,11 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                     return false;
                 }
 
-                if (question.points <= 0) {
+                if (question.points < 1) {
                     toast({
                         variant: "destructive",
                         title: "Validation Error",
-                        description: `Question ${questionIndex + 1} in section "${section.title}" must have points greater than 0`,
+                        description: `Question ${questionIndex + 1} in section "${section.title}" must have at least 1 point`,
                     });
                     return false;
                 }
@@ -561,7 +575,6 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                 onChange={handleNumberInputChange}
                                 placeholder="Minimum passing score"
                                 className="max-w-full sm:max-w-[200px]"
-                                min="1"
                             />
                         </div>
                     </div>
@@ -575,7 +588,6 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                 onChange={handleNumberInputChange}
                                 placeholder="Number of attempts allowed"
                                 className="max-w-full sm:max-w-[200px]"
-                                min="1"
                             />
                         </div>
                     </div>
@@ -780,6 +792,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                                                             className="w-20"
                                                                             value={question.points}
                                                                             onChange={(e) => handleQuestionChange(sectionIndex, questionIndex, 'points', e.target.value)}
+                                                                            min="1"
                                                                         />
                                                                         <Button
                                                                             variant="ghost"

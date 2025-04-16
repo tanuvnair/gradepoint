@@ -167,10 +167,23 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
         const { name, value, type } = e.target;
         if (type === 'number') {
             const numValue = value === "" ? null : parseFloat(value);
-            setFormData(prev => ({
-                ...prev,
-                [name]: name === 'timeLimit' && numValue === 0 ? null : (numValue || 0)
-            }));
+
+            if (name === 'timeLimit') {
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: numValue === 0 ? null : (numValue || 0)
+                }));
+            } else if (name === 'passingScore' || name === 'allowedAttempts') {
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue
+                }));
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: numValue || 0
+                }));
+            }
         } else {
             setFormData(prev => ({
                 ...prev,
@@ -209,7 +222,15 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                 sIndex === sectionIndex ? {
                     ...section,
                     questions: section.questions.map((question, qIndex) =>
-                        qIndex === questionIndex ? { ...question, [field]: value } : question
+                        qIndex === questionIndex ? {
+                            ...question,
+                            [field]: field === 'points'
+                                ? (() => {
+                                    const points = parseFloat(value);
+                                    return isNaN(points) || points < 1 ? 1 : points;
+                                })()
+                                : value
+                        } : question
                     )
                 } : section
             )
@@ -370,6 +391,15 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     toast({
                         title: "Error",
                         description: "Question content is required",
+                        variant: "destructive",
+                    });
+                    return false;
+                }
+
+                if (question.points < 1) {
+                    toast({
+                        title: "Error",
+                        description: "Each question must have at least 1 point",
                         variant: "destructive",
                     });
                     return false;
@@ -780,7 +810,6 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                     onChange={handleInputChange}
                                     placeholder="Minimum passing score"
                                     className="max-w-full sm:max-w-[200px]"
-                                    min="1"
                                 />
                             </div>
                         </div>
@@ -794,7 +823,6 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                     onChange={handleInputChange}
                                     placeholder="Number of attempts allowed"
                                     className="max-w-full sm:max-w-[200px]"
-                                    min="1"
                                 />
                             </div>
                         </div>

@@ -289,19 +289,19 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
 
             {/* Tabs and Create Button */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <Tabs defaultValue={userRole === "STUDENT" ? "ongoing" : "active"} className="w-full sm:w-auto" onValueChange={setActiveTab}>
+                <Tabs defaultValue={userRole === "STUDENT" ? "all" : "all"} className="w-full sm:w-auto" onValueChange={setActiveTab}>
                     <TabsList className="grid w-full grid-cols-3 sm:w-auto">
                         {userRole === "STUDENT" ? (
                             <>
+                                <TabsTrigger value="all" className="text-xs sm:text-sm">All Exams</TabsTrigger>
                                 <TabsTrigger value="ongoing" className="text-xs sm:text-sm">Ongoing</TabsTrigger>
                                 <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
-                                <TabsTrigger value="all" className="text-xs sm:text-sm">All Exams</TabsTrigger>
                             </>
                         ) : (
                             <>
+                                <TabsTrigger value="all" className="text-xs sm:text-sm">All Exams</TabsTrigger>
                                 <TabsTrigger value="active" className="text-xs sm:text-sm">Active</TabsTrigger>
                                 <TabsTrigger value="draft" className="text-xs sm:text-sm">Drafts</TabsTrigger>
-                                <TabsTrigger value="all" className="text-xs sm:text-sm">All Exams</TabsTrigger>
                             </>
                         )}
                     </TabsList>
