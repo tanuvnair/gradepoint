@@ -12,6 +12,11 @@ export async function GET(
     { params }: { params: { organizationId: string; examId: string } }
 ) {
     const { organizationId, examId } = await params;
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const exam = await prisma.exam.findFirst({
             where: {
@@ -278,7 +283,40 @@ export async function DELETE(
             );
         }
 
-        // Delete exam (cascade will handle sections and questions)
+        // Delete all related records first to avoid foreign key constraint errors
+        // Delete all responses for all attempts of this exam
+        await prisma.examResponse.deleteMany({
+            where: {
+                attempt: {
+                    examId: examId
+                }
+            }
+        });
+
+        // Delete all attempts for this exam
+        await prisma.examAttempt.deleteMany({
+            where: {
+                examId: examId
+            }
+        });
+
+        // Delete all questions for all sections of this exam
+        await prisma.question.deleteMany({
+            where: {
+                section: {
+                    examId: examId
+                }
+            }
+        });
+
+        // Delete all sections for this exam
+        await prisma.examSection.deleteMany({
+            where: {
+                examId: examId
+            }
+        });
+
+        // Finally delete the exam
         await prisma.exam.delete({
             where: {
                 id: examId,

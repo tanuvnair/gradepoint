@@ -48,7 +48,7 @@ const createExamSchema = z.object({
                             order: z
                                 .number()
                                 .min(0, "Order must be 0 or greater"),
-                            options: z.record(z.unknown()).optional(), // For multiple choice
+                            options: z.record(z.unknown()).optional(),
                             correctAnswer: z.record(z.unknown()).optional(),
                         })
                     )
