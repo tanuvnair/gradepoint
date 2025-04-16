@@ -1,5 +1,16 @@
 "use client";
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,7 +74,7 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                 title: "",
                 description: "",
                 timeLimit: 0,
-                passingScore: 0,
+                passingScore: 1,
                 randomizeOrder: false,
                 publishedAt: null,
                 startDate: null,
@@ -76,7 +87,7 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
             title: "",
             description: "",
             timeLimit: 0,
-            passingScore: 0,
+            passingScore: 1,
             randomizeOrder: false,
             publishedAt: null,
             startDate: null,
@@ -153,11 +164,19 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
     }, [organizationId, examId, toast]);
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        const { name, value, type } = e.target;
+        if (type === 'number') {
+            const numValue = value === "" ? null : parseFloat(value);
+            setFormData(prev => ({
+                ...prev,
+                [name]: name === 'timeLimit' && numValue === 0 ? null : (numValue || 0)
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     }, []);
 
     const handleSwitchChange = useCallback((name: string, checked: boolean) => {
@@ -293,6 +312,40 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
             return false;
         }
 
+        // Calculate total possible score
+        const totalScore = formData.sections.reduce((total, section) => {
+            return total + section.questions.reduce((sectionTotal, question) => {
+                return sectionTotal + (question.points || 0);
+            }, 0);
+        }, 0);
+
+        if (formData.passingScore <= 0) {
+            toast({
+                title: "Error",
+                description: "Passing score must be greater than 0",
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        if (formData.passingScore > totalScore) {
+            toast({
+                title: "Error",
+                description: `Passing score cannot be greater than the total possible score (${totalScore})`,
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        if (formData.allowedAttempts <= 0) {
+            toast({
+                title: "Error",
+                description: "Allowed attempts must be greater than 0",
+                variant: "destructive",
+            });
+            return false;
+        }
+
         for (const section of formData.sections) {
             if (!section.title.trim()) {
                 toast({
@@ -357,7 +410,7 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
         try {
             const requestBody = {
                 ...formData,
-                timeLimit: formData.timeLimit || null,
+                timeLimit: formData.timeLimit === 0 ? null : formData.timeLimit,
                 passingScore: formData.passingScore || null,
                 publishedAt: formData.publishedAt || null,
                 startDate: formData.startDate || null,
@@ -403,6 +456,31 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
             });
         }
     }, [formData, organizationId, examId, router, toast, validateForm]);
+
+    const handleDeleteExam = useCallback(async () => {
+        try {
+            const response = await fetch(`/api/organization/${organizationId}/exams/${examId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete exam');
+            }
+
+            toast({
+                title: "Success",
+                description: "Exam deleted successfully",
+            });
+            router.push(`/organization/${organizationId}/exams/all`);
+        } catch (error) {
+            console.error("Error deleting exam:", error);
+            toast({
+                title: "Error",
+                description: "Failed to delete exam",
+                variant: "destructive",
+            });
+        }
+    }, [organizationId, examId, router, toast]);
 
     if (isLoading) {
         return (
@@ -654,12 +732,14 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                     <Input
                                         type="number"
                                         name="timeLimit"
-                                        value={formData.timeLimit}
+                                        value={formData.timeLimit === null ? "" : formData.timeLimit}
                                         onChange={handleInputChange}
                                         placeholder="Duration in minutes"
                                         className="max-w-full sm:max-w-[200px]"
+                                        min="0"
                                     />
                                 </div>
+                                <p className="text-xs text-muted-foreground">Leave empty for no time limit</p>
                             </div>
                         </div>
                     </CardContent>
@@ -700,6 +780,7 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                     onChange={handleInputChange}
                                     placeholder="Minimum passing score"
                                     className="max-w-full sm:max-w-[200px]"
+                                    min="1"
                                 />
                             </div>
                         </div>
@@ -713,6 +794,7 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                     onChange={handleInputChange}
                                     placeholder="Number of attempts allowed"
                                     className="max-w-full sm:max-w-[200px]"
+                                    min="1"
                                 />
                             </div>
                         </div>
@@ -982,6 +1064,35 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     >
                         Cancel
                     </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="destructive"
+                                type="button"
+                                className="w-full sm:w-auto"
+                            >
+                                Delete Exam
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure you want to delete this exam?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the exam
+                                    and all its associated data.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={handleDeleteExam}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                     {!formData.publishedAt && (
                         <Button
                             type="button"

@@ -50,7 +50,7 @@ const initialFormData: ExamFormData = {
     title: "",
     description: "",
     timeLimit: 60,
-    passingScore: 0,
+    passingScore: 1,
     randomizeOrder: false,
     publishedAt: null,
     startDate: null,
@@ -103,9 +103,10 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
 
     const handleNumberInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
+        const numValue = value === "" ? null : parseFloat(value);
         setFormData(prev => ({
             ...prev,
-            [name]: parseFloat(value) || 0
+            [name]: name === 'timeLimit' && numValue === 0 ? null : (numValue || 0)
         }));
     }, []);
 
@@ -204,20 +205,36 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
             return false;
         }
 
-        if (formData.passingScore < 0 || formData.passingScore > 100) {
+        // Calculate total possible score
+        const totalScore = formData.sections.reduce((total, section) => {
+            return total + section.questions.reduce((sectionTotal, question) => {
+                return sectionTotal + (question.points || 0);
+            }, 0);
+        }, 0);
+
+        if (formData.passingScore <= 0) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
-                description: "Passing score must be between 0 and 100",
+                description: "Passing score must be greater than 0",
             });
             return false;
         }
 
-        if (formData.allowedAttempts < 1) {
+        if (formData.passingScore > totalScore) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
-                description: "Allowed attempts must be at least 1",
+                description: `Passing score cannot be greater than the total possible score (${totalScore})`,
+            });
+            return false;
+        }
+
+        if (formData.allowedAttempts <= 0) {
+            toast({
+                variant: "destructive",
+                title: "Validation Error",
+                description: "Allowed attempts must be greater than 0",
             });
             return false;
         }
@@ -305,7 +322,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
         try {
             const requestBody = {
                 ...formData,
-                timeLimit: formData.timeLimit || null,
+                timeLimit: formData.timeLimit === 0 ? null : formData.timeLimit,
                 passingScore: formData.passingScore || null,
                 publishedAt: formData.publishedAt || null,
                 startDate: formData.startDate || null,
@@ -497,12 +514,14 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                             <Input
                                 type="number"
                                 name="timeLimit"
-                                value={formData.timeLimit}
+                                value={formData.timeLimit === null ? "" : formData.timeLimit}
                                 onChange={handleNumberInputChange}
                                 placeholder="Duration in minutes"
                                 className="max-w-full sm:max-w-[200px]"
+                                min="0"
                             />
                         </div>
+                        <p className="text-xs text-muted-foreground">Leave empty for no time limit</p>
                     </div>
                 </CardContent>
             </Card>
@@ -542,6 +561,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                 onChange={handleNumberInputChange}
                                 placeholder="Minimum passing score"
                                 className="max-w-full sm:max-w-[200px]"
+                                min="1"
                             />
                         </div>
                     </div>
@@ -555,6 +575,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                 onChange={handleNumberInputChange}
                                 placeholder="Number of attempts allowed"
                                 className="max-w-full sm:max-w-[200px]"
+                                min="1"
                             />
                         </div>
                     </div>
