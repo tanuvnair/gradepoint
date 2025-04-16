@@ -22,14 +22,6 @@ export default function ForgotPassword() {
                         GradePoint
                     </h1>
                 </Link>
-                <div className="space-y-2 text-center">
-                    <h2 className="text-2xl font-semibold tracking-tight">
-                        Forgot Password
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Enter your email address and we'll send you a link to reset your password.
-                    </p>
-                </div>
                 <ForgotPasswordForm />
             </div>
         </div>

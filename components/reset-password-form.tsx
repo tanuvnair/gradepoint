@@ -129,7 +129,7 @@ export function ResetPasswordForm() {
             </CardHeader>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} noValidate>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <div className="grid gap-4">
                             {alert && (
                                 <Alert variant={alert.variant}>

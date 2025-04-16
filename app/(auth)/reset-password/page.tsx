@@ -22,14 +22,6 @@ export default function ResetPassword() {
                         GradePoint
                     </h1>
                 </Link>
-                <div className="space-y-2 text-center">
-                    <h2 className="text-2xl font-semibold tracking-tight">
-                        Reset Password
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Enter your new password below.
-                    </p>
-                </div>
                 <ResetPasswordForm />
             </div>
         </div>
