@@ -109,12 +109,23 @@ export async function PUT(
                 id: examId,
                 organizationId,
             },
+            include: {
+                attempts: true,
+            },
         });
 
         if (!existingExam) {
             return NextResponse.json(
                 { error: "Exam not found" },
                 { status: 404 }
+            );
+        }
+
+        // Check if the exam has any attempts
+        if (existingExam.attempts && existingExam.attempts.length > 0) {
+            return NextResponse.json(
+                { error: "Cannot edit exam that has already been attempted by users" },
+                { status: 403 }
             );
         }
 
