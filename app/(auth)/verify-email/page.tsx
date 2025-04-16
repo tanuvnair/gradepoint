@@ -3,6 +3,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -63,7 +64,14 @@ export default function VerifyEmailPage() {
                             <AlertTitle>Success</AlertTitle>
                             <AlertDescription>{message}</AlertDescription>
                             <div className="mt-4">
-                                <Link href="/signin" className="text-primary hover:underline">
+                                <Link
+                                    href="/signin"
+                                    className="text-primary hover:underline"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        signOut({ callbackUrl: "/signin" });
+                                    }}
+                                >
                                     Proceed to Sign In
                                 </Link>
                             </div>
