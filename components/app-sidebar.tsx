@@ -42,11 +42,6 @@ function getNavItems(organizationId: string) {
             icon: History,
         },
         {
-            title: "Student Performance",
-            url: `/organization/${organizationId}/students/performance`,
-            icon: Users,
-        },
-        {
             title: "Settings",
             url: `/organization/${organizationId}/settings`,
             icon: Settings2,

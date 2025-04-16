@@ -90,45 +90,26 @@ export default function DashboardLayout({
 
     // Extract breadcrumbs from URL path
     const breadcrumbs = useMemo(() => {
-        // Skip empty segments and get parts after organization ID
         const segments = pathname.split("/").filter(Boolean);
+        const orgIdIndex = segments.findIndex(segment => segment === "organization");
+        const currentSegment = segments[orgIdIndex + 2] || "dashboard";
 
-        // Find the index of the organization ID segment
-        const orgIdIndex = segments.findIndex(
-            (segment) => segment === "organization"
-        );
-
-        // Get segments after the organization ID (skip organization and the ID itself)
-        const relevantSegments = segments.slice(orgIdIndex + 2);
-
-        if (relevantSegments.length === 0) {
-            return [
-                { label: "Dashboard", href: pathname, isCurrentPage: true },
-            ];
+        let label = "Dashboard";
+        if (currentSegment === "exams") {
+            const subSegment = segments[orgIdIndex + 3];
+            if (subSegment === "all") {
+                label = "All Exams";
+            } else if (subSegment === "history") {
+                label = "Exam History";
+            }
+        } else if (currentSegment === "students") {
+            label = "Student Performance";
+        } else if (currentSegment === "settings") {
+            label = "Settings";
         }
 
-        // Transform segments into breadcrumb items
-        return relevantSegments.map((segment, index) => {
-            // Create path for this breadcrumb by joining all segments up to this point
-            const segmentPath = segments
-                .slice(0, orgIdIndex + 2 + index + 1)
-                .join("/");
-            const href = `/${segmentPath}`;
-
-            // Format label to be more readable (capitalize first letter)
-            let label = segment.charAt(0).toUpperCase() + segment.slice(1);
-
-            // If this is the exam ID segment and we have the exam title, use it instead
-            if (segment === examId && examTitle) {
-                label = examTitle;
-            }
-
-            // Check if this is the current page (last segment)
-            const isCurrentPage = index === relevantSegments.length - 1;
-
-            return { label, href, isCurrentPage };
-        });
-    }, [pathname, examId, examTitle]);
+        return [{ label, href: pathname, isCurrentPage: true }];
+    }, [pathname]);
 
     if (isLoading) {
         return (
