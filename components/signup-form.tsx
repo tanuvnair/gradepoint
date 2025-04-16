@@ -55,7 +55,6 @@ export function SignUpForm({
 
     async function onSignUp(values: z.infer<typeof signUpSchema>) {
         setAlert(null);
-        console.log();
 
         try {
             const { confirmPassword, ...signUpData } = values;
@@ -76,10 +75,13 @@ export function SignUpForm({
                     message: message as string,
                 });
             } else {
-                await signIn("credentials", {
-                    email: values.email,
-                    password: values.password,
+                setAlert({
+                    variant: "default",
+                    type: "success",
+                    title: "Success",
+                    message: "Please check your email to verify your account before signing in.",
                 });
+                form.reset();
             }
         } catch (error: unknown) {
             setAlert({

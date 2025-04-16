@@ -1,4 +1,3 @@
-import { hashPassword } from "@/lib/hashing";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
@@ -8,28 +7,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
     try {
-        const { name, email, password } = await req.json();
+        const { email } = await req.json();
 
-        const existingUser = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { email },
         });
 
-        if (existingUser) {
+        if (!user) {
             return NextResponse.json(
-                { message: "Email already in use" },
-                { status: 400 }
+                { message: "User not found" },
+                { status: 404 }
             );
         }
-
-        const hashedPassword = await hashPassword(password);
-
-        const user = await prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-            },
-        });
 
         // Generate verification token
         const token = uuidv4();
@@ -64,7 +53,7 @@ export async function POST(req: NextRequest) {
                     border: 1px solid hsl(171, 30%, 50%);
                 ">
                     <h1 style="color: hsl(171, 60%, 23%); font-size: 1.5rem; text-align: center;">
-                        Welcome to GradePoint!
+                        Verify Your Email Address
                     </h1>
                     <p style="font-size: 1rem; margin-top: 1rem;">
                         Please verify your email address to complete your registration.
@@ -99,17 +88,17 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(
             {
-                message: "User registered successfully. Please check your email to verify your account.",
+                message: "Verification email sent",
                 data
             },
-            { status: 201 }
+            { status: 200 }
         );
     } catch (error) {
         if (error instanceof Error) {
-            console.error("Error during signup:", error.message);
+            console.error("Error sending verification email:", error.message);
             return NextResponse.json(
                 {
-                    message: "User creation failed",
+                    message: "Failed to send verification email",
                     details: error.message
                 },
                 { status: 500 }
@@ -119,7 +108,7 @@ export async function POST(req: NextRequest) {
         console.error("Unknown error:", error);
         return NextResponse.json(
             {
-                message: "User creation failed",
+                message: "Failed to send verification email",
                 details: "An unknown error occurred",
             },
             { status: 500 }
