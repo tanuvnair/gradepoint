@@ -3,6 +3,7 @@
 import {
     BarChart2,
     GraduationCap,
+    History,
     Settings2,
     Users
 } from "lucide-react";
@@ -32,38 +33,18 @@ function getNavItems(organizationId: string) {
             isActive: false,
         },
         {
-            title: "Exams",
-            url: `/organization/${organizationId}/exams`,
+            title: "All Exams",
+            url: `/organization/${organizationId}/exams/all`,
             icon: GraduationCap,
-            items: [
-                {
-                    title: "All Exams",
-                    url: `/organization/${organizationId}/exams/all`,
-                    isActive: false,
-                },
-                {
-                    title: "Exam History",
-                    url: `/organization/${organizationId}/exams/history`,
-                    isActive: false,
-                },
-            ],
+        },{
+            title: "Exam History",
+            url: `/organization/${organizationId}/exams/history`,
+            icon: History,
         },
         {
-            title: "Students",
-            url: `/organization/${organizationId}/students`,
+            title: "Student Performance",
+            url: `/organization/${organizationId}/students/performance`,
             icon: Users,
-            items: [
-                {
-                    title: "Directory",
-                    url: `/organization/${organizationId}/students/directory`,
-                    isActive: false,
-                },
-                {
-                    title: "Performance",
-                    url: `/organization/${organizationId}/students/performance`,
-                    isActive: false,
-                },
-            ],
         },
         {
             title: "Settings",
