@@ -97,7 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             const data = await res.json();
             setOrganizations(data.organizations);
         } catch (error) {
-            console.error("Error fetching organizations:", error);
+            console.log("Error fetching organizations:", error);
         } finally {
             setLoading(false);
         }

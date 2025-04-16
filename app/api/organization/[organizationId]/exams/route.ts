@@ -14,6 +14,7 @@ const createExamSchema = z.object({
     timeLimit: z
         .number()
         .min(1, "Time limit must be at least 1 minute")
+        .nullable()
         .optional(),
     passingScore: z
         .number()
@@ -23,7 +24,7 @@ const createExamSchema = z.object({
     publishedAt: z.string().datetime().nullable(),
     startDate: z.string().datetime().nullable(),
     endDate: z.string().datetime().nullable(),
-    allowedAttempts: z.number().min(1, "Allowed attempts must be at least 1").optional(),
+    allowedAttempts: z.number().min(1, "Allowed attempts must be at least 1").nullable().optional(),
     sections: z
         .array(
             z.object({

@@ -110,10 +110,15 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                 ...prev,
                 timeLimit: isNaN(numValue) ? 0 : (numValue === 0 ? null : numValue)
             }));
-        } else if (name === 'passingScore' || name === 'allowedAttempts') {
+        } else if (name === 'passingScore') {
             setFormData(prev => ({
                 ...prev,
                 [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue
+            }));
+        } else if (name === 'allowedAttempts') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: isNaN(numValue) || numValue < 1 ? null : numValue
             }));
         } else {
             setFormData(prev => ({
@@ -210,7 +215,7 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
             return false;
         }
 
-        if (formData.timeLimit < 1) {
+        if (formData.timeLimit !== null && formData.timeLimit < 1) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
@@ -584,12 +589,13 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                             <Input
                                 type="number"
                                 name="allowedAttempts"
-                                value={formData.allowedAttempts}
+                                value={formData.allowedAttempts === null ? "" : formData.allowedAttempts}
                                 onChange={handleNumberInputChange}
                                 placeholder="Number of attempts allowed"
                                 className="max-w-full sm:max-w-[200px]"
                             />
                         </div>
+                        <p className="text-xs text-muted-foreground">Leave empty for unlimited attempts</p>
                     </div>
                 </CardContent>
             </Card>

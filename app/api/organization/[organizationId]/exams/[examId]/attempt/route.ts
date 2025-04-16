@@ -11,7 +11,7 @@ export async function POST(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const userId = session.user.id;
-    const { organizationId, examId } = params;
+    const { organizationId, examId } = await params;
 
     const membership = await prisma.userOrganization.findUnique({
         where: { userId_organizationId: { userId, organizationId } },

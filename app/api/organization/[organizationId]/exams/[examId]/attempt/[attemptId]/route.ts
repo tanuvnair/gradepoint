@@ -13,7 +13,7 @@ export async function GET(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const userId = session.user.id;
-    const { organizationId, examId, attemptId } = params;
+    const { organizationId, examId, attemptId } = await params;
 
     const attempt = await prisma.examAttempt.findUnique({
         where: { id: attemptId },

@@ -11,7 +11,7 @@ export async function PATCH(
     request: Request,
     { params }: { params: { organizationId: string; examId: string } }
 ) {
-    const { organizationId, examId } = params; // Corrected here, no need for 'await'
+    const { organizationId, examId } = await params;
 
     let session;
     try {

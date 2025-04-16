@@ -13,7 +13,7 @@ export async function POST(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const userId = session.user.id;
-    const { organizationId, examId, attemptId } = params;
+    const { organizationId, examId, attemptId } = await params;
     const body = await req.json();
 
     const { responses } = body;

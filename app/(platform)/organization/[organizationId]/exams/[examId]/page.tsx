@@ -35,6 +35,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { use } from "react";
 
 interface Question {
     id: string;
@@ -67,10 +68,10 @@ interface AttemptData {
 export default function ExamAttemptPage({
     params,
 }: {
-    params: { organizationId: string; examId: string };
+    params: Promise<{ organizationId: string; examId: string }>;
 }) {
     const router = useRouter();
-    const { organizationId, examId } = params;
+    const { organizationId, examId } = use(params);
 
     const [loading, setLoading] = useState(true);
     const [examData, setExamData] = useState<ExamData | null>(null);
@@ -117,6 +118,14 @@ export default function ExamAttemptPage({
 
                         if (attemptResponse.ok) {
                             const data = await attemptResponse.json();
+                            
+                            // Check if the attempt is already submitted
+                            if (data.attempt.submittedAt) {
+                                toast.error("This exam has already been submitted");
+                                router.push(`/organization/${organizationId}/exams/history`);
+                                return;
+                            }
+
                             setExamData(data.exam);
                             setAttemptId(data.attempt.id);
 
@@ -252,7 +261,9 @@ export default function ExamAttemptPage({
 
     // Save responses to the server
     const saveResponses = async () => {
-        if (!attemptId) return;
+        if (!attemptId) {
+            throw new Error("No active exam attempt found");
+        }
 
         try {
             setSaveStatus("saving");
@@ -265,6 +276,12 @@ export default function ExamAttemptPage({
                 }))
                 .filter((r) => r.response !== null);
 
+            // Validate that we have at least some responses
+            if (responsesToSave.length === 0) {
+                setSaveStatus("saved");
+                return;
+            }
+
             const response = await fetch(
                 `/api/organization/${organizationId}/exams/${examId}/attempt/${attemptId}/responses`,
                 {
@@ -276,15 +293,25 @@ export default function ExamAttemptPage({
                 }
             );
 
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                throw new Error("Server error occurred. Please try again.");
+            }
+
             if (!response.ok) {
+                throw new Error(errorData.error || "Failed to save responses");
+            }
+
+            if (!errorData.success) {
                 throw new Error("Failed to save responses");
             }
 
             setSaveStatus("saved");
-        } catch (error) {
-            console.error("Error saving responses:", error);
+        } catch (error: any) {
             setSaveStatus("error");
-            toast.error("Failed to save your responses. Please try again.");
+            throw error; // Re-throw to be handled by the caller
         }
     };
 
@@ -306,39 +333,106 @@ export default function ExamAttemptPage({
 
     // Submit the exam
     const handleSubmitExam = async () => {
-        if (!attemptId) return;
+        if (!attemptId) {
+            toast.error("No active exam attempt found. Please refresh the page and try again.");
+            return;
+        }
 
         try {
             setSubmitting(true);
 
             // First save all responses
-            await saveResponses();
+            try {
+                await saveResponses();
+            } catch (error: any) {
+                toast.error(error.message || "Failed to save your responses. Please try again.");
+                setSubmitting(false);
+                setSubmitDialogOpen(false);
+                return;
+            }
 
             // Then submit the exam
             const response = await fetch(
                 `/api/organization/${organizationId}/exams/${examId}/attempt/${attemptId}/submit`,
                 {
                     method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("Failed to submit exam");
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                throw new Error("Server error occurred. Please try again.");
             }
 
-            const result = await response.json();
+            if (!response.ok) {
+                if (errorData.error === "This exam has already been submitted") {
+                    toast.error("This exam has already been submitted");
+                    router.push(`/organization/${organizationId}/exams/history`);
+                    return;
+                }
+                throw new Error(errorData.error || "Failed to submit exam");
+            }
+
+            if (!errorData.success) {
+                throw new Error("Submission was not successful");
+            }
 
             toast.success("Exam submitted successfully!");
-
             // Redirect to results or history page
             router.push(`/organization/${organizationId}/exams/history`);
-        } catch (error) {
-            console.error("Error submitting exam:", error);
-            toast.error("Failed to submit your exam. Please try again.");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to submit your exam. Please try again.");
             setSubmitting(false);
             setSubmitDialogOpen(false);
         }
     };
+
+    // Auto-save responses
+    useEffect(() => {
+        if (!attemptId) return;
+
+        let timeoutId: NodeJS.Timeout | undefined;
+        const autoSave = async () => {
+            try {
+                await saveResponses();
+                if (saveStatus === "error") {
+                    toast.success("Responses saved successfully");
+                }
+            } catch (error: any) {
+                // Only show error toast if it's not already showing
+                if (saveStatus !== "error") {
+                    toast.error(error.message || "Failed to save your responses automatically");
+                }
+            }
+        };
+
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (saveStatus === "saving") {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        // Auto-save every 30 seconds
+        const interval = setInterval(() => {
+            if (saveStatus !== "saving") {
+                autoSave();
+            }
+        }, 30000);
+
+        return () => {
+            clearInterval(interval);
+            if (timeoutId) clearTimeout(timeoutId);
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [attemptId, responses, saveStatus]);
 
     // Calculate progress
     const calculateProgress = () => {

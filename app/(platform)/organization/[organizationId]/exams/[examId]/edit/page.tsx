@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
+import { QuestionType } from "@prisma/client";
 
 type ExamType =
     | "MULTIPLE_CHOICE"
@@ -72,19 +73,27 @@ interface Question {
 interface ExamFormData {
     title: string;
     description: string;
-    timeLimit: number;
+    timeLimit: number | null;
     passingScore: number;
     randomizeOrder: boolean;
     publishedAt: string | null;
     startDate: string | null;
     endDate: string | null;
-    allowedAttempts: number;
+    allowedAttempts: number | null;
     sections: {
-        id?: string;
+        id: string;
         title: string;
-        description?: string;
+        description: string;
         order: number;
-        questions: Question[];
+        questions: {
+            id: string;
+            content: string;
+            type: QuestionType;
+            points: number;
+            order: number;
+            options?: Record<string, any>;
+            correctAnswer?: Record<string, any>;
+        }[];
     }[];
 }
 
@@ -106,26 +115,26 @@ export default function EditExamForm({
                 : {
                       title: "",
                       description: "",
-                      timeLimit: 0,
+                      timeLimit: null,
                       passingScore: 1,
                       randomizeOrder: false,
                       publishedAt: null,
                       startDate: null,
                       endDate: null,
-                      allowedAttempts: 1,
+                      allowedAttempts: null,
                       sections: [],
                   };
         }
         return {
             title: "",
             description: "",
-            timeLimit: 0,
+            timeLimit: null,
             passingScore: 1,
             randomizeOrder: false,
             publishedAt: null,
             startDate: null,
             endDate: null,
-            allowedAttempts: 1,
+            allowedAttempts: null,
             sections: [],
         };
     });
@@ -163,13 +172,13 @@ export default function EditExamForm({
                 setFormData({
                     title: exam.title,
                     description: exam.description || "",
-                    timeLimit: exam.timeLimit || 0,
+                    timeLimit: exam.timeLimit || null,
                     passingScore: exam.passingScore || 0,
                     randomizeOrder: exam.randomizeOrder,
                     publishedAt: exam.publishedAt,
                     startDate: exam.startDate,
                     endDate: exam.endDate,
-                    allowedAttempts: exam.allowedAttempts || 1,
+                    allowedAttempts: exam.allowedAttempts || null,
                     sections: exam.sections.map((section: any) => ({
                         id: section.id,
                         title: section.title,
@@ -201,40 +210,32 @@ export default function EditExamForm({
         fetchExam();
     }, [organizationId, examId, toast]);
 
-    const handleInputChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            const { name, value, type } = e.target;
-            if (type === "number") {
-                const numValue = value === "" ? null : parseFloat(value);
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const numValue = parseFloat(value);
 
-                if (name === "timeLimit") {
-                    setFormData((prev) => ({
-                        ...prev,
-                        [name]: numValue === 0 ? null : numValue || 0,
-                    }));
-                } else if (
-                    name === "passingScore" ||
-                    name === "allowedAttempts"
-                ) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue,
-                    }));
-                } else {
-                    setFormData((prev) => ({
-                        ...prev,
-                        [name]: numValue || 0,
-                    }));
-                }
-            } else {
-                setFormData((prev) => ({
-                    ...prev,
-                    [name]: value,
-                }));
-            }
-        },
-        []
-    );
+        if (name === 'timeLimit') {
+            setFormData(prev => ({
+                ...prev,
+                timeLimit: isNaN(numValue) ? null : (numValue === 0 ? null : numValue)
+            }));
+        } else if (name === 'passingScore') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue
+            }));
+        } else if (name === 'allowedAttempts') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: isNaN(numValue) || numValue < 1 ? null : numValue
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: isNaN(numValue) ? 0 : numValue
+            }));
+        }
+    }, []);
 
     const handleSwitchChange = useCallback((name: string, checked: boolean) => {
         setFormData((prev) => ({
@@ -447,10 +448,19 @@ export default function EditExamForm({
             return false;
         }
 
-        if (formData.allowedAttempts <= 0) {
+        if (formData.allowedAttempts !== null && formData.allowedAttempts <= 0) {
             toast({
                 title: "Error",
                 description: "Allowed attempts must be greater than 0",
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        if (formData.timeLimit !== null && formData.timeLimit < 1) {
+            toast({
+                title: "Error",
+                description: "Time limit must be at least 1 minute",
                 variant: "destructive",
             });
             return false;
@@ -1036,12 +1046,13 @@ export default function EditExamForm({
                                 <Input
                                     type="number"
                                     name="allowedAttempts"
-                                    value={formData.allowedAttempts}
+                                    value={formData.allowedAttempts === null ? "" : formData.allowedAttempts}
                                     onChange={handleInputChange}
                                     placeholder="Number of attempts allowed"
                                     className="max-w-full sm:max-w-[200px]"
                                 />
                             </div>
+                            <p className="text-xs text-muted-foreground">Leave empty for unlimited attempts</p>
                         </div>
                     </CardContent>
                 </Card>
