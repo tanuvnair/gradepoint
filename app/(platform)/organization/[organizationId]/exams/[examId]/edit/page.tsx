@@ -948,6 +948,39 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     >
                         Cancel
                     </Button>
+                    {!formData.publishedAt && (
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            className="w-full sm:w-auto"
+                            onClick={async () => {
+                                try {
+                                    const response = await fetch(`/api/organization/${organizationId}/exams/${examId}/publish`, {
+                                        method: 'PATCH',
+                                    });
+
+                                    if (!response.ok) {
+                                        throw new Error('Failed to publish exam');
+                                    }
+
+                                    toast({
+                                        title: "Success",
+                                        description: "Exam published successfully",
+                                    });
+                                    router.refresh();
+                                } catch (error) {
+                                    console.error("Error publishing exam:", error);
+                                    toast({
+                                        title: "Error",
+                                        description: "Failed to publish exam",
+                                        variant: "destructive",
+                                    });
+                                }
+                            }}
+                        >
+                            Publish Exam
+                        </Button>
+                    )}
                     <Button
                         type="submit"
                         className="w-full sm:w-auto"
