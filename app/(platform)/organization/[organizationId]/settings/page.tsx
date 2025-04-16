@@ -160,7 +160,7 @@ export default function OrganizationSettings() {
         async function fetchUsers() {
             try {
                 const res = await fetch(
-                    `/api/userOrganization/${organizationId}/getUsers`
+                    `/api/userOrganization/${organizationId}/users`
                 );
                 const data = await res.json();
                 if (data.users) {
