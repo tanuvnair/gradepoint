@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
     TableBody,
@@ -65,6 +66,115 @@ interface ExamResponse {
     correctAnswer?: string;
     options?: Record<string, string>;
 }
+
+// Add skeleton components
+const StatsSkeleton = () => (
+    <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="mt-2 h-2 w-full" />
+                <Skeleton className="mt-1 h-3 w-32" />
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="mt-2 h-2 w-full" />
+                <Skeleton className="mt-1 h-3 w-32" />
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="mt-2 h-2 w-full" />
+                <Skeleton className="mt-1 h-3 w-32" />
+            </CardContent>
+        </Card>
+    </div>
+);
+
+const TableSkeleton = () => (
+    <Card>
+        <CardHeader>
+            <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-32" />
+                <div className="relative w-64">
+                    <Skeleton className="absolute left-2 top-2.5 h-4 w-4" />
+                    <Skeleton className="h-9 w-full pl-8" />
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {[...Array(5)].map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+    </Card>
+);
+
+const AnswerSkeleton = () => (
+    <div className="space-y-6">
+        {[...Array(3)].map((_, sectionIndex) => (
+            <div key={sectionIndex} className="space-y-4">
+                <Skeleton className="h-6 w-48" />
+                <div className="space-y-4">
+                    {[...Array(2)].map((_, questionIndex) => (
+                        <div key={questionIndex} className="p-4 border rounded-lg space-y-4">
+                            <div className="flex justify-between items-start">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-3 w-16" />
+                                </div>
+                                <Skeleton className="h-6 w-16" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-4 w-3/4" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-4 w-3/4" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        ))}
+    </div>
+);
 
 export default function ExamHistory() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -208,6 +318,7 @@ export default function ExamHistory() {
 
     const handleExamClick = async (exam: Exam) => {
         setSelectedExam(exam);
+        setIsLoadingResponses(true);
         // The attempt ID is not directly available in the exam data, so we need to fetch it
         try {
             const response = await fetch(`/api/organization/${organizationId}/exams/${exam.id}/attempts?userId=${exam.attempt.userId}`);
@@ -222,11 +333,18 @@ export default function ExamHistory() {
             }
         } catch (error) {
             console.error("Error fetching attempt ID:", error);
+        } finally {
+            setIsLoadingResponses(false);
         }
     };
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                <StatsSkeleton />
+                <TableSkeleton />
+            </div>
+        );
     }
 
     return (
@@ -357,18 +475,21 @@ export default function ExamHistory() {
                 </CardContent>
             </Card>
 
-            <Dialog open={!!selectedExam} onOpenChange={() => setSelectedExam(null)}>
+            <Dialog open={!!selectedExam} onOpenChange={() => {
+                setSelectedExam(null);
+                setIsLoadingResponses(false);
+            }}>
                 <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>
                             {selectedExam?.title} - {selectedExam?.attempt.studentName}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-6">
-                        {isLoadingResponses ? (
-                            <div>Loading answers...</div>
-                        ) : (
-                            selectedExam?.sections.map((section, sectionIndex) => (
+                    {isLoadingResponses ? (
+                        <AnswerSkeleton />
+                    ) : (
+                        <div className="space-y-6">
+                            {selectedExam?.sections.map((section, sectionIndex) => (
                                 <div key={sectionIndex} className="space-y-4">
                                     <h3 className="text-lg font-semibold">{section.title}</h3>
                                     {section.description && (
@@ -427,9 +548,9 @@ export default function ExamHistory() {
                                         })}
                                     </div>
                                 </div>
-                            ))
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

@@ -81,6 +81,7 @@ export default function ExamAttemptPage({
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
     const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">(
         "saved"
     );
@@ -316,18 +317,26 @@ export default function ExamAttemptPage({
     };
 
     // Navigate to previous section
-    const goToPreviousSection = () => {
+    const goToPreviousSection = async () => {
         if (currentSectionIndex > 0) {
-            saveResponses();
-            setCurrentSectionIndex(currentSectionIndex - 1);
+            try {
+                await saveResponses();
+                setCurrentSectionIndex(currentSectionIndex - 1);
+            } catch (error: any) {
+                toast.error("Failed to save responses. Please try again.");
+            }
         }
     };
 
     // Navigate to next section
-    const goToNextSection = () => {
+    const goToNextSection = async () => {
         if (examData && currentSectionIndex < examData.sections.length - 1) {
-            saveResponses();
-            setCurrentSectionIndex(currentSectionIndex + 1);
+            try {
+                await saveResponses();
+                setCurrentSectionIndex(currentSectionIndex + 1);
+            } catch (error: any) {
+                toast.error("Failed to save responses. Please try again.");
+            }
         }
     };
 
@@ -338,7 +347,12 @@ export default function ExamAttemptPage({
             return;
         }
 
+        if (isSubmitting) {
+            return; // Prevent multiple submissions
+        }
+
         try {
+            setIsSubmitting(true);
             setSubmitting(true);
 
             // First save all responses
@@ -346,6 +360,7 @@ export default function ExamAttemptPage({
                 await saveResponses();
             } catch (error: any) {
                 toast.error(error.message || "Failed to save your responses. Please try again.");
+                setIsSubmitting(false);
                 setSubmitting(false);
                 setSubmitDialogOpen(false);
                 return;
@@ -387,6 +402,7 @@ export default function ExamAttemptPage({
             router.push(`/organization/${organizationId}/exams/history`);
         } catch (error: any) {
             toast.error(error.message || "Failed to submit your exam. Please try again.");
+            setIsSubmitting(false);
             setSubmitting(false);
             setSubmitDialogOpen(false);
         }
