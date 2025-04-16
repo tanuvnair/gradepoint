@@ -39,6 +39,7 @@ interface Exam {
             content: string;
             type: string;
             points: number;
+            options?: Record<string, string>;
         }[];
     }[];
     attempt: {
@@ -61,6 +62,8 @@ interface ExamResponse {
     isCorrect: boolean;
     score: number;
     feedback?: string;
+    correctAnswer?: string;
+    options?: Record<string, string>;
 }
 
 export default function ExamHistory() {
@@ -228,16 +231,16 @@ export default function ExamHistory() {
 
     return (
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Performance</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{averageScore.toFixed(1)}%</div>
-                        <Progress value={averageScore} className="mt-2" />
+                        <div className="text-2xl font-bold">{averageScore.toFixed(1)}</div>
+                        <Progress value={(averageScore / 100) * 100} className="mt-2" />
                         <p className="text-xs text-muted-foreground mt-1">
-                            {highestScore}% highest score
+                            {highestScore} highest score
                         </p>
                     </CardContent>
                 </Card>
@@ -254,17 +257,6 @@ export default function ExamHistory() {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Study Time</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{Math.floor(totalTimeSpent)}h</div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {(totalTimeSpent / totalExams).toFixed(1)}h per exam
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Best Section</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -275,7 +267,7 @@ export default function ExamHistory() {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                             {Object.entries(sectionStats).length > 0
-                                ? `${Object.entries(sectionStats).sort((a, b) => b[1].avgScore - a[1].avgScore)[0][1].avgScore.toFixed(1)}% average`
+                                ? `${Object.entries(sectionStats).sort((a, b) => b[1].avgScore - a[1].avgScore)[0][1].avgScore.toFixed(1)} average`
                                 : "No attempts yet"}
                         </p>
                     </CardContent>
@@ -346,11 +338,15 @@ export default function ExamHistory() {
                                         {new Date(exam.attempt.submittedAt).toLocaleDateString()}
                                     </TableCell>
                                     <TableCell>{exam.timeLimit} minutes</TableCell>
-                                    <TableCell>{exam.passingScore}%</TableCell>
+                                    <TableCell>{exam.passingScore}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
-                                            {exam.attempt.score}%
-                                            <Progress value={exam.attempt.score} className="w-20" />
+                                            {exam.attempt.score}
+                                            <Progress 
+                                                value={(exam.attempt.score / exam.sections.reduce((total, section) => 
+                                                    total + section.questions.reduce((sum, q) => sum + q.points, 0), 0)) * 100} 
+                                                className="w-20" 
+                                            />
                                         </div>
                                     </TableCell>
                                     <TableCell>{exam.attempt.timeSpent}</TableCell>
@@ -401,9 +397,23 @@ export default function ExamHistory() {
                                                     {response && (
                                                         <div className="mt-4 space-y-2">
                                                             <div>
-                                                                <p className="text-sm font-medium">Answer:</p>
-                                                                <p className="text-sm">{response.response}</p>
+                                                                <p className="text-sm font-medium">Your Answer:</p>
+                                                                <p className="text-sm">
+                                                                    {question.type === "MULTIPLE_CHOICE" && question.options
+                                                                        ? question.options[response.response] || response.response
+                                                                        : response.response}
+                                                                </p>
                                                             </div>
+                                                            {question.type === "MULTIPLE_CHOICE" && response.correctAnswer && (
+                                                                <div>
+                                                                    <p className="text-sm font-medium">Correct Answer:</p>
+                                                                    <p className="text-sm">
+                                                                        {question.options
+                                                                            ? question.options[response.correctAnswer] || response.correctAnswer
+                                                                            : response.correctAnswer}
+                                                                    </p>
+                                                                </div>
+                                                            )}
                                                             {response.feedback && (
                                                                 <div>
                                                                     <p className="text-sm font-medium">Feedback:</p>
