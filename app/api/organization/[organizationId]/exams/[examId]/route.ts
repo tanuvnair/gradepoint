@@ -129,6 +129,40 @@ export async function PUT(
             },
         });
 
+        const existingSections = await prisma.examSection.findMany({
+            where: { examId },
+            include: { questions: true },
+        });
+
+        const updatedSectionIds = sections
+            .filter((section) => section.id)
+            .map((section) => section.id);
+
+        for (const existingSection of existingSections) {
+            if (!updatedSectionIds.includes(existingSection.id)) {
+                // Delete the section and its questions (cascade delete should handle this)
+                await prisma.examSection.delete({
+                    where: { id: existingSection.id },
+                });
+            } else {
+                // For sections that remain, delete questions not in the update
+                const sectionUpdate = sections.find(
+                    (s) => s.id === existingSection.id
+                );
+                const updatedQuestionIds = sectionUpdate.questions
+                    .filter((question) => question.id)
+                    .map((question) => question.id);
+
+                for (const existingQuestion of existingSection.questions) {
+                    if (!updatedQuestionIds.includes(existingQuestion.id)) {
+                        await prisma.question.delete({
+                            where: { id: existingQuestion.id },
+                        });
+                    }
+                }
+            }
+        }
+
         // Update sections and questions
         for (const section of sections) {
             if (section.id) {

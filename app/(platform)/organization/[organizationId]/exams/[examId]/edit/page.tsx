@@ -13,22 +13,49 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { ArrowDown, ArrowLeft, ArrowUp, CalendarIcon, Plus, Trash2 } from "lucide-react";
+import {
+    ArrowDown,
+    ArrowLeft,
+    ArrowUp,
+    CalendarIcon,
+    Plus,
+    Trash2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 
-type ExamType = "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "OPEN_ENDED" | "CODE_BASED";
+type ExamType =
+    | "MULTIPLE_CHOICE"
+    | "SHORT_ANSWER"
+    | "OPEN_ENDED"
+    | "CODE_BASED";
 
 interface Question {
     id?: string;
@@ -61,27 +88,33 @@ interface ExamFormData {
     }[];
 }
 
-export default function EditExamForm({ params }: { params: Promise<{ organizationId: string; examId: string }> }) {
+export default function EditExamForm({
+    params,
+}: {
+    params: Promise<{ organizationId: string; examId: string }>;
+}) {
     const router = useRouter();
     const { organizationId, examId } = use(params);
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState<ExamFormData>(() => {
         // Try to load saved form data from localStorage
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
             const savedData = localStorage.getItem(`examFormData_${examId}`);
-            return savedData ? JSON.parse(savedData) : {
-                title: "",
-                description: "",
-                timeLimit: 0,
-                passingScore: 1,
-                randomizeOrder: false,
-                publishedAt: null,
-                startDate: null,
-                endDate: null,
-                allowedAttempts: 1,
-                sections: [],
-            };
+            return savedData
+                ? JSON.parse(savedData)
+                : {
+                      title: "",
+                      description: "",
+                      timeLimit: 0,
+                      passingScore: 1,
+                      randomizeOrder: false,
+                      publishedAt: null,
+                      startDate: null,
+                      endDate: null,
+                      allowedAttempts: 1,
+                      sections: [],
+                  };
         }
         return {
             title: "",
@@ -99,15 +132,18 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
 
     // Save form data to localStorage whenever it changes
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem(`examFormData_${examId}`, JSON.stringify(formData));
+        if (typeof window !== "undefined") {
+            localStorage.setItem(
+                `examFormData_${examId}`,
+                JSON.stringify(formData)
+            );
         }
     }, [formData, examId]);
 
     // Clear saved form data when component unmounts or when exam is successfully updated
     useEffect(() => {
         return () => {
-            if (typeof window !== 'undefined') {
+            if (typeof window !== "undefined") {
                 localStorage.removeItem(`examFormData_${examId}`);
             }
         };
@@ -116,9 +152,11 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
     useEffect(() => {
         async function fetchExam() {
             try {
-                const response = await fetch(`/api/organization/${organizationId}/exams/${examId}`);
+                const response = await fetch(
+                    `/api/organization/${organizationId}/exams/${examId}`
+                );
                 if (!response.ok) {
-                    throw new Error('Failed to fetch exam');
+                    throw new Error("Failed to fetch exam");
                 }
                 const exam = await response.json();
 
@@ -144,9 +182,9 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                             points: question.points,
                             order: question.order,
                             options: question.options || {},
-                            correctAnswer: question.correctAnswer || {}
-                        }))
-                    }))
+                            correctAnswer: question.correctAnswer || {},
+                        })),
+                    })),
                 });
             } catch (error) {
                 console.error("Error fetching exam:", error);
@@ -163,82 +201,115 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
         fetchExam();
     }, [organizationId, examId, toast]);
 
-    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
-        if (type === 'number') {
-            const numValue = value === "" ? null : parseFloat(value);
+    const handleInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            const { name, value, type } = e.target;
+            if (type === "number") {
+                const numValue = value === "" ? null : parseFloat(value);
 
-            if (name === 'timeLimit') {
-                setFormData(prev => ({
-                    ...prev,
-                    [name]: numValue === 0 ? null : (numValue || 0)
-                }));
-            } else if (name === 'passingScore' || name === 'allowedAttempts') {
-                setFormData(prev => ({
-                    ...prev,
-                    [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue
-                }));
+                if (name === "timeLimit") {
+                    setFormData((prev) => ({
+                        ...prev,
+                        [name]: numValue === 0 ? null : numValue || 0,
+                    }));
+                } else if (
+                    name === "passingScore" ||
+                    name === "allowedAttempts"
+                ) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue,
+                    }));
+                } else {
+                    setFormData((prev) => ({
+                        ...prev,
+                        [name]: numValue || 0,
+                    }));
+                }
             } else {
-                setFormData(prev => ({
+                setFormData((prev) => ({
                     ...prev,
-                    [name]: numValue || 0
+                    [name]: value,
                 }));
             }
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
-        }
-    }, []);
+        },
+        []
+    );
 
     const handleSwitchChange = useCallback((name: string, checked: boolean) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: checked
+            [name]: checked,
         }));
     }, []);
 
-    const handleDateChange = useCallback((name: string, date: Date | undefined) => {
-        setFormData(prev => ({
-            ...prev,
-            [name]: date ? date.toISOString() : null
-        }));
-    }, []);
+    const handleDateChange = useCallback(
+        (name: string, date: Date | undefined) => {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: date ? date.toISOString() : null,
+            }));
+        },
+        []
+    );
 
-    const handleSectionChange = useCallback((index: number, field: string, value: string) => {
-        setFormData(prev => ({
-            ...prev,
-            sections: prev.sections.map((section, i) =>
-                i === index ? { ...section, [field]: value } : section
-            )
-        }));
-    }, []);
+    const handleSectionChange = useCallback(
+        (index: number, field: string, value: string) => {
+            setFormData((prev) => ({
+                ...prev,
+                sections: prev.sections.map((section, i) =>
+                    i === index ? { ...section, [field]: value } : section
+                ),
+            }));
+        },
+        []
+    );
 
-    const handleQuestionChange = useCallback((sectionIndex: number, questionIndex: number, field: string, value: any) => {
-        setFormData(prev => ({
-            ...prev,
-            sections: prev.sections.map((section, sIndex) =>
-                sIndex === sectionIndex ? {
-                    ...section,
-                    questions: section.questions.map((question, qIndex) =>
-                        qIndex === questionIndex ? {
-                            ...question,
-                            [field]: field === 'points'
-                                ? (() => {
-                                    const points = parseFloat(value);
-                                    return isNaN(points) || points < 1 ? 1 : points;
-                                })()
-                                : value
-                        } : question
-                    )
-                } : section
-            )
-        }));
-    }, []);
+    const handleQuestionChange = useCallback(
+        (
+            sectionIndex: number,
+            questionIndex: number,
+            field: string,
+            value: any
+        ) => {
+            setFormData((prev) => ({
+                ...prev,
+                sections: prev.sections.map((section, sIndex) =>
+                    sIndex === sectionIndex
+                        ? {
+                              ...section,
+                              questions: section.questions.map(
+                                  (question, qIndex) =>
+                                      qIndex === questionIndex
+                                          ? {
+                                                ...question,
+                                                [field]:
+                                                    field === "points"
+                                                        ? (() => {
+                                                              const points =
+                                                                  parseFloat(
+                                                                      value
+                                                                  );
+                                                              return isNaN(
+                                                                  points
+                                                              ) || points < 1
+                                                                  ? 1
+                                                                  : points;
+                                                          })()
+                                                        : value,
+                                            }
+                                          : question
+                              ),
+                          }
+                        : section
+                ),
+            }));
+        },
+        []
+    );
 
     const addSection = useCallback(() => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             sections: [
                 ...prev.sections,
@@ -246,73 +317,88 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     title: "",
                     description: "",
                     order: prev.sections.length,
-                    questions: []
-                }
-            ]
+                    questions: [],
+                },
+            ],
         }));
     }, []);
 
     const removeSection = useCallback((index: number) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            sections: prev.sections.filter((_, i) => i !== index)
+            sections: prev.sections.filter((_, i) => i !== index),
         }));
     }, []);
 
     const addQuestion = useCallback((sectionIndex: number) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             sections: prev.sections.map((section, index) =>
-                index === sectionIndex ? {
-                    ...section,
-                    questions: [
-                        ...section.questions,
-                        {
-                            content: "",
-                            type: "MULTIPLE_CHOICE" as ExamType,
-                            points: 1,
-                            order: section.questions.length,
-                            options: {},
-                            correctAnswer: { option: "" }
-                        }
-                    ]
-                } : section
-            )
+                index === sectionIndex
+                    ? {
+                          ...section,
+                          questions: [
+                              ...section.questions,
+                              {
+                                  content: "",
+                                  type: "MULTIPLE_CHOICE" as ExamType,
+                                  points: 1,
+                                  order: section.questions.length,
+                                  options: {},
+                                  correctAnswer: { option: "" },
+                              },
+                          ],
+                      }
+                    : section
+            ),
         }));
     }, []);
 
-    const removeQuestion = useCallback((sectionIndex: number, questionIndex: number) => {
-        setFormData(prev => ({
-            ...prev,
-            sections: prev.sections.map((section, sIndex) =>
-                sIndex === sectionIndex ? {
-                    ...section,
-                    questions: section.questions.filter((_, qIndex) => qIndex !== questionIndex)
-                } : section
-            )
-        }));
-    }, []);
-
-    const moveSection = useCallback((index: number, direction: "up" | "down") => {
-        setFormData(prev => {
-            const newSections = [...prev.sections];
-            const newIndex = direction === "up" ? index - 1 : index + 1;
-
-            if (newIndex < 0 || newIndex >= newSections.length) {
-                return prev;
-            }
-
-            [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
-
-            return {
+    const removeQuestion = useCallback(
+        (sectionIndex: number, questionIndex: number) => {
+            setFormData((prev) => ({
                 ...prev,
-                sections: newSections.map((section, i) => ({
-                    ...section,
-                    order: i
-                }))
-            };
-        });
-    }, []);
+                sections: prev.sections.map((section, sIndex) =>
+                    sIndex === sectionIndex
+                        ? {
+                              ...section,
+                              questions: section.questions.filter(
+                                  (_, qIndex) => qIndex !== questionIndex
+                              ),
+                          }
+                        : section
+                ),
+            }));
+        },
+        []
+    );
+
+    const moveSection = useCallback(
+        (index: number, direction: "up" | "down") => {
+            setFormData((prev) => {
+                const newSections = [...prev.sections];
+                const newIndex = direction === "up" ? index - 1 : index + 1;
+
+                if (newIndex < 0 || newIndex >= newSections.length) {
+                    return prev;
+                }
+
+                [newSections[index], newSections[newIndex]] = [
+                    newSections[newIndex],
+                    newSections[index],
+                ];
+
+                return {
+                    ...prev,
+                    sections: newSections.map((section, i) => ({
+                        ...section,
+                        order: i,
+                    })),
+                };
+            });
+        },
+        []
+    );
 
     const validateForm = useCallback(() => {
         if (!formData.title.trim()) {
@@ -335,9 +421,12 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
 
         // Calculate total possible score
         const totalScore = formData.sections.reduce((total, section) => {
-            return total + section.questions.reduce((sectionTotal, question) => {
-                return sectionTotal + (question.points || 0);
-            }, 0);
+            return (
+                total +
+                section.questions.reduce((sectionTotal, question) => {
+                    return sectionTotal + (question.points || 0);
+                }, 0)
+            );
         }, 0);
 
         if (formData.passingScore <= 0) {
@@ -409,7 +498,8 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     if (Object.keys(question.options || {}).length < 2) {
                         toast({
                             title: "Error",
-                            description: "Multiple choice questions must have at least 2 options",
+                            description:
+                                "Multiple choice questions must have at least 2 options",
                             variant: "destructive",
                         });
                         return false;
@@ -418,7 +508,8 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     if (!question.correctAnswer?.option) {
                         toast({
                             title: "Error",
-                            description: "Correct answer must be selected for multiple choice questions",
+                            description:
+                                "Correct answer must be selected for multiple choice questions",
                             variant: "destructive",
                         });
                         return false;
@@ -430,71 +521,93 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
         return true;
     }, [formData, toast]);
 
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
 
-        if (!validateForm()) {
-            return;
-        }
-
-        try {
-            const requestBody = {
-                ...formData,
-                timeLimit: formData.timeLimit === 0 ? null : formData.timeLimit,
-                passingScore: formData.passingScore || null,
-                publishedAt: formData.publishedAt || null,
-                startDate: formData.startDate || null,
-                endDate: formData.endDate || null,
-                allowedAttempts: formData.allowedAttempts || null,
-                sections: formData.sections.map((section, index) => ({
-                    ...section,
-                    order: index,
-                    questions: section.questions.map((question, qIndex) => ({
-                        ...question,
-                        order: qIndex,
-                        points: parseFloat(question.points.toString()),
-                        options: question.type === "MULTIPLE_CHOICE" ? question.options || {} : {},
-                        correctAnswer: question.type === "MULTIPLE_CHOICE" ? question.correctAnswer || {} : {}
-                    }))
-                }))
-            };
-
-            const response = await fetch(`/api/organization/${organizationId}/exams/${examId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to update exam');
+            if (!validateForm()) {
+                return;
             }
 
-            toast({
-                title: "Success",
-                description: "Exam updated successfully",
-            });
-            router.push(`/organization/${organizationId}/exams/all`);
-        } catch (error) {
-            console.error("Error updating exam:", error);
-            toast({
-                title: "Error",
-                description: "Failed to update exam",
-                variant: "destructive",
-            });
-        }
-    }, [formData, organizationId, examId, router, toast, validateForm]);
+            try {
+                const requestBody = {
+                    ...formData,
+                    timeLimit:
+                        formData.timeLimit === 0 ? null : formData.timeLimit,
+                    passingScore: formData.passingScore || null,
+                    publishedAt: formData.publishedAt || null,
+                    startDate: formData.startDate || null,
+                    endDate: formData.endDate || null,
+                    allowedAttempts: formData.allowedAttempts || null,
+                    sections: formData.sections.map((section, index) => ({
+                        ...section,
+                        order: index,
+                        questions: section.questions.map(
+                            (question, qIndex) => ({
+                                ...question,
+                                order: qIndex,
+                                points: parseFloat(question.points.toString()),
+                                options:
+                                    question.type === "MULTIPLE_CHOICE"
+                                        ? question.options || {}
+                                        : {},
+                                correctAnswer:
+                                    question.type === "MULTIPLE_CHOICE"
+                                        ? question.correctAnswer || {}
+                                        : {},
+                            })
+                        ),
+                    })),
+                };
+
+                console.log("requestBody", requestBody);
+
+                const response = await fetch(
+                    `/api/organization/${organizationId}/exams/${examId}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(requestBody),
+                    }
+                );
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(
+                        errorData.message || "Failed to update exam"
+                    );
+                }
+
+                toast({
+                    title: "Success",
+                    description: "Exam updated successfully",
+                });
+                router.push(`/organization/${organizationId}/exams/all`);
+            } catch (error) {
+                console.error("Error updating exam:", error);
+                toast({
+                    title: "Error",
+                    description: "Failed to update exam",
+                    variant: "destructive",
+                });
+            }
+        },
+        [formData, organizationId, examId, router, toast, validateForm]
+    );
 
     const handleDeleteExam = useCallback(async () => {
         try {
-            const response = await fetch(`/api/organization/${organizationId}/exams/${examId}`, {
-                method: 'DELETE',
-            });
+            const response = await fetch(
+                `/api/organization/${organizationId}/exams/${examId}`,
+                {
+                    method: "DELETE",
+                }
+            );
 
             if (!response.ok) {
-                throw new Error('Failed to delete exam');
+                throw new Error("Failed to delete exam");
             }
 
             toast({
@@ -585,7 +698,10 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                         <CardContent>
                             <div className="space-y-4">
                                 {[1, 2].map((sectionIndex) => (
-                                    <div key={sectionIndex} className="rounded-lg border p-4">
+                                    <div
+                                        key={sectionIndex}
+                                        className="rounded-lg border p-4"
+                                    >
                                         <div className="space-y-4">
                                             <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
                                                 <Skeleton className="h-10 w-64" />
@@ -608,35 +724,54 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                                     <Skeleton className="h-10 w-32" />
                                                 </div>
                                                 <div className="space-y-4">
-                                                    {[1, 2].map((questionIndex) => (
-                                                        <div key={questionIndex} className="rounded-lg border p-4">
-                                                            <div className="space-y-4">
-                                                                <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
-                                                                    <Skeleton className="h-10 w-full" />
-                                                                    <div className="flex gap-2">
-                                                                        <Skeleton className="h-10 w-32" />
-                                                                        <Skeleton className="h-10 w-20" />
-                                                                        <Skeleton className="h-8 w-8" />
-                                                                        <Skeleton className="h-8 w-8" />
-                                                                        <Skeleton className="h-8 w-8" />
+                                                    {[1, 2].map(
+                                                        (questionIndex) => (
+                                                            <div
+                                                                key={
+                                                                    questionIndex
+                                                                }
+                                                                className="rounded-lg border p-4"
+                                                            >
+                                                                <div className="space-y-4">
+                                                                    <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+                                                                        <Skeleton className="h-10 w-full" />
+                                                                        <div className="flex gap-2">
+                                                                            <Skeleton className="h-10 w-32" />
+                                                                            <Skeleton className="h-10 w-20" />
+                                                                            <Skeleton className="h-8 w-8" />
+                                                                            <Skeleton className="h-8 w-8" />
+                                                                            <Skeleton className="h-8 w-8" />
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <Skeleton className="h-4 w-24" />
                                                                     <div className="space-y-2">
-                                                                        {[1, 2].map((optionIndex) => (
-                                                                            <div key={optionIndex} className="flex items-center gap-2">
-                                                                                <Skeleton className="h-10 w-full" />
-                                                                                <Skeleton className="h-4 w-4 rounded-full" />
-                                                                                <Skeleton className="h-8 w-8" />
-                                                                            </div>
-                                                                        ))}
-                                                                        <Skeleton className="h-10 w-32" />
+                                                                        <Skeleton className="h-4 w-24" />
+                                                                        <div className="space-y-2">
+                                                                            {[
+                                                                                1,
+                                                                                2,
+                                                                            ].map(
+                                                                                (
+                                                                                    optionIndex
+                                                                                ) => (
+                                                                                    <div
+                                                                                        key={
+                                                                                            optionIndex
+                                                                                        }
+                                                                                        className="flex items-center gap-2"
+                                                                                    >
+                                                                                        <Skeleton className="h-10 w-full" />
+                                                                                        <Skeleton className="h-4 w-4 rounded-full" />
+                                                                                        <Skeleton className="h-8 w-8" />
+                                                                                    </div>
+                                                                                )
+                                                                            )}
+                                                                            <Skeleton className="h-10 w-32" />
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
+                                                        )
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -667,20 +802,30 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Edit Exam</h1>
-                    <p className="text-sm text-muted-foreground sm:text-base">Update your exam settings and questions</p>
+                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                        Edit Exam
+                    </h1>
+                    <p className="text-sm text-muted-foreground sm:text-base">
+                        Update your exam settings and questions
+                    </p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg sm:text-xl">Exam Details</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">Configure basic exam information</CardDescription>
+                        <CardTitle className="text-lg sm:text-xl">
+                            Exam Details
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
+                            Configure basic exam information
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label className="text-sm sm:text-base">Exam Title</Label>
+                            <Label className="text-sm sm:text-base">
+                                Exam Title
+                            </Label>
                             <Input
                                 name="title"
                                 value={formData.title}
@@ -691,7 +836,9 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-sm sm:text-base">Description</Label>
+                            <Label className="text-sm sm:text-base">
+                                Description
+                            </Label>
                             <Textarea
                                 name="description"
                                 value={formData.description}
@@ -701,7 +848,9 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                         </div>
                         <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label className="text-sm sm:text-base">Start Date</Label>
+                                <Label className="text-sm sm:text-base">
+                                    Start Date
+                                </Label>
                                 <div className="flex flex-col gap-2 sm:flex-row">
                                     <Popover>
                                         <PopoverTrigger asChild>
@@ -709,27 +858,52 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                                 variant={"outline"}
                                                 className={cn(
                                                     "w-full justify-start text-left font-normal",
-                                                    !formData.startDate && "text-muted-foreground"
+                                                    !formData.startDate &&
+                                                        "text-muted-foreground"
                                                 )}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {formData.startDate ? format(new Date(formData.startDate), "PPP") : <span>Pick a date</span>}
+                                                {formData.startDate ? (
+                                                    format(
+                                                        new Date(
+                                                            formData.startDate
+                                                        ),
+                                                        "PPP"
+                                                    )
+                                                ) : (
+                                                    <span>Pick a date</span>
+                                                )}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar
                                                 mode="single"
-                                                selected={formData.startDate ? new Date(formData.startDate) : undefined}
-                                                onSelect={(date) => handleDateChange('startDate', date)}
+                                                selected={
+                                                    formData.startDate
+                                                        ? new Date(
+                                                              formData.startDate
+                                                          )
+                                                        : undefined
+                                                }
+                                                onSelect={(date) =>
+                                                    handleDateChange(
+                                                        "startDate",
+                                                        date
+                                                    )
+                                                }
                                                 initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Leave empty to start immediately</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Leave empty to start immediately
+                                </p>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm sm:text-base">End Date</Label>
+                                <Label className="text-sm sm:text-base">
+                                    End Date
+                                </Label>
                                 <div className="flex flex-col gap-2 sm:flex-row">
                                     <Popover>
                                         <PopoverTrigger asChild>
@@ -737,39 +911,70 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                                 variant={"outline"}
                                                 className={cn(
                                                     "w-full justify-start text-left font-normal",
-                                                    !formData.endDate && "text-muted-foreground"
+                                                    !formData.endDate &&
+                                                        "text-muted-foreground"
                                                 )}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {formData.endDate ? format(new Date(formData.endDate), "PPP") : <span>Pick a date</span>}
+                                                {formData.endDate ? (
+                                                    format(
+                                                        new Date(
+                                                            formData.endDate
+                                                        ),
+                                                        "PPP"
+                                                    )
+                                                ) : (
+                                                    <span>Pick a date</span>
+                                                )}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar
                                                 mode="single"
-                                                selected={formData.endDate ? new Date(formData.endDate) : undefined}
-                                                onSelect={(date) => handleDateChange('endDate', date)}
+                                                selected={
+                                                    formData.endDate
+                                                        ? new Date(
+                                                              formData.endDate
+                                                          )
+                                                        : undefined
+                                                }
+                                                onSelect={(date) =>
+                                                    handleDateChange(
+                                                        "endDate",
+                                                        date
+                                                    )
+                                                }
                                                 initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Leave empty to run indefinitely</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Leave empty to run indefinitely
+                                </p>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm sm:text-base">Time Limit (minutes)</Label>
+                                <Label className="text-sm sm:text-base">
+                                    Time Limit (minutes)
+                                </Label>
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                     <Input
                                         type="number"
                                         name="timeLimit"
-                                        value={formData.timeLimit === null ? "" : formData.timeLimit}
+                                        value={
+                                            formData.timeLimit === null
+                                                ? ""
+                                                : formData.timeLimit
+                                        }
                                         onChange={handleInputChange}
                                         placeholder="Duration in minutes"
                                         className="max-w-full sm:max-w-[200px]"
                                         min="0"
                                     />
                                 </div>
-                                <p className="text-xs text-muted-foreground">Leave empty for no time limit</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Leave empty for no time limit
+                                </p>
                             </div>
                         </div>
                     </CardContent>
@@ -777,12 +982,18 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg sm:text-xl">Exam Settings</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">Configure exam behavior</CardDescription>
+                        <CardTitle className="text-lg sm:text-xl">
+                            Exam Settings
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
+                            Configure exam behavior
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 sm:space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-sm sm:text-base">Question Randomization</Label>
+                            <Label className="text-sm sm:text-base">
+                                Question Randomization
+                            </Label>
                             <div className="flex items-center space-x-2">
                                 <Switch
                                     id="randomizeOrder"
@@ -790,18 +1001,25 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                     onCheckedChange={(checked: boolean) => {
                                         handleInputChange({
                                             target: {
-                                                name: 'randomizeOrder',
-                                                type: 'checkbox',
-                                                checked
-                                            }
+                                                name: "randomizeOrder",
+                                                type: "checkbox",
+                                                checked,
+                                            },
                                         } as React.ChangeEvent<HTMLInputElement>);
                                     }}
                                 />
-                                <Label htmlFor="randomizeOrder" className="text-sm sm:text-base">Randomize question order</Label>
+                                <Label
+                                    htmlFor="randomizeOrder"
+                                    className="text-sm sm:text-base"
+                                >
+                                    Randomize question order
+                                </Label>
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <Label className="text-sm sm:text-base">Passing Score</Label>
+                            <Label className="text-sm sm:text-base">
+                                Passing Score
+                            </Label>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <Input
                                     type="number"
@@ -814,7 +1032,9 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <Label className="text-sm sm:text-base">Allowed Attempts</Label>
+                            <Label className="text-sm sm:text-base">
+                                Allowed Attempts
+                            </Label>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <Input
                                     type="number"
@@ -833,8 +1053,12 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     <CardHeader>
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle className="text-lg sm:text-xl">Exam Sections</CardTitle>
-                                <CardDescription className="text-xs sm:text-sm">Add and manage exam sections</CardDescription>
+                                <CardTitle className="text-lg sm:text-xl">
+                                    Exam Sections
+                                </CardTitle>
+                                <CardDescription className="text-xs sm:text-sm">
+                                    Add and manage exam sections
+                                </CardDescription>
                             </div>
                             <Button
                                 type="button"
@@ -849,14 +1073,23 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                     <CardContent>
                         <div className="space-y-4">
                             {formData.sections.map((section, sectionIndex) => (
-                                <div key={sectionIndex} className="rounded-lg border p-4">
+                                <div
+                                    key={sectionIndex}
+                                    className="rounded-lg border p-4"
+                                >
                                     <div className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
                                             <div className="flex-1">
                                                 <Input
                                                     placeholder="Section title"
                                                     value={section.title}
-                                                    onChange={(e) => handleSectionChange(sectionIndex, 'title', e.target.value)}
+                                                    onChange={(e) =>
+                                                        handleSectionChange(
+                                                            sectionIndex,
+                                                            "title",
+                                                            e.target.value
+                                                        )
+                                                    }
                                                 />
                                             </div>
                                             <div className="flex gap-2">
@@ -864,8 +1097,15 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                                     variant="ghost"
                                                     size="sm"
                                                     type="button"
-                                                    onClick={() => moveSection(sectionIndex, "up")}
-                                                    disabled={sectionIndex === 0}
+                                                    onClick={() =>
+                                                        moveSection(
+                                                            sectionIndex,
+                                                            "up"
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        sectionIndex === 0
+                                                    }
                                                 >
                                                     <ArrowUp className="h-4 w-4" />
                                                 </Button>
@@ -873,8 +1113,18 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                                     variant="ghost"
                                                     size="sm"
                                                     type="button"
-                                                    onClick={() => moveSection(sectionIndex, "down")}
-                                                    disabled={sectionIndex === formData.sections.length - 1}
+                                                    onClick={() =>
+                                                        moveSection(
+                                                            sectionIndex,
+                                                            "down"
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        sectionIndex ===
+                                                        formData.sections
+                                                            .length -
+                                                            1
+                                                    }
                                                 >
                                                     <ArrowDown className="h-4 w-4" />
                                                 </Button>
@@ -882,7 +1132,11 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                                     variant="ghost"
                                                     size="sm"
                                                     type="button"
-                                                    onClick={() => removeSection(sectionIndex)}
+                                                    onClick={() =>
+                                                        removeSection(
+                                                            sectionIndex
+                                                        )
+                                                    }
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -893,185 +1147,454 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                             <Textarea
                                                 placeholder="Section description"
                                                 value={section.description}
-                                                onChange={(e) => handleSectionChange(sectionIndex, 'description', e.target.value)}
+                                                onChange={(e) =>
+                                                    handleSectionChange(
+                                                        sectionIndex,
+                                                        "description",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div className="space-y-4">
                                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                                 <div>
-                                                    <CardTitle className="text-base sm:text-lg">Questions</CardTitle>
-                                                    <CardDescription className="text-xs sm:text-sm">Add and manage questions in this section</CardDescription>
+                                                    <CardTitle className="text-base sm:text-lg">
+                                                        Questions
+                                                    </CardTitle>
+                                                    <CardDescription className="text-xs sm:text-sm">
+                                                        Add and manage questions
+                                                        in this section
+                                                    </CardDescription>
                                                 </div>
                                                 <Button
                                                     type="button"
                                                     className="gap-2"
-                                                    onClick={() => addQuestion(sectionIndex)}
+                                                    onClick={() =>
+                                                        addQuestion(
+                                                            sectionIndex
+                                                        )
+                                                    }
                                                 >
                                                     <Plus className="h-4 w-4" />
                                                     Add Question
                                                 </Button>
                                             </div>
                                             <div className="space-y-4">
-                                                {section.questions.length === 0 ? (
+                                                {section.questions.length ===
+                                                0 ? (
                                                     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-6 sm:p-8 text-center">
                                                         <div className="rounded-full bg-primary/10 p-3">
                                                             <Plus className="h-6 w-6 text-primary" />
                                                         </div>
-                                                        <h3 className="mt-4 text-base font-medium sm:text-lg">No questions added yet</h3>
+                                                        <h3 className="mt-4 text-base font-medium sm:text-lg">
+                                                            No questions added
+                                                            yet
+                                                        </h3>
                                                         <p className="mt-2 text-xs text-muted-foreground sm:text-sm">
-                                                            Click the "Add Question" button to get started
+                                                            Click the "Add
+                                                            Question" button to
+                                                            get started
                                                         </p>
                                                     </div>
                                                 ) : (
                                                     <div className="space-y-4">
-                                                        {section.questions.map((question, questionIndex) => (
-                                                            <div key={questionIndex} className="rounded-lg border p-4">
-                                                                <div className="flex flex-col gap-4">
-                                                                    <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
-                                                                        <div className="flex-1">
-                                                                            <Input
-                                                                                placeholder="Enter question content"
-                                                                                value={question.content}
-                                                                                onChange={(e) => handleQuestionChange(sectionIndex, questionIndex, 'content', e.target.value)}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="flex gap-2">
-                                                                            <Select
-                                                                                value={question.type}
-                                                                                onValueChange={(value) => handleQuestionChange(sectionIndex, questionIndex, "type", value)}
-                                                                            >
-                                                                                <SelectTrigger className="w-[180px]">
-                                                                                    <SelectValue placeholder="Select type" />
-                                                                                </SelectTrigger>
-                                                                                <SelectContent>
-                                                                                    <SelectItem value="MULTIPLE_CHOICE">Multiple Choice</SelectItem>
-                                                                                    <SelectItem value="SHORT_ANSWER">Short Answer</SelectItem>
-                                                                                    <SelectItem value="OPEN_ENDED">Open Ended</SelectItem>
-                                                                                    <SelectItem value="CODE_BASED">Code Based</SelectItem>
-                                                                                </SelectContent>
-                                                                            </Select>
-                                                                            <Input
-                                                                                type="number"
-                                                                                placeholder="Points"
-                                                                                className="w-20"
-                                                                                value={question.points}
-                                                                                onChange={(e) => handleQuestionChange(sectionIndex, questionIndex, 'points', e.target.value)}
-                                                                            />
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                type="button"
-                                                                                onClick={() => {
-                                                                                    if (questionIndex > 0) {
-                                                                                        const newSections = [...formData.sections];
-                                                                                        const questions = [...newSections[sectionIndex].questions];
-                                                                                        [questions[questionIndex], questions[questionIndex - 1]] = [questions[questionIndex - 1], questions[questionIndex]];
-                                                                                        newSections[sectionIndex].questions = questions.map((q, i) => ({
-                                                                                            ...q,
-                                                                                            order: i
-                                                                                        }));
-                                                                                        setFormData(prev => ({
-                                                                                            ...prev,
-                                                                                            sections: newSections
-                                                                                        }));
+                                                        {section.questions.map(
+                                                            (
+                                                                question,
+                                                                questionIndex
+                                                            ) => (
+                                                                <div
+                                                                    key={
+                                                                        questionIndex
+                                                                    }
+                                                                    className="rounded-lg border p-4"
+                                                                >
+                                                                    <div className="flex flex-col gap-4">
+                                                                        <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+                                                                            <div className="flex-1">
+                                                                                <Input
+                                                                                    placeholder="Enter question content"
+                                                                                    value={
+                                                                                        question.content
                                                                                     }
-                                                                                }}
-                                                                                disabled={questionIndex === 0}
-                                                                            >
-                                                                                <ArrowUp className="h-4 w-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                type="button"
-                                                                                onClick={() => {
-                                                                                    if (questionIndex < section.questions.length - 1) {
-                                                                                        const newSections = [...formData.sections];
-                                                                                        const questions = [...newSections[sectionIndex].questions];
-                                                                                        [questions[questionIndex], questions[questionIndex + 1]] = [questions[questionIndex + 1], questions[questionIndex]];
-                                                                                        newSections[sectionIndex].questions = questions.map((q, i) => ({
-                                                                                            ...q,
-                                                                                            order: i
-                                                                                        }));
-                                                                                        setFormData(prev => ({
-                                                                                            ...prev,
-                                                                                            sections: newSections
-                                                                                        }));
+                                                                                    onChange={(
+                                                                                        e
+                                                                                    ) =>
+                                                                                        handleQuestionChange(
+                                                                                            sectionIndex,
+                                                                                            questionIndex,
+                                                                                            "content",
+                                                                                            e
+                                                                                                .target
+                                                                                                .value
+                                                                                        )
                                                                                     }
-                                                                                }}
-                                                                                disabled={questionIndex === section.questions.length - 1}
-                                                                            >
-                                                                                <ArrowDown className="h-4 w-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                type="button"
-                                                                                onClick={() => removeQuestion(sectionIndex, questionIndex)}
-                                                                            >
-                                                                                <Trash2 className="h-4 w-4" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    </div>
-                                                                    {question.type === "MULTIPLE_CHOICE" && (
-                                                                        <div className="space-y-2">
-                                                                            <Label>Options</Label>
-                                                                            <div className="space-y-2">
-                                                                                {Object.entries(question.options || {}).map(([key, value], optionIndex) => (
-                                                                                    <div key={key} className="flex items-center gap-2">
-                                                                                        <Input
-                                                                                            placeholder={`Option ${optionIndex + 1}`}
-                                                                                            value={value}
-                                                                                            onChange={(e) => {
-                                                                                                const newOptions = { ...question.options };
-                                                                                                newOptions[key] = e.target.value;
-                                                                                                handleQuestionChange(sectionIndex, questionIndex, "options", newOptions);
-                                                                                            }}
-                                                                                        />
-                                                                                        <input
-                                                                                            type="radio"
-                                                                                            name={`correct-answer-${sectionIndex}-${questionIndex}`}
-                                                                                            value={key}
-                                                                                            checked={question.correctAnswer?.option === key}
-                                                                                            onChange={(e) => handleQuestionChange(sectionIndex, questionIndex, "correctAnswer", { option: e.target.value })}
-                                                                                        />
-                                                                                        <Button
-                                                                                            variant="ghost"
-                                                                                            size="sm"
-                                                                                            type="button"
-                                                                                            onClick={() => {
-                                                                                                const newOptions = { ...question.options };
-                                                                                                delete newOptions[key];
-                                                                                                handleQuestionChange(sectionIndex, questionIndex, "options", newOptions);
-                                                                                                if (question.correctAnswer?.option === key) {
-                                                                                                    handleQuestionChange(sectionIndex, questionIndex, "correctAnswer", { option: "" });
-                                                                                                }
-                                                                                            }}
-                                                                                        >
-                                                                                            <Trash2 className="h-4 w-4" />
-                                                                                        </Button>
-                                                                                    </div>
-                                                                                ))}
-                                                                                <Button
-                                                                                    type="button"
-                                                                                    variant="outline"
-                                                                                    size="sm"
-                                                                                    onClick={() => {
-                                                                                        const newOptions = { ...question.options };
-                                                                                        const newKey = `option${Object.keys(question.options || {}).length + 1}`;
-                                                                                        newOptions[newKey] = "";
-                                                                                        handleQuestionChange(sectionIndex, questionIndex, "options", newOptions);
-                                                                                    }}
+                                                                                />
+                                                                            </div>
+                                                                            <div className="flex gap-2">
+                                                                                <Select
+                                                                                    value={
+                                                                                        question.type
+                                                                                    }
+                                                                                    onValueChange={(
+                                                                                        value
+                                                                                    ) =>
+                                                                                        handleQuestionChange(
+                                                                                            sectionIndex,
+                                                                                            questionIndex,
+                                                                                            "type",
+                                                                                            value
+                                                                                        )
+                                                                                    }
                                                                                 >
-                                                                                    <Plus className="mr-2 h-4 w-4" />
-                                                                                    Add Option
+                                                                                    <SelectTrigger className="w-[180px]">
+                                                                                        <SelectValue placeholder="Select type" />
+                                                                                    </SelectTrigger>
+                                                                                    <SelectContent>
+                                                                                        <SelectItem value="MULTIPLE_CHOICE">
+                                                                                            Multiple
+                                                                                            Choice
+                                                                                        </SelectItem>
+                                                                                        <SelectItem value="SHORT_ANSWER">
+                                                                                            Short
+                                                                                            Answer
+                                                                                        </SelectItem>
+                                                                                        <SelectItem value="OPEN_ENDED">
+                                                                                            Open
+                                                                                            Ended
+                                                                                        </SelectItem>
+                                                                                        <SelectItem value="CODE_BASED">
+                                                                                            Code
+                                                                                            Based
+                                                                                        </SelectItem>
+                                                                                    </SelectContent>
+                                                                                </Select>
+                                                                                <Input
+                                                                                    type="number"
+                                                                                    placeholder="Points"
+                                                                                    className="w-20"
+                                                                                    value={
+                                                                                        question.points
+                                                                                    }
+                                                                                    onChange={(
+                                                                                        e
+                                                                                    ) =>
+                                                                                        handleQuestionChange(
+                                                                                            sectionIndex,
+                                                                                            questionIndex,
+                                                                                            "points",
+                                                                                            e
+                                                                                                .target
+                                                                                                .value
+                                                                                        )
+                                                                                    }
+                                                                                />
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        if (
+                                                                                            questionIndex >
+                                                                                            0
+                                                                                        ) {
+                                                                                            const newSections =
+                                                                                                [
+                                                                                                    ...formData.sections,
+                                                                                                ];
+                                                                                            const questions =
+                                                                                                [
+                                                                                                    ...newSections[
+                                                                                                        sectionIndex
+                                                                                                    ]
+                                                                                                        .questions,
+                                                                                                ];
+                                                                                            [
+                                                                                                questions[
+                                                                                                    questionIndex
+                                                                                                ],
+                                                                                                questions[
+                                                                                                    questionIndex -
+                                                                                                        1
+                                                                                                ],
+                                                                                            ] =
+                                                                                                [
+                                                                                                    questions[
+                                                                                                        questionIndex -
+                                                                                                            1
+                                                                                                    ],
+                                                                                                    questions[
+                                                                                                        questionIndex
+                                                                                                    ],
+                                                                                                ];
+                                                                                            newSections[
+                                                                                                sectionIndex
+                                                                                            ].questions =
+                                                                                                questions.map(
+                                                                                                    (
+                                                                                                        q,
+                                                                                                        i
+                                                                                                    ) => ({
+                                                                                                        ...q,
+                                                                                                        order: i,
+                                                                                                    })
+                                                                                                );
+                                                                                            setFormData(
+                                                                                                (
+                                                                                                    prev
+                                                                                                ) => ({
+                                                                                                    ...prev,
+                                                                                                    sections:
+                                                                                                        newSections,
+                                                                                                })
+                                                                                            );
+                                                                                        }
+                                                                                    }}
+                                                                                    disabled={
+                                                                                        questionIndex ===
+                                                                                        0
+                                                                                    }
+                                                                                >
+                                                                                    <ArrowUp className="h-4 w-4" />
+                                                                                </Button>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        if (
+                                                                                            questionIndex <
+                                                                                            section
+                                                                                                .questions
+                                                                                                .length -
+                                                                                                1
+                                                                                        ) {
+                                                                                            const newSections =
+                                                                                                [
+                                                                                                    ...formData.sections,
+                                                                                                ];
+                                                                                            const questions =
+                                                                                                [
+                                                                                                    ...newSections[
+                                                                                                        sectionIndex
+                                                                                                    ]
+                                                                                                        .questions,
+                                                                                                ];
+                                                                                            [
+                                                                                                questions[
+                                                                                                    questionIndex
+                                                                                                ],
+                                                                                                questions[
+                                                                                                    questionIndex +
+                                                                                                        1
+                                                                                                ],
+                                                                                            ] =
+                                                                                                [
+                                                                                                    questions[
+                                                                                                        questionIndex +
+                                                                                                            1
+                                                                                                    ],
+                                                                                                    questions[
+                                                                                                        questionIndex
+                                                                                                    ],
+                                                                                                ];
+                                                                                            newSections[
+                                                                                                sectionIndex
+                                                                                            ].questions =
+                                                                                                questions.map(
+                                                                                                    (
+                                                                                                        q,
+                                                                                                        i
+                                                                                                    ) => ({
+                                                                                                        ...q,
+                                                                                                        order: i,
+                                                                                                    })
+                                                                                                );
+                                                                                            setFormData(
+                                                                                                (
+                                                                                                    prev
+                                                                                                ) => ({
+                                                                                                    ...prev,
+                                                                                                    sections:
+                                                                                                        newSections,
+                                                                                                })
+                                                                                            );
+                                                                                        }
+                                                                                    }}
+                                                                                    disabled={
+                                                                                        questionIndex ===
+                                                                                        section
+                                                                                            .questions
+                                                                                            .length -
+                                                                                            1
+                                                                                    }
+                                                                                >
+                                                                                    <ArrowDown className="h-4 w-4" />
+                                                                                </Button>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    type="button"
+                                                                                    onClick={() =>
+                                                                                        removeQuestion(
+                                                                                            sectionIndex,
+                                                                                            questionIndex
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
                                                                                 </Button>
                                                                             </div>
                                                                         </div>
-                                                                    )}
+                                                                        {question.type ===
+                                                                            "MULTIPLE_CHOICE" && (
+                                                                            <div className="space-y-2">
+                                                                                <Label>
+                                                                                    Options
+                                                                                </Label>
+                                                                                <div className="space-y-2">
+                                                                                    {Object.entries(
+                                                                                        question.options ||
+                                                                                            {}
+                                                                                    ).map(
+                                                                                        (
+                                                                                            [
+                                                                                                key,
+                                                                                                value,
+                                                                                            ],
+                                                                                            optionIndex
+                                                                                        ) => (
+                                                                                            <div
+                                                                                                key={
+                                                                                                    key
+                                                                                                }
+                                                                                                className="flex items-center gap-2"
+                                                                                            >
+                                                                                                <Input
+                                                                                                    placeholder={`Option ${optionIndex + 1}`}
+                                                                                                    value={
+                                                                                                        value
+                                                                                                    }
+                                                                                                    onChange={(
+                                                                                                        e
+                                                                                                    ) => {
+                                                                                                        const newOptions =
+                                                                                                            {
+                                                                                                                ...question.options,
+                                                                                                            };
+                                                                                                        newOptions[
+                                                                                                            key
+                                                                                                        ] =
+                                                                                                            e.target.value;
+                                                                                                        handleQuestionChange(
+                                                                                                            sectionIndex,
+                                                                                                            questionIndex,
+                                                                                                            "options",
+                                                                                                            newOptions
+                                                                                                        );
+                                                                                                    }}
+                                                                                                />
+                                                                                                <input
+                                                                                                    type="radio"
+                                                                                                    name={`correct-answer-${sectionIndex}-${questionIndex}`}
+                                                                                                    value={
+                                                                                                        key
+                                                                                                    }
+                                                                                                    checked={
+                                                                                                        question
+                                                                                                            .correctAnswer
+                                                                                                            ?.option ===
+                                                                                                        key
+                                                                                                    }
+                                                                                                    onChange={(
+                                                                                                        e
+                                                                                                    ) =>
+                                                                                                        handleQuestionChange(
+                                                                                                            sectionIndex,
+                                                                                                            questionIndex,
+                                                                                                            "correctAnswer",
+                                                                                                            {
+                                                                                                                option: e
+                                                                                                                    .target
+                                                                                                                    .value,
+                                                                                                            }
+                                                                                                        )
+                                                                                                    }
+                                                                                                />
+                                                                                                <Button
+                                                                                                    variant="ghost"
+                                                                                                    size="sm"
+                                                                                                    type="button"
+                                                                                                    onClick={() => {
+                                                                                                        const newOptions =
+                                                                                                            {
+                                                                                                                ...question.options,
+                                                                                                            };
+                                                                                                        delete newOptions[
+                                                                                                            key
+                                                                                                        ];
+                                                                                                        handleQuestionChange(
+                                                                                                            sectionIndex,
+                                                                                                            questionIndex,
+                                                                                                            "options",
+                                                                                                            newOptions
+                                                                                                        );
+                                                                                                        if (
+                                                                                                            question
+                                                                                                                .correctAnswer
+                                                                                                                ?.option ===
+                                                                                                            key
+                                                                                                        ) {
+                                                                                                            handleQuestionChange(
+                                                                                                                sectionIndex,
+                                                                                                                questionIndex,
+                                                                                                                "correctAnswer",
+                                                                                                                {
+                                                                                                                    option: "",
+                                                                                                                }
+                                                                                                            );
+                                                                                                        }
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                                </Button>
+                                                                                            </div>
+                                                                                        )
+                                                                                    )}
+                                                                                    <Button
+                                                                                        type="button"
+                                                                                        variant="outline"
+                                                                                        size="sm"
+                                                                                        onClick={() => {
+                                                                                            const newOptions =
+                                                                                                {
+                                                                                                    ...question.options,
+                                                                                                };
+                                                                                            const newKey = `option${Object.keys(question.options || {}).length + 1}`;
+                                                                                            newOptions[
+                                                                                                newKey
+                                                                                            ] =
+                                                                                                "";
+                                                                                            handleQuestionChange(
+                                                                                                sectionIndex,
+                                                                                                questionIndex,
+                                                                                                "options",
+                                                                                                newOptions
+                                                                                            );
+                                                                                        }}
+                                                                                    >
+                                                                                        <Plus className="mr-2 h-4 w-4" />
+                                                                                        Add
+                                                                                        Option
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        ))}
+                                                            )
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -1104,10 +1627,13 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure you want to delete this exam?</AlertDialogTitle>
+                                <AlertDialogTitle>
+                                    Are you sure you want to delete this exam?
+                                </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the exam
-                                    and all its associated data.
+                                    This action cannot be undone. This will
+                                    permanently delete the exam and all its
+                                    associated data.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -1128,21 +1654,30 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                             className="w-full sm:w-auto"
                             onClick={async () => {
                                 try {
-                                    const response = await fetch(`/api/organization/${organizationId}/exams/${examId}/publish`, {
-                                        method: 'PATCH',
-                                    });
+                                    const response = await fetch(
+                                        `/api/organization/${organizationId}/exams/${examId}/publish`,
+                                        {
+                                            method: "PATCH",
+                                        }
+                                    );
 
                                     if (!response.ok) {
-                                        throw new Error('Failed to publish exam');
+                                        throw new Error(
+                                            "Failed to publish exam"
+                                        );
                                     }
 
                                     toast({
                                         title: "Success",
-                                        description: "Exam published successfully",
+                                        description:
+                                            "Exam published successfully",
                                     });
                                     router.refresh();
                                 } catch (error) {
-                                    console.error("Error publishing exam:", error);
+                                    console.error(
+                                        "Error publishing exam:",
+                                        error
+                                    );
                                     toast({
                                         title: "Error",
                                         description: "Failed to publish exam",
@@ -1154,10 +1689,7 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                             Publish Exam
                         </Button>
                     )}
-                    <Button
-                        type="submit"
-                        className="w-full sm:w-auto"
-                    >
+                    <Button type="submit" className="w-full sm:w-auto">
                         Update Exam
                     </Button>
                 </div>
