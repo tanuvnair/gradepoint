@@ -55,18 +55,52 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
     const { organizationId, examId } = use(params);
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(true);
-    const [formData, setFormData] = useState<ExamFormData>({
-        title: "",
-        description: "",
-        timeLimit: 0,
-        passingScore: 0,
-        randomizeOrder: false,
-        publishedAt: null,
-        startDate: null,
-        endDate: null,
-        allowedAttempts: 1,
-        sections: [],
+    const [formData, setFormData] = useState<ExamFormData>(() => {
+        // Try to load saved form data from localStorage
+        if (typeof window !== 'undefined') {
+            const savedData = localStorage.getItem(`examFormData_${examId}`);
+            return savedData ? JSON.parse(savedData) : {
+                title: "",
+                description: "",
+                timeLimit: 0,
+                passingScore: 0,
+                randomizeOrder: false,
+                publishedAt: null,
+                startDate: null,
+                endDate: null,
+                allowedAttempts: 1,
+                sections: [],
+            };
+        }
+        return {
+            title: "",
+            description: "",
+            timeLimit: 0,
+            passingScore: 0,
+            randomizeOrder: false,
+            publishedAt: null,
+            startDate: null,
+            endDate: null,
+            allowedAttempts: 1,
+            sections: [],
+        };
     });
+
+    // Save form data to localStorage whenever it changes
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(`examFormData_${examId}`, JSON.stringify(formData));
+        }
+    }, [formData, examId]);
+
+    // Clear saved form data when component unmounts or when exam is successfully updated
+    useEffect(() => {
+        return () => {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem(`examFormData_${examId}`);
+            }
+        };
+    }, [examId]);
 
     useEffect(() => {
         async function fetchExam() {

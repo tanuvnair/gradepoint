@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ArrowDown, ArrowLeft, ArrowUp, CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use, useCallback, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 
 type ExamType = "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "OPEN_ENDED" | "CODE_BASED";
 
@@ -68,7 +68,30 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
     const router = useRouter();
     const { organizationId } = use(params);
     const { toast } = useToast();
-    const [formData, setFormData] = useState<ExamFormData>(initialFormData);
+    const [formData, setFormData] = useState<ExamFormData>(() => {
+        // Try to load saved form data from localStorage
+        if (typeof window !== 'undefined') {
+            const savedData = localStorage.getItem('examFormData');
+            return savedData ? JSON.parse(savedData) : initialFormData;
+        }
+        return initialFormData;
+    });
+
+    // Save form data to localStorage whenever it changes
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('examFormData', JSON.stringify(formData));
+        }
+    }, [formData]);
+
+    // Clear saved form data when component unmounts or when exam is successfully created
+    useEffect(() => {
+        return () => {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('examFormData');
+            }
+        };
+    }, []);
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
