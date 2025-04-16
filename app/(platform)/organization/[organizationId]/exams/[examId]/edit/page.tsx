@@ -584,6 +584,35 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
                                         </PopoverContent>
                                     </Popover>
                                 </div>
+                                <p className="text-xs text-muted-foreground">Leave empty to start immediately</p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-sm sm:text-base">End Date</Label>
+                                <div className="flex flex-col gap-2 sm:flex-row">
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full justify-start text-left font-normal",
+                                                    !formData.endDate && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {formData.endDate ? format(new Date(formData.endDate), "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={formData.endDate ? new Date(formData.endDate) : undefined}
+                                                onSelect={(date) => handleDateChange('endDate', date)}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Leave empty to run indefinitely</p>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-sm sm:text-base">Time Limit (minutes)</Label>

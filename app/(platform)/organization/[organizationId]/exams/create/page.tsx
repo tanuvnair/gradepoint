@@ -437,19 +437,48 @@ export default function CreateExamForm({ params }: { params: Promise<{ organizat
                                     </PopoverContent>
                                 </Popover>
                             </div>
+                            <p className="text-xs text-muted-foreground">Leave empty to start immediately</p>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-sm sm:text-base">Time Limit (minutes)</Label>
-                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                <Input
-                                    type="number"
-                                    name="timeLimit"
-                                    value={formData.timeLimit}
-                                    onChange={handleNumberInputChange}
-                                    placeholder="Duration in minutes"
-                                    className="max-w-full sm:max-w-[200px]"
-                                />
+                            <Label className="text-sm sm:text-base">End Date</Label>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-full justify-start text-left font-normal",
+                                                !formData.endDate && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {formData.endDate ? format(new Date(formData.endDate), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={formData.endDate ? new Date(formData.endDate) : undefined}
+                                            onSelect={(date) => handleDateChange('endDate', date)}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
+                            <p className="text-xs text-muted-foreground">Leave empty to run indefinitely</p>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="text-sm sm:text-base">Time Limit (minutes)</Label>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <Input
+                                type="number"
+                                name="timeLimit"
+                                value={formData.timeLimit}
+                                onChange={handleNumberInputChange}
+                                placeholder="Duration in minutes"
+                                className="max-w-full sm:max-w-[200px]"
+                            />
                         </div>
                     </div>
                 </CardContent>
