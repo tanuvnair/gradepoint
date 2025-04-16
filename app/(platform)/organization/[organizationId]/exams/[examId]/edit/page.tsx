@@ -39,6 +39,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { QuestionType } from "@prisma/client";
 import { format } from "date-fns";
 import {
     ArrowDown,
@@ -50,7 +51,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
-import { QuestionType } from "@prisma/client";
 
 type ExamType =
     | "MULTIPLE_CHOICE"
@@ -210,32 +210,39 @@ export default function EditExamForm({
         fetchExam();
     }, [organizationId, examId, toast]);
 
-    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        const numValue = parseFloat(value);
+    const handleInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const { name, value } = e.target;
+            const numValue = parseFloat(value);
 
-        if (name === 'timeLimit') {
-            setFormData(prev => ({
-                ...prev,
-                timeLimit: isNaN(numValue) ? null : (numValue === 0 ? null : numValue)
-            }));
-        } else if (name === 'passingScore') {
-            setFormData(prev => ({
-                ...prev,
-                [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue
-            }));
-        } else if (name === 'allowedAttempts') {
-            setFormData(prev => ({
-                ...prev,
-                [name]: isNaN(numValue) || numValue < 1 ? null : numValue
-            }));
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: isNaN(numValue) ? 0 : numValue
-            }));
-        }
-    }, []);
+            if (name === "timeLimit") {
+                setFormData((prev) => ({
+                    ...prev,
+                    timeLimit: isNaN(numValue)
+                        ? null
+                        : numValue === 0
+                        ? null
+                        : numValue,
+                }));
+            } else if (name === "passingScore") {
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: isNaN(numValue) || numValue < 1 ? 1 : numValue,
+                }));
+            } else if (name === "allowedAttempts") {
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: isNaN(numValue) || numValue < 1 ? null : numValue,
+                }));
+            } else {
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: isNaN(numValue) ? 0 : numValue,
+                }));
+            }
+        },
+        []
+    );
 
     const handleSwitchChange = useCallback((name: string, checked: boolean) => {
         setFormData((prev) => ({
@@ -448,7 +455,10 @@ export default function EditExamForm({
             return false;
         }
 
-        if (formData.allowedAttempts !== null && formData.allowedAttempts <= 0) {
+        if (
+            formData.allowedAttempts !== null &&
+            formData.allowedAttempts <= 0
+        ) {
             toast({
                 title: "Error",
                 description: "Allowed attempts must be greater than 0",
@@ -1046,13 +1056,17 @@ export default function EditExamForm({
                                 <Input
                                     type="number"
                                     name="allowedAttempts"
-                                    value={formData.allowedAttempts === null ? "" : formData.allowedAttempts}
+                                    value={
+                                        formData.allowedAttempts === null
+                                            ? ""
+                                            : formData.allowedAttempts
+                                    }
                                     onChange={handleInputChange}
                                     placeholder="Number of attempts allowed"
                                     className="max-w-full sm:max-w-[200px]"
+                                    disabled={true}
                                 />
                             </div>
-                            <p className="text-xs text-muted-foreground">Leave empty for unlimited attempts</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -1480,7 +1494,10 @@ export default function EditExamForm({
                                                                                                 className="flex items-center gap-2"
                                                                                             >
                                                                                                 <Input
-                                                                                                    placeholder={`Option ${optionIndex + 1}`}
+                                                                                                    placeholder={`Option ${
+                                                                                                        optionIndex +
+                                                                                                        1
+                                                                                                    }`}
                                                                                                     value={
                                                                                                         value
                                                                                                     }
@@ -1579,7 +1596,14 @@ export default function EditExamForm({
                                                                                                 {
                                                                                                     ...question.options,
                                                                                                 };
-                                                                                            const newKey = `option${Object.keys(question.options || {}).length + 1}`;
+                                                                                            const newKey = `option${
+                                                                                                Object.keys(
+                                                                                                    question.options ||
+                                                                                                        {}
+                                                                                                )
+                                                                                                    .length +
+                                                                                                1
+                                                                                            }`;
                                                                                             newOptions[
                                                                                                 newKey
                                                                                             ] =
