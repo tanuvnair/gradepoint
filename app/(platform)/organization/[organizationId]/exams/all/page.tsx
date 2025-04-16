@@ -104,6 +104,8 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
     const [searchQuery, setSearchQuery] = useState("");
     const [publishDialogOpen, setPublishDialogOpen] = useState(false);
     const [examToPublish, setExamToPublish] = useState<Exam | null>(null);
+    const [startAttemptDialogOpen, setStartAttemptDialogOpen] = useState(false);
+    const [examToAttempt, setExamToAttempt] = useState<Exam | null>(null);
 
     useEffect(() => {
         async function fetchUserRole() {
@@ -251,6 +253,11 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
         }
     };
 
+    const handleStartAttempt = () => {
+        if (!examToAttempt) return;
+        router.push(`/organization/${organizationId}/exams/${examToAttempt.id}`);
+    };
+
     if (isLoading) {
         return <ExamListSkeleton />;
     }
@@ -348,7 +355,10 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                             <Card
                                 key={exam.id}
                                 className="group select-none transition-all duration-200 hover:bg-accent/5 hover:shadow-md"
-                                onClick={() => router.push(`/organization/${organizationId}/exams/${exam.id}`)}
+                                onClick={() => {
+                                    setExamToAttempt(exam);
+                                    setStartAttemptDialogOpen(true);
+                                }}
                             >
                                 <CardHeader className="space-y-3 sm:space-y-4 md:space-y-6">
                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -489,20 +499,38 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                 )}
             </div>
 
+            {/* Start Attempt Confirmation Dialog */}
+            <AlertDialog open={startAttemptDialogOpen} onOpenChange={setStartAttemptDialogOpen}>
+                <AlertDialogContent className="sm:max-w-[425px]">
+                    <AlertDialogHeader className="space-y-4">
+                        <AlertDialogTitle className="text-xl">Start Exam Attempt</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base">
+                            Are you sure you want to start the exam "{examToAttempt?.title}"? Once you begin, the timer will start and you won't be able to pause the exam.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-6 space-x-4">
+                        <AlertDialogCancel className="px-6">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleStartAttempt} className="px-6">
+                            Start Exam
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             {/* Publish Confirmation Dialog */}
             <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Publish Exam</AlertDialogTitle>
-                        <AlertDialogDescription>
+                <AlertDialogContent className="sm:max-w-[425px]">
+                    <AlertDialogHeader className="space-y-4">
+                        <AlertDialogTitle className="text-xl">Publish Exam</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base">
                             Are you sure you want to publish the exam "{examToPublish?.title}"? Once published, students will be able to take this exam.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogFooter className="mt-6 space-x-4">
+                        <AlertDialogCancel className="px-6">Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handlePublishExam}
-                            className="bg-green-600 text-white hover:bg-green-600/90"
+                            className="bg-green-600 text-white hover:bg-green-600/90 px-6"
                         >
                             Publish
                         </AlertDialogAction>
@@ -512,18 +540,18 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
+                <AlertDialogContent className="sm:max-w-[425px]">
+                    <AlertDialogHeader className="space-y-4">
+                        <AlertDialogTitle className="text-xl">Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base">
                             This action cannot be undone. This will permanently delete the exam "{examToDelete?.title}".
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogFooter className="mt-6 space-x-4">
+                        <AlertDialogCancel className="px-6">Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDeleteExam}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 px-6"
                         >
                             Delete
                         </AlertDialogAction>

@@ -2,10 +2,9 @@
 
 import {
     BarChart2,
-    BookOpen,
     GraduationCap,
     Settings2,
-    Users,
+    Users
 } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
@@ -62,28 +61,6 @@ function getNavItems(organizationId: string) {
                 {
                     title: "Performance",
                     url: `/organization/${organizationId}/students/performance`,
-                    isActive: false,
-                },
-                {
-                    title: "Attendance",
-                    url: `/organization/${organizationId}/students/attendance`,
-                    isActive: false,
-                },
-            ],
-        },
-        {
-            title: "Resources",
-            url: `/organization/${organizationId}/resources`,
-            icon: BookOpen,
-            items: [
-                {
-                    title: "Materials",
-                    url: `/organization/${organizationId}/resources/materials`,
-                    isActive: false,
-                },
-                {
-                    title: "Help Center",
-                    url: `/organization/${organizationId}/resources/help`,
                     isActive: false,
                 },
             ],
