@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -370,7 +371,146 @@ export default function EditExamForm({ params }: { params: Promise<{ organizatio
     }, [formData, organizationId, examId, router, toast, validateForm]);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex flex-1 flex-col gap-4 p-4 sm:gap-6 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="space-y-2">
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-4 w-64" />
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-6 w-32" />
+                            <Skeleton className="h-4 w-48" />
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-20 w-full" />
+                            </div>
+                            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-6 w-32" />
+                            <Skeleton className="h-4 w-48" />
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-48" />
+                                <Skeleton className="h-6 w-24" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-48" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-10 w-48" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-6 w-32" />
+                                    <Skeleton className="h-4 w-48" />
+                                </div>
+                                <Skeleton className="h-10 w-32" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {[1, 2].map((sectionIndex) => (
+                                    <div key={sectionIndex} className="rounded-lg border p-4">
+                                        <div className="space-y-4">
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+                                                <Skeleton className="h-10 w-64" />
+                                                <div className="flex gap-2">
+                                                    <Skeleton className="h-8 w-8" />
+                                                    <Skeleton className="h-8 w-8" />
+                                                    <Skeleton className="h-8 w-8" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-32" />
+                                                <Skeleton className="h-20 w-full" />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                                    <div className="space-y-2">
+                                                        <Skeleton className="h-6 w-32" />
+                                                        <Skeleton className="h-4 w-48" />
+                                                    </div>
+                                                    <Skeleton className="h-10 w-32" />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    {[1, 2].map((questionIndex) => (
+                                                        <div key={questionIndex} className="rounded-lg border p-4">
+                                                            <div className="space-y-4">
+                                                                <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+                                                                    <Skeleton className="h-10 w-full" />
+                                                                    <div className="flex gap-2">
+                                                                        <Skeleton className="h-10 w-32" />
+                                                                        <Skeleton className="h-10 w-20" />
+                                                                        <Skeleton className="h-8 w-8" />
+                                                                        <Skeleton className="h-8 w-8" />
+                                                                        <Skeleton className="h-8 w-8" />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <Skeleton className="h-4 w-24" />
+                                                                    <div className="space-y-2">
+                                                                        {[1, 2].map((optionIndex) => (
+                                                                            <div key={optionIndex} className="flex items-center gap-2">
+                                                                                <Skeleton className="h-10 w-full" />
+                                                                                <Skeleton className="h-4 w-4 rounded-full" />
+                                                                                <Skeleton className="h-8 w-8" />
+                                                                            </div>
+                                                                        ))}
+                                                                        <Skeleton className="h-10 w-32" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-4">
+                        <Skeleton className="h-10 w-full sm:w-24" />
+                        <Skeleton className="h-10 w-full sm:w-32" />
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (

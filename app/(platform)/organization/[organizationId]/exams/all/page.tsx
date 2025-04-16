@@ -363,7 +363,7 @@ export default function AllExamsPage({ params }: { params: Promise<{ organizatio
                                 <ContextMenuTrigger asChild>
                                     <Card
                                         className="group select-none transition-all duration-200 hover:bg-accent/5 hover:shadow-md"
-                                        onClick={() => router.push(`/organization/${organizationId}/exams/${exam.id}`)}
+                                        onClick={() => router.push(`/organization/${organizationId}/exams/${exam.id}/edit`)}
                                     >
                                         <CardHeader className="space-y-3 sm:space-y-4 md:space-y-6">
                                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
