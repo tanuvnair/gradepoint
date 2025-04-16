@@ -14,6 +14,7 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useToast } from "@/hooks/use-toast";
 import { ORGANIZATION_ICONS } from "@/lib/types";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import {
@@ -24,7 +25,7 @@ import {
     Plus,
     UserPlus,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -42,6 +43,8 @@ interface OrganizationResponse {
 
 export default function OrganizationSelection() {
     const router = useRouter();
+    const { data: session } = useSession();
+    const { toast } = useToast();
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -53,6 +56,7 @@ export default function OrganizationSelection() {
     const [isCreateDialogOpen, setIsCreateDialogOpen] =
         useState<boolean>(false);
     const [isJoinDialogOpen, setIsJoinDialogOpen] = useState<boolean>(false);
+    const [isResending, setIsResending] = useState(false);
 
     useEffect(() => {
         async function fetchOrganizations() {
@@ -228,6 +232,32 @@ export default function OrganizationSelection() {
         </div>
     );
 
+    const handleResendVerification = async () => {
+        try {
+            setIsResending(true);
+            const response = await fetch("/api/auth/resend-verification", {
+                method: "POST",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to resend verification email");
+            }
+
+            toast({
+                title: "Success",
+                description: "Verification email sent successfully",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to resend verification email",
+                variant: "destructive",
+            });
+        } finally {
+            setIsResending(false);
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen w-full p-4">
@@ -239,6 +269,38 @@ export default function OrganizationSelection() {
     if (organizations.length === 0) {
         return (
             <div className="flex flex-col gap-4 justify-center items-center min-h-screen w-full p-4">
+                {!session?.user?.emailVerified && (
+                    <div className="w-full max-w-md mb-4 p-4 bg-primary/10 border border-primary/20 text-primary rounded-md">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="rounded-full bg-primary/20 p-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                </div>
+                                <p className="text-sm font-medium">
+                                    Please verify your email to access all features
+                                </p>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleResendVerification}
+                                disabled={isResending}
+                            >
+                                {isResending ? (
+                                    <>
+                                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    "Resend"
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )}
                 <Link
                     href="/"
                     className="flex items-center gap-2 self-center font-medium"
