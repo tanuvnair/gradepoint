@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ExamAttempt, ExamResponse, Question } from "@prisma/client";
+import { gradeResponse } from "@/lib/gemini";
 
 type ExamResponseWithQuestion = ExamResponse & {
     question: Question;
@@ -20,7 +21,7 @@ export async function POST(
             );
         }
 
-        const { organizationId, examId, attemptId } = params;
+        const { organizationId, examId, attemptId } = await params;
 
         // Validate the attempt exists and belongs to the user
         const attempt = await prisma.examAttempt.findUnique({
@@ -70,21 +71,43 @@ export async function POST(
             );
         }
 
-        // Grade the responses
-        const gradedResponses = attempt.responses.map((response: ExamResponseWithQuestion) => {
-            let score = 0;
-            if (response.question.type === "MULTIPLE_CHOICE") {
-                score = response.response === response.question.correctAnswer ? response.question.points : 0;
-            } else if (response.question.type === "SHORT_ANSWER") {
-                // For short answers, we'll need manual grading
-                score = 0;
-            }
+        // Grade each response using Gemini AI
+        const gradedResponses = await Promise.all(
+            attempt.responses.map(async (response: ExamResponseWithQuestion) => {
+                if (response.question.type === "MULTIPLE_CHOICE") {
+                    // For multiple choice, we can grade automatically
+                    const isCorrect = response.response === response.question.correctAnswer;
+                    return {
+                        ...response,
+                        isCorrect,
+                        score: isCorrect ? response.question.points : 0,
+                        feedback: isCorrect ? "Correct answer!" : "Incorrect answer."
+                    };
+                } else {
+                    // For other types, use Gemini AI
+                    const gradingResult = await gradeResponse({
+                        question: response.question.content,
+                        correctAnswer: response.question.correctAnswer,
+                        studentResponse: response.response,
+                        questionType: response.question.type,
+                        points: response.question.points
+                    });
 
-            return {
-                ...response,
-                score,
-            };
-        });
+                    return {
+                        ...response,
+                        isCorrect: gradingResult.isCorrect,
+                        score: gradingResult.score,
+                        feedback: gradingResult.feedback
+                    };
+                }
+            })
+        );
+
+        // Calculate total score
+        const totalScore = gradedResponses.reduce(
+            (sum, response) => sum + (response.score || 0),
+            0
+        );
 
         // Update the attempt status and save graded responses
         await prisma.$transaction([
@@ -92,15 +115,19 @@ export async function POST(
                 where: { id: attemptId },
                 data: {
                     submittedAt: new Date(),
+                    score: totalScore,
+                    graded: true
                 },
             }),
-            ...gradedResponses.map((response: ExamResponseWithQuestion) =>
+            ...gradedResponses.map((response) =>
                 prisma.examResponse.update({
                     where: {
                         id: response.id,
                     },
                     data: {
+                        isCorrect: response.isCorrect,
                         score: response.score,
+                        feedback: response.feedback
                     },
                 })
             ),
