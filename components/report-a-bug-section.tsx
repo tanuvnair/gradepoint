@@ -32,10 +32,27 @@ export default function ReportABugSection() {
         }
         setLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            toast({ title: "Success", description: "Bug report submitted!" });
-            setFormData({ name: "", email: "", description: "" });
-        } catch (error) {
+            const res = await fetch("https://formspree.io/f/xanezlzr", {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                },
+                body: new FormData(e.currentTarget),
+            });
+
+            if (res.ok) {
+                toast({
+                    title: "Success",
+                    description: "Bug report submitted!",
+                });
+                setFormData({ name: "", email: "", description: "" });
+            } else {
+                toast({
+                    title: "Error",
+                    description: "Something went wrong. Please try again.",
+                });
+            }
+        } catch {
             toast({
                 title: "Error",
                 description: "Something went wrong!",
