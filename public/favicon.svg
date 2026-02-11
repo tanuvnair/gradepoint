@@ -1,36 +1,36 @@
 <svg viewBox="0 0 463 383" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="a" x1="347.737" y1="-11.816" x2="248.4" y2="478.227" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1593F5"/>
-      <stop offset="1" stop-color="#0084CE"/>
+      <stop stop-color="#28b878"/>
+      <stop offset="1" stop-color="#22a86d"/>
     </linearGradient>
     <linearGradient id="b" x1="338.003" y1="518.992" x2="-78.452" y2="-148.902" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1593F5"/>
-      <stop offset="1" stop-color="#0084CE"/>
+      <stop stop-color="#28b878"/>
+      <stop offset="1" stop-color="#22a86d"/>
     </linearGradient>
     <linearGradient id="c" x1="611.99" y1="530.235" x2="361.19" y2="80.271" gradientUnits="userSpaceOnUse">
       <stop stop-color="white"/>
-      <stop offset="1" stop-color="#15ABFF"/>
+      <stop offset="1" stop-color="#2fc982"/>
     </linearGradient>
     <linearGradient id="d" x1="167.455" y1="-262.399" x2="380.368" y2="225.387" gradientUnits="userSpaceOnUse">
       <stop stop-color="white"/>
-      <stop offset="1" stop-color="#79CFFF"/>
+      <stop offset="1" stop-color="#7dd4ad"/>
     </linearGradient>
     <linearGradient id="e" x1="406.927" y1="-76.821" x2="68.518" y2="392.18" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0057E5"/>
-      <stop offset="1" stop-color="#0084CE"/>
+      <stop stop-color="#1a8554"/>
+      <stop offset="1" stop-color="#22a86d"/>
     </linearGradient>
     <linearGradient id="f" x1="330.245" y1="-94.545" x2="223.798" y2="199.049" gradientUnits="userSpaceOnUse">
       <stop stop-color="white"/>
-      <stop offset="1" stop-color="#15ABFF"/>
+      <stop offset="1" stop-color="#2fc982"/>
     </linearGradient>
     <linearGradient id="g" x1="463.1" y1="491.08" x2="-71.75" y2="-214.82" gradientUnits="userSpaceOnUse">
       <stop stop-color="white"/>
-      <stop offset="1" stop-color="#79CFFF"/>
+      <stop offset="1" stop-color="#7dd4ad"/>
     </linearGradient>
     <linearGradient id="h" x1="369.836" y1="-165.821" x2="95.393" y2="376.47" gradientUnits="userSpaceOnUse">
       <stop stop-color="white"/>
-      <stop offset="1" stop-color="#79CFFF"/>
+      <stop offset="1" stop-color="#7dd4ad"/>
     </linearGradient>
   </defs>
   
