@@ -16,7 +16,7 @@ export default function ForgotPassword() {
   return (
     <AuthPageLayout
       pageTitle="Forgot password"
-      metaDescription="Reset your GradePoint account password. Enter your email to receive a reset link."
+      metaDescription="Reset your GradePoint password. Enter your email to receive a reset link."
     >
       <Card class="w-full max-w-[400px] shadow-apple-lg">
         <CardHeader class="pb-4">

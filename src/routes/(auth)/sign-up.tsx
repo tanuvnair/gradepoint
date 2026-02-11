@@ -16,13 +16,13 @@ export default function SignUp() {
   return (
     <AuthPageLayout
       pageTitle="Sign up"
-      metaDescription="Create your GradePoint account to manage your grades and courses."
+      metaDescription="Create your GradePoint account to conduct or take real-time online exams."
     >
       <Card class="w-full max-w-[400px] shadow-apple-lg">
         <CardHeader class="pb-4">
           <CardTitle>Create your account</CardTitle>
           <CardDescription class="text-pretty">
-            Enter your details to get started with GradePoint.
+            Enter your details to get started with the real-time examination system.
           </CardDescription>
         </CardHeader>
         <form action="#" method="post" class="contents" onSubmit={(e) => e.preventDefault()}>

@@ -2,6 +2,7 @@ import { Meta, Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import { Button, Container } from "~/components/ui";
+import BrandLogo from "~/components/brand/brand-logo";
 import FeatureCard from "~/components/landing/feature-card";
 import SiteFooter from "~/components/layout/site-footer";
 import SiteHeader from "~/components/layout/site-header";
@@ -9,29 +10,29 @@ import { cn } from "~/lib/utils";
 
 const FEATURES = [
   {
-    title: "Track your grades",
+    title: "Real-time exams",
     description:
-      "Log assignments and exams, see your running average per course, and know where you stand at a glance.",
+      "Conduct and take exams live. Questions and submissions sync in real time so everyone stays on the same page.",
   },
   {
-    title: "Manage courses",
+    title: "Online assessment",
     description:
-      "Keep all your courses in one place. Add semesters, set credits, and see your overall GPA when it matters.",
+      "Create exams, set time limits, and deliver them online. Students take exams from anywhere with a browser.",
   },
   {
-    title: "Stay organized",
+    title: "Instant results",
     description:
-      "No spreadsheets, no guesswork. GradePoint gives you a clear view of your progress so you can focus on learning.",
+      "See submissions as they come in. Grade and release results quickly so students get feedback without the wait.",
   },
 ] as const;
 
 export default function Home() {
   return (
     <>
-      <Title>GradePoint – Manage your grades and courses</Title>
+      <Title>GradePoint – Real-time online examination system</Title>
       <Meta
         name="description"
-        content="GradePoint helps students track grades, manage courses, and stay on top of their progress in one simple place."
+        content="GradePoint is a real-time online examination system for students, educators and organizations. Conduct and take exams live, with instant results and grading."
       />
 
       <SiteHeader />
@@ -39,27 +40,44 @@ export default function Home() {
       <main>
         <section
           class={cn(
-            "flex min-h-dvh flex-col items-center justify-center px-4 py-20",
+            "relative flex min-h-dvh flex-col items-center justify-center px-4 py-24",
+            "bg-muted/25 border-b border-border/40",
             "safe-area-inset-bottom safe-area-inset-top",
           )}
         >
           <Container size="md" class="flex flex-col items-center text-center">
-            <h1 class="text-4xl font-bold text-balance sm:text-5xl md:text-6xl">
-              Your grades, organized.
+            <div class="mb-8">
+              <BrandLogo size="lg" href="/" />
+            </div>
+            <span
+              class={cn(
+                "inline-block rounded-full border border-border/60 bg-background px-4 py-1.5",
+                "text-sm font-medium text-muted-foreground",
+              )}
+            >
+              For students, educators and organizations
+            </span>
+            <h1 class="mt-6 text-4xl font-bold text-balance sm:text-5xl md:text-6xl lg:text-7xl">
+              Real-time online examinations.
             </h1>
-            <p class="mt-6 max-w-2xl text-lg text-muted-foreground text-pretty sm:text-xl">
-              Track courses, monitor your GPA, and stay on top of your progress
-              in one simple place. Built for students who want clarity without
-              the clutter.
+            <div
+              class="mt-4 h-1 w-16 rounded-full bg-primary"
+              aria-hidden
+            />
+            <p class="mt-8 max-w-2xl text-lg text-muted-foreground text-pretty sm:text-xl">
+              Conduct and take exams live. Create assessments, run them in real
+              time, and get instant results. Students, educators and
+              organizations can all benefit from a single, reliable examination
+              system.
             </p>
-            <div class="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:gap-3">
+            <div class="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:gap-4">
               <A href="/sign-up">
-                <Button size="lg" class="w-full sm:w-auto">
+                <Button size="lg" class="min-w-[180px] w-full sm:w-auto">
                   Get started free
                 </Button>
               </A>
               <A href="/sign-in">
-                <Button variant="outline" size="lg" class="w-full sm:w-auto">
+                <Button variant="outline" size="lg" class="min-w-[180px] w-full sm:w-auto">
                   Sign in
                 </Button>
               </A>
@@ -70,10 +88,11 @@ export default function Home() {
         <section class="border-t border-border/60 bg-muted/40 py-20">
           <Container size="lg" class="px-4">
             <h2 class="text-center text-2xl font-semibold text-balance sm:text-3xl">
-              Everything you need to stay on track
+              Built for live, online assessment
             </h2>
             <p class="mx-auto mt-3 max-w-xl text-center text-muted-foreground text-pretty">
-              Simple tools that fit how you study.
+              Students take exams, educators create and grade them, and
+              organizations run assessments at scale.
             </p>
             <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
               <For each={FEATURES}>
@@ -96,7 +115,7 @@ export default function Home() {
               Ready to get started?
             </h2>
             <p class="mt-3 text-muted-foreground text-pretty">
-              Create your account and start tracking your grades in minutes.
+              Create your account and run your first real-time exam in minutes.
             </p>
             <div class="mt-8">
               <A href="/sign-up">

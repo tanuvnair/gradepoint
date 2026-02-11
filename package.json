@@ -1,6 +1,6 @@
 {
   "name": "gradepoint",
-  "description": "GradePoint is a platform for students to manage their grades and courses.",
+  "description": "GradePoint is a real-time online examination system for conducting and taking exams live.",
   "version": "0.0.1",
   "author": "Tanuv Nair",
   "license": "MIT",

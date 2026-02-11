@@ -16,13 +16,13 @@ export default function SignIn() {
   return (
     <AuthPageLayout
       pageTitle="Sign in"
-      metaDescription="Sign in to your GradePoint account with your email and password."
+      metaDescription="Sign in to GradePoint, the real-time online examination system."
     >
       <Card class="w-full max-w-[400px] shadow-apple-lg">
         <CardHeader class="pb-4">
           <CardTitle>Sign in to your account</CardTitle>
           <CardDescription class="text-pretty">
-            Use your email and password to access GradePoint dashboard.
+            Use your email and password to access the examination system.
           </CardDescription>
         </CardHeader>
         <form action="#" method="post" class="contents" onSubmit={(e) => e.preventDefault()}>
