@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import AuthPageLayout from "~/components/auth/auth-page-layout";
+import AuthPageLayout from "~/components/layout/auth-page-layout";
 import {
   Button,
   Card,

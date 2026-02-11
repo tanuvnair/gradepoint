@@ -5,6 +5,7 @@ import {
   onCleanup,
   createSignal,
   splitProps,
+  Show,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import { cn } from "~/lib/utils";
@@ -100,32 +101,34 @@ const Dialog: Component<DialogProps> = (props) => {
   });
 
   return (
-    <Portal>
-      <div
-        class={cn("fixed inset-0 z-50 flex items-center justify-center", props.class)}
-      >
+    <Show when={visible()}>
+      <Portal>
         <div
-          class="dialog-overlay fixed inset-0 z-50 bg-black/50"
-          data-state={state()}
-          data-exiting={exiting()}
-          onClick={(e) => {
-            e.stopPropagation();
-            close();
-          }}
-          aria-hidden
-        />
-        <div
-          class="dialog-content relative z-50"
-          role="dialog"
-          aria-modal="true"
-          data-state={state()}
-          data-exiting={exiting()}
-          onClick={(e) => e.stopPropagation()}
+          class={cn("fixed inset-0 z-50 flex items-center justify-center", props.class)}
         >
-          {props.children}
+          <div
+            class="dialog-overlay fixed inset-0 z-50 bg-black/50"
+            data-state={state()}
+            data-exiting={exiting()}
+            onClick={(e) => {
+              e.stopPropagation();
+              close();
+            }}
+            aria-hidden
+          />
+          <div
+            class="dialog-content relative z-50"
+            role="dialog"
+            aria-modal="true"
+            data-state={state()}
+            data-exiting={exiting()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {props.children}
+          </div>
         </div>
-      </div>
-    </Portal>
+      </Portal>
+    </Show>
   );
 };
 
