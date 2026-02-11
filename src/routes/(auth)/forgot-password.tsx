@@ -12,25 +12,26 @@ import {
   Label,
 } from "~/components/ui";
 
-export default function SignIn() {
+export default function ForgotPassword() {
   return (
     <AuthPageLayout
-      pageTitle="Sign in"
-      metaDescription="Sign in to your GradePoint account with your email and password."
+      pageTitle="Forgot password"
+      metaDescription="Reset your GradePoint account password. Enter your email to receive a reset link."
     >
       <Card class="w-full max-w-[400px] shadow-apple-lg">
         <CardHeader class="pb-4">
-          <CardTitle>Sign in to your account</CardTitle>
+          <CardTitle>Reset your password</CardTitle>
           <CardDescription class="text-pretty">
-            Use your email and password to access GradePoint dashboard.
+            Enter the email address for your account and we&apos;ll send you a link to reset your
+            password.
           </CardDescription>
         </CardHeader>
         <form action="#" method="post" class="contents" onSubmit={(e) => e.preventDefault()}>
           <CardContent class="flex flex-col gap-4">
             <div class="flex flex-col gap-2">
-              <Label for="sign-in-email">Email</Label>
+              <Label for="forgot-password-email">Email</Label>
               <Input
-                id="sign-in-email"
+                id="forgot-password-email"
                 name="email"
                 type="email"
                 autocomplete="email"
@@ -38,31 +39,14 @@ export default function SignIn() {
                 required
               />
             </div>
-            <div class="flex flex-col gap-2">
-              <div class="flex items-center justify-between">
-                <Label for="sign-in-password">Password</Label>
-                <A href="/forgot-password" class="text-sm text-primary hover:underline">
-                  Forgot password?
-                </A>
-              </div>
-              <Input
-                id="sign-in-password"
-                name="password"
-                type="password"
-                autocomplete="current-password"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
           </CardContent>
           <CardFooter class="flex flex-col gap-5">
             <Button type="submit" class="w-full">
-              Sign in
+              Send reset link
             </Button>
             <p class="text-center text-sm text-muted-foreground text-pretty">
-              Don&apos;t have an account?{" "}
-              <A href="/sign-up" class="text-primary font-medium hover:underline">
-                Create one
+              <A href="/sign-in" class="text-primary font-medium hover:underline">
+                Back to sign in
               </A>
             </p>
           </CardFooter>
