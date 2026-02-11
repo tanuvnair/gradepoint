@@ -5,7 +5,7 @@ import { getSession, passwordLogin } from "./server";
 const PROTECTED_ROUTES = ["/"];
 
 const isProtected = (path: string) =>
-  PROTECTED_ROUTES.some(route =>
+  PROTECTED_ROUTES.some((route) =>
     route.endsWith("/*")
       ? path.startsWith(route.slice(0, -2))
       : path === route || path.startsWith(route + "/")

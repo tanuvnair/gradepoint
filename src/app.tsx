@@ -9,13 +9,13 @@ import ErrorNotification from "./components/Error";
 import "./app.css";
 
 export const route: RouteDefinition = {
-  preload: ({ location }) => querySession(location.pathname)
+  preload: ({ location }) => querySession(location.pathname),
 };
 
 export default function App() {
   return (
     <Router
-      root={props => (
+      root={(props) => (
         <MetaProvider>
           <Auth>
             <Suspense>

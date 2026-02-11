@@ -14,7 +14,7 @@ export default function ErrorNotification() {
 
   return (
     <Show when={typeof searchParams.error === "string" && searchParams.error} keyed>
-      {msg => (
+      {(msg) => (
         <aside class="flex items-start gap-3 fixed bottom-4 left-4 max-w-sm bg-red-50 border border-red-200 rounded-xl p-4 shadow-lg z-50 transition-all duration-300 text-sm">
           <div>
             <strong class="font-medium text-red-800">Error</strong>

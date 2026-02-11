@@ -1,8 +1,23 @@
 {
-  "name": "example-with-auth",
+  "name": "gradepoint",
+  "description": "GradePoint is a platform for students to manage their grades and courses.",
+  "version": "0.0.1",
+  "author": "Tanuv Nair",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tanuvnair/gradepoint.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vinxi dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "check": "eslint . && prettier --check .",
+    "fix": "eslint . --fix && prettier --write .",
+    "prebuild": "prisma generate",
     "build": "vinxi build",
     "start": "vinxi start"
   },
@@ -16,8 +31,14 @@
     "vinxi": "^0.5.8"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@tailwindcss/vite": "^4.1.13",
-    "tailwindcss": "^4.1.13"
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.3.0",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4.1.13",
+    "typescript-eslint": "^8.55.0"
   },
   "engines": {
     "node": ">=22"

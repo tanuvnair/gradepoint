@@ -1,0 +1,6 @@
+node_modules
+dist
+build
+.vinxi
+*.min.js
+package-lock.json

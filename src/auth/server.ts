@@ -10,7 +10,7 @@ export interface Session {
 
 export const getSession = () =>
   useSession<Session>({
-    password: process.env.SESSION_SECRET!
+    password: process.env.SESSION_SECRET!,
   });
 
 export async function createSession(user: Session, redirectTo?: string) {
@@ -28,10 +28,10 @@ async function createHash(password: string) {
       name: "PBKDF2",
       salt,
       iterations: 100_000,
-      hash: "SHA-512"
+      hash: "SHA-512",
     },
     await subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, [
-      "deriveBits"
+      "deriveBits",
     ]),
     512
   );
@@ -47,10 +47,10 @@ async function checkPassword(storedPassword: string, providedPassword: string) {
       name: "PBKDF2",
       salt: Buffer.from(storedSalt, "hex"),
       iterations: 100_000,
-      hash: "SHA-512"
+      hash: "SHA-512",
     },
     await subtle.importKey("raw", new TextEncoder().encode(providedPassword), "PBKDF2", false, [
-      "deriveBits"
+      "deriveBits",
     ]),
     512
   );
@@ -65,7 +65,7 @@ export async function passwordLogin(email: string, password: string) {
   if (!user)
     user = await createUser({
       email,
-      password: await createHash(password)
+      password: await createHash(password),
     });
   else if (!user.password)
     throw new Error("Account exists via OAuth. Sign in with your OAuth provider");

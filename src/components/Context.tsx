@@ -12,7 +12,7 @@ const Context = createContext<{
 export default function Auth(props: ParentProps) {
   const location = useLocation();
   const session = createAsync(() => querySession(location.pathname), {
-    deferStream: true
+    deferStream: true,
   });
   const signedIn = () => Boolean(session()?.id);
 
