@@ -1,0 +1,14 @@
+---
+description: Prefer SolidJS official documentation for APIs and patterns
+alwaysApply: true
+---
+
+# SolidJS Documentation
+
+When implementing features, fixing bugs, or choosing patterns in this project, always refer to the official SolidJS documentation.
+
+- **API reference**: https://docs.solidjs.com/reference
+- **Guides**: https://docs.solidjs.com/guides
+- **Tutorial**: https://docs.solidjs.com/tutorials
+
+Prefer documented APIs and recommended patterns over third-party or framework-agnostic approaches. When in doubt, check the docs for the correct primitive or component pattern (e.g. `createSignal`, `createEffect`, `Show`, `For`, `Index`).

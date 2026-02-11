@@ -1,0 +1,29 @@
+---
+description: File and folder naming must use kebab-case
+alwaysApply: true
+---
+
+# File and Folder Naming
+
+Use **kebab-case** for all file and folder names in this project.
+
+- **Allowed**: `user-profile.tsx`, `grade-calculator.ts`, `empty-state.tsx`, `entry-client.tsx`
+- **Not allowed**: `UserProfile.tsx`, `userProfile.ts`, `user_profile.ts`, `emptyState.tsx`
+
+Apply this when:
+
+- Creating new files or folders
+- Renaming existing files or folders
+- Suggesting paths in code (imports, routes, assets)
+
+Example:
+
+```
+src/
+  components/
+    grade-calculator/
+      grade-calculator.tsx
+      grade-display.tsx
+  lib/
+    format-grade.ts
+```

@@ -1,0 +1,32 @@
+---
+description: Services hold business logic; db-repositories hold DB calls; repo files named by table
+alwaysApply: true
+---
+
+# Project Flow
+
+## Services
+
+All **business logic** lives in `services/`. Services orchestrate workflows, validate input, and call repositories. They do not contain raw DB queries or HTTP calls to external APIs (except via dedicated clients).
+
+- Put new business logic in service modules under `services/`.
+- Name service files by domain or feature in kebab-case (e.g. `grade-calculation.ts`, `user-auth.ts`).
+
+## DB Repositories
+
+All **database calls** live in `db-repositories/` (or equivalent repo layer). Repositories are the only place that talk to the DB.
+
+- One file per **table** (or logical aggregate). Name the file after the table it targets.
+- Examples: `users.ts` for the `users` table, `grades.ts` for the `grades` table, `course-enrollments.ts` for the `course_enrollments` table.
+- Services import and use repositories; components and routes use services, not repositories directly when business logic is involved.
+
+Example layout:
+
+```
+src/
+  services/
+    grade-calculation.ts   # business logic, uses repos
+  db-repositories/
+    users.ts              # DB calls for users table
+    grades.ts             # DB calls for grades table
+```

@@ -1,0 +1,21 @@
+---
+description: TDD flow - clarify expected behaviour, write tests first, then implement
+alwaysApply: true
+---
+
+# Test-Driven Development
+
+Follow this flow when adding or changing behaviour:
+
+1. **Clarify expected behaviour**  
+   Before writing code, ask the user for the expected behaviour (inputs, outputs, edge cases) if it is not already clear.
+
+2. **Write tests first**  
+   Write or update test cases that describe the expected behaviour. Tests should fail initially (red).
+
+3. **Implement to satisfy tests**  
+   Implement the function or feature so that the tests pass (green). Do not write the implementation before the tests.
+
+When refactoring, keep tests passing; add new tests if you are changing or extending behaviour.
+
+Summary: **Ask for expected behaviour → Write tests → Then implement.**
