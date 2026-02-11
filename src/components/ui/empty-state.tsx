@@ -29,9 +29,9 @@ const EmptyState: Component<EmptyStateProps> = (props) => {
       )}
       {...others}
     >
-      <p class="text-lg font-medium text-foreground">{local.title}</p>
+      <p class="text-lg font-medium text-foreground text-balance">{local.title}</p>
       {local.description && (
-        <p class="text-sm text-muted-foreground">{local.description}</p>
+        <p class="text-sm text-muted-foreground text-pretty">{local.description}</p>
       )}
       {resolvedAction() && <div class="flex justify-center">{resolvedAction()}</div>}
       {resolvedChildren()}

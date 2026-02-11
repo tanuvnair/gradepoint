@@ -41,7 +41,7 @@ const CardTitle: Component<CardTitleProps> = (props) => {
 
   return (
     <h3
-      class={cn("text-xl font-semibold leading-8", local.class)}
+      class={cn("text-xl font-semibold leading-8 text-balance", local.class)}
       {...others}
     >
       {local.children}
@@ -56,7 +56,7 @@ const CardDescription: Component<CardDescriptionProps> = (props) => {
 
   return (
     <p
-      class={cn("text-sm text-muted-foreground", local.class)}
+      class={cn("text-sm text-muted-foreground text-pretty", local.class)}
       {...others}
     >
       {local.children}

@@ -34,7 +34,7 @@ const Button: Component<ButtonProps> = (props) => {
     xs: "min-h-8 px-3 text-xs font-medium leading-5",
     sm: "min-h-11 px-4 text-sm font-medium leading-5",
     lg: "min-h-12 px-6 text-lg font-semibold leading-7",
-    icon: "h-11 w-11",
+    icon: "size-11",
   };
 
   return (

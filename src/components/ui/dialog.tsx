@@ -4,6 +4,7 @@ import {
   createEffect,
   onCleanup,
   createSignal,
+  splitProps,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import { cn } from "~/lib/utils";
@@ -39,11 +40,13 @@ export interface DialogFooterProps {
 
 export interface DialogTitleProps {
   class?: string;
+  id?: string;
   children: JSX.Element;
 }
 
 export interface DialogDescriptionProps {
   class?: string;
+  id?: string;
   children: JSX.Element;
 }
 
@@ -113,6 +116,8 @@ const Dialog: Component<DialogProps> = (props) => {
         />
         <div
           class="dialog-content relative z-50"
+          role="dialog"
+          aria-modal="true"
           data-state={state()}
           data-exiting={exiting()}
           onClick={(e) => e.stopPropagation()}
@@ -158,17 +163,31 @@ const DialogFooter: Component<DialogFooterProps> = (props) => (
   </div>
 );
 
-const DialogTitle: Component<DialogTitleProps> = (props) => (
-  <h2 class={cn("text-xl font-semibold leading-8", props.class)}>
-    {props.children}
-  </h2>
-);
+const DialogTitle: Component<DialogTitleProps> = (props) => {
+  const [local, others] = splitProps(props, ["class", "id", "children"]);
+  return (
+    <h2
+      class={cn("text-xl font-semibold leading-8 text-balance", local.class)}
+      id={local.id}
+      {...others}
+    >
+      {local.children}
+    </h2>
+  );
+};
 
-const DialogDescription: Component<DialogDescriptionProps> = (props) => (
-  <p class={cn("text-sm text-muted-foreground", props.class)}>
-    {props.children}
-  </p>
-);
+const DialogDescription: Component<DialogDescriptionProps> = (props) => {
+  const [local, others] = splitProps(props, ["class", "id", "children"]);
+  return (
+    <p
+      class={cn("text-sm text-muted-foreground text-pretty", local.class)}
+      id={local.id}
+      {...others}
+    >
+      {local.children}
+    </p>
+  );
+};
 
 export default Dialog;
 export {

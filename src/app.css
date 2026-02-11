@@ -281,4 +281,26 @@
   .dialog-content[data-state="closed"][data-exiting="true"] {
     animation: dialog-content-out 0.2s ease-out forwards;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dialog-overlay[data-state="open"],
+    .dialog-overlay[data-state="closed"][data-exiting="true"] {
+      animation: none;
+    }
+    .dialog-overlay[data-state="open"] {
+      opacity: 1;
+    }
+    .dialog-content[data-state="open"],
+    .dialog-content[data-state="closed"][data-exiting="true"] {
+      animation: none;
+    }
+    .dialog-content[data-state="open"] {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .dialog-content[data-state="closed"] {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
 }

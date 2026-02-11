@@ -46,7 +46,7 @@ const Alert: Component<AlertProps> = (props) => {
       )}
       {...others}
     >
-      <Icon class={cn("h-5 w-5 shrink-0", config().icon)} />
+      <Icon class={cn("h-5 w-5 shrink-0", config().icon)} aria-hidden />
       <div class="flex flex-1 flex-col gap-1">{resolved()}</div>
     </div>
   );

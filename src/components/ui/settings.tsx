@@ -48,7 +48,7 @@ export const SettingsRow: Component<SettingsRowProps> = (props) => {
       <div class="flex min-w-0 flex-1 flex-col gap-0.5">
         <span class="text-sm font-medium text-foreground">{props.label}</span>
         {props.description && (
-          <span class="text-xs text-muted-foreground">{props.description}</span>
+          <span class="text-xs text-muted-foreground text-pretty">{props.description}</span>
         )}
       </div>
       <div class="shrink-0">{props.children}</div>
@@ -80,7 +80,7 @@ export const SettingsContentRow: Component<SettingsContentRowProps> = (
       <span class="text-sm font-medium text-foreground">{props.label}</span>
       {props.children}
       {props.description && (
-        <span class="text-xs text-muted-foreground">{props.description}</span>
+        <span class="text-xs text-muted-foreground text-pretty">{props.description}</span>
       )}
     </div>
   );
