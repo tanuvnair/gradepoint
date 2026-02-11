@@ -71,7 +71,7 @@ export default function Home() {
             <div class="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:gap-4">
               <A href="/sign-up">
                 <Button size="lg" class="min-w-[180px] w-full sm:w-auto">
-                  Get started free
+                  Get started
                 </Button>
               </A>
               <A href="/sign-in">
