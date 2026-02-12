@@ -4,19 +4,15 @@ import LogOut from "lucide-solid/icons/log-out";
 import Settings from "lucide-solid/icons/settings";
 import Users from "lucide-solid/icons/users";
 
-/** Route definition for nav: path, label, icon, optional exact match, optional page heading. */
+/** Route definition for nav: icon, name, optional description, path, optional exact match. */
 export interface RouteDef {
-  /** Stable id for the route (e.g. for analytics or tests). */
-  constant?: string;
-  path: string;
-  label: string;
   icon: LucideIcon;
+  name: string;
+  /** Optional description (e.g. for page heading). */
+  description?: string;
+  path: string;
   /** When true, active only when path exactly matches (or path + "/"). */
   exact?: boolean;
-  /** Page heading title (rendered when this route is active). */
-  pageTitle?: string;
-  /** Page heading description (rendered when this route is active). */
-  pageDescription?: string;
 }
 
 /** Sidebar section: header and list of route definitions. */
@@ -34,29 +30,23 @@ export const ORG_NAV_SECTIONS: NavSectionConfig[] = [
     header: "Platform",
     submenu: [
       {
-        constant: "DASHBOARD",
-        path: "",
-        label: "Dashboard",
         icon: LayoutDashboard,
+        name: "Dashboard",
+        description: "Welcome to your GradePoint dashboard.",
+        path: "",
         exact: true,
-        pageTitle: "Dashboard",
-        pageDescription: "Welcome to your GradePoint dashboard.",
       },
       {
-        constant: "USERS_ROUTE",
-        path: "users",
-        label: "Users",
         icon: Users,
-        pageTitle: "Users",
-        pageDescription: "Manage organization members and roles.",
+        name: "Users",
+        description: "Manage organization members and roles.",
+        path: "users",
       },
       {
-        constant: "SETTINGS_ROUTE",
-        path: "settings",
-        label: "Settings",
         icon: Settings,
-        pageTitle: "Settings",
-        pageDescription: "Organization settings and preferences.",
+        name: "Settings",
+        description: "Organization settings and preferences.",
+        path: "settings",
       },
     ],
   },
@@ -67,9 +57,9 @@ export const DOCUMENT_TITLE_SUFFIX = "GradePoint";
 
 /** Footer nav item (e.g. sign out). */
 export const FOOTER_ROUTE: RouteDef = {
-  path: "/sign-in",
-  label: "Sign out",
   icon: LogOut,
+  name: "Sign out",
+  path: "/sign-in",
 };
 
 /**
@@ -90,7 +80,7 @@ export function routeDefsToNavItems(
           : `${basePath.replace(/\/$/, "")}/${d.path.replace(/^\//, "")}`;
     return {
       href,
-      label: d.label,
+      label: d.name,
       icon: d.icon,
       exact: d.exact,
     };
@@ -135,10 +125,10 @@ export function getPageHeading(pathname: string, orgId?: string): PageHeadingCon
     const matches = def.exact
       ? normalizedPathname === normalizedDef
       : normalizedPathname === normalizedDef || normalizedPathname.startsWith(normalizedDef + "/");
-    if (matches && (def.pageTitle != null || def.pageDescription != null)) {
+    if (matches && (def.name != null || def.description != null)) {
       return {
-        title: def.pageTitle ?? def.label,
-        description: def.pageDescription,
+        title: def.name,
+        description: def.description,
       };
     }
   }

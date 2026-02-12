@@ -44,7 +44,7 @@ export interface AppLayoutProps {
 const defaultNavItems: NavItem[] = [];
 const defaultFooterItem = {
   href: FOOTER_ROUTE.path,
-  label: FOOTER_ROUTE.label,
+  label: FOOTER_ROUTE.name,
   icon: FOOTER_ROUTE.icon,
 };
 
