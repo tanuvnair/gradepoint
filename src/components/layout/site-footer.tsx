@@ -8,17 +8,12 @@ export interface SiteFooterProps {
 }
 
 const footerLinkClass = cn(
-  "text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline",
+  "text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
 );
 
 export default function SiteFooter(props: SiteFooterProps) {
   return (
-    <footer
-      class={cn(
-        "border-t border-border/60 py-8",
-        props.class,
-      )}
-    >
+    <footer class={cn("border-t border-border/60 py-8", props.class)}>
       <Container
         size="xl"
         class="flex flex-col items-center justify-between gap-4 px-4 sm:flex-row"

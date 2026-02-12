@@ -52,7 +52,6 @@ export type {
 export type { EmptyStateProps } from "./empty-state";
 export type { InputProps } from "./input";
 export type { LabelProps } from "./label";
-export type { SearchableSelectOption, SearchableSelectProps } from "./searchable-select";
 export type { SeparatorProps } from "./separator";
 export type {
   SettingsSectionProps,

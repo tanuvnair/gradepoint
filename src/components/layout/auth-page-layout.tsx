@@ -13,7 +13,7 @@ export interface AuthPageLayoutProps {
 }
 
 const backLinkClass = cn(
-  "text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline",
+  "text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
 );
 
 export default function AuthPageLayout(props: AuthPageLayoutProps) {
@@ -21,7 +21,7 @@ export default function AuthPageLayout(props: AuthPageLayoutProps) {
     <div
       class={cn(
         "flex min-h-dvh flex-col items-center justify-center py-10 px-4",
-        "safe-area-inset-bottom safe-area-inset-top",
+        "safe-area-inset-bottom safe-area-inset-top"
       )}
     >
       <Title>{props.pageTitle} - GradePoint</Title>

@@ -18,11 +18,7 @@ const Container: Component<ContainerProps> = (props) => {
 
   return (
     <div
-      class={cn(
-        "mx-auto w-full px-4",
-        sizeClasses[local.size ?? "md"],
-        local.class,
-      )}
+      class={cn("mx-auto w-full px-4", sizeClasses[local.size ?? "md"], local.class)}
       {...others}
     >
       {local.children}

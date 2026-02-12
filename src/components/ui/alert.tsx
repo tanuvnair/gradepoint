@@ -1,3 +1,4 @@
+import { Alert as KobalteAlert } from "@kobalte/core/alert";
 import { children, Component, JSX, splitProps } from "solid-js";
 import { cn } from "~/lib/utils";
 import Info from "lucide-solid/icons/info";
@@ -37,8 +38,7 @@ const Alert: Component<AlertProps> = (props) => {
   const Icon = variantIcon[local.variant ?? "default"];
 
   return (
-    <div
-      role="alert"
+    <KobalteAlert
       class={cn(
         "flex gap-3 rounded-lg border border-border/60 p-4 text-sm",
         config().container,
@@ -48,7 +48,7 @@ const Alert: Component<AlertProps> = (props) => {
     >
       <Icon class={cn("h-5 w-5 shrink-0", config().icon)} aria-hidden />
       <div class="flex flex-1 flex-col gap-1">{resolved()}</div>
-    </div>
+    </KobalteAlert>
   );
 };
 

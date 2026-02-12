@@ -1,3 +1,4 @@
+import { Badge as KobalteBadge } from "@kobalte/core/badge";
 import { Component, JSX, splitProps } from "solid-js";
 import { cn } from "~/lib/utils";
 
@@ -16,16 +17,16 @@ const Badge: Component<BadgeProps> = (props) => {
   };
 
   return (
-    <span
+    <KobalteBadge
       class={cn(
         "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium",
         variantClasses[local.variant ?? "default"],
-        local.class,
+        local.class
       )}
       {...others}
     >
       {local.children}
-    </span>
+    </KobalteBadge>
   );
 };
 

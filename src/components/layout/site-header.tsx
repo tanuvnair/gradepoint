@@ -9,17 +9,12 @@ export interface SiteHeaderProps {
 
 const navLinkClass = cn(
   "inline-flex min-h-11 items-center px-4 text-sm font-medium text-foreground",
-  "hover:text-primary underline-offset-4 hover:underline",
+  "hover:text-primary underline-offset-4 hover:underline"
 );
 
 export default function SiteHeader(props: SiteHeaderProps) {
   return (
-    <header
-      class={cn(
-        "border-b border-border/60 bg-background/95",
-        props.class,
-      )}
-    >
+    <header class={cn("border-b border-border/60 bg-background/95", props.class)}>
       <Container size="xl" class="flex h-16 items-center justify-between">
         <BrandLogo size="md" />
         <nav class="flex items-center gap-3" aria-label="Main navigation">

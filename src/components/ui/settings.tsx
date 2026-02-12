@@ -19,7 +19,7 @@ export const SettingsGroup: Component<SettingsGroupProps> = (props) => (
   <div
     class={cn(
       "flex flex-col rounded-lg border border-border/60 bg-secondary/30 overflow-hidden",
-      props.class,
+      props.class
     )}
   >
     {props.children}
@@ -42,7 +42,7 @@ export const SettingsRow: Component<SettingsRowProps> = (props) => {
       class={cn(
         "flex flex-row items-center justify-between gap-4 px-4 py-3",
         showBorder() && "border-b border-border/60 last:border-b-0",
-        props.class,
+        props.class
       )}
     >
       <div class="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -64,9 +64,7 @@ export interface SettingsContentRowProps {
   children: JSX.Element;
 }
 
-export const SettingsContentRow: Component<SettingsContentRowProps> = (
-  props,
-) => {
+export const SettingsContentRow: Component<SettingsContentRowProps> = (props) => {
   const showBorder = () => props.border !== false;
 
   return (
@@ -74,7 +72,7 @@ export const SettingsContentRow: Component<SettingsContentRowProps> = (
       class={cn(
         "flex flex-col gap-2 px-4 py-3",
         showBorder() && "border-b border-border/60 last:border-b-0",
-        props.class,
+        props.class
       )}
     >
       <span class="text-sm font-medium text-foreground">{props.label}</span>

@@ -6,18 +6,14 @@ export interface LabelProps extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
 }
 
 const Label: Component<LabelProps> = (props) => {
-  const [local, others] = splitProps(props, [
-    "class",
-    "children",
-    "selectable",
-  ]);
+  const [local, others] = splitProps(props, ["class", "children", "selectable"]);
 
   return (
     <label
       class={cn(
         "text-sm font-medium leading-5 text-foreground",
         !local.selectable && "select-none",
-        local.class,
+        local.class
       )}
       {...others}
     >

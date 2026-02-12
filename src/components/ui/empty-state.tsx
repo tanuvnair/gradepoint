@@ -25,7 +25,7 @@ const EmptyState: Component<EmptyStateProps> = (props) => {
     <div
       class={cn(
         "flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border/60 bg-secondary/30 p-12 text-center",
-        local.class,
+        local.class
       )}
       {...others}
     >

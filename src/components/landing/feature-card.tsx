@@ -9,17 +9,10 @@ export interface FeatureCardProps {
 
 export default function FeatureCard(props: FeatureCardProps) {
   return (
-    <Card
-      class={cn(
-        "h-full border-border/60 shadow-apple",
-        props.class,
-      )}
-    >
+    <Card class={cn("h-full border-border/60 shadow-apple", props.class)}>
       <CardHeader>
         <CardTitle>{props.title}</CardTitle>
-        <CardDescription class="text-pretty">
-          {props.description}
-        </CardDescription>
+        <CardDescription class="text-pretty">{props.description}</CardDescription>
       </CardHeader>
     </Card>
   );

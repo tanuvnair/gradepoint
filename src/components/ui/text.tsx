@@ -44,7 +44,7 @@ const Text: Component<TextProps> = (props) => {
         variantClasses[v()],
         local.muted && "text-muted-foreground",
         local.tabularNums && "tabular-nums",
-        local.class,
+        local.class
       )}
       {...others}
     >

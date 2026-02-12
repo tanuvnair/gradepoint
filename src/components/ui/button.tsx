@@ -1,14 +1,9 @@
+import { Button as KobalteButton } from "@kobalte/core/button";
 import { children, Component, JSX, splitProps } from "solid-js";
 import { cn } from "~/lib/utils";
 
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?:
-    | "default"
-    | "secondary"
-    | "outline"
-    | "ghost"
-    | "link"
-    | "destructive";
+  variant?: "default" | "secondary" | "outline" | "ghost" | "link" | "destructive";
   size?: "default" | "xs" | "sm" | "lg" | "icon";
 }
 
@@ -38,18 +33,18 @@ const Button: Component<ButtonProps> = (props) => {
   };
 
   return (
-    <button
+    <KobalteButton
       type="button"
       class={cn(
         "inline-flex items-center justify-center gap-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0",
         variantClasses[local.variant ?? "default"],
         sizeClasses[local.size ?? "default"],
-        local.class,
+        local.class
       )}
       {...others}
     >
       {resolved()}
-    </button>
+    </KobalteButton>
   );
 };
 

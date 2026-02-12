@@ -2,5 +2,6 @@ node_modules
 dist
 build
 .vinxi
+.output
 *.min.js
 package-lock.json
