@@ -1,6 +1,7 @@
 import { Meta } from "@solidjs/meta";
 import { Show, createSignal } from "solid-js";
 import CreateOrganizationDialog from "~/components/dialogs/create-organization-dialog";
+import JoinOrganizationDialog from "~/components/dialogs/join-organization-dialog";
 import OrganizationsPageLayout from "~/components/layout/organizations-page-layout";
 import {
   Button,
@@ -28,6 +29,8 @@ export default function OrganizationSelection() {
   const [organizations, setOrganizations] = createSignal<MockOrganization[]>(MOCK_ORGANIZATIONS);
   const [selectedOrg, setSelectedOrg] = createSignal<MockOrganization | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = createSignal(false);
+  const [joinDialogOpen, setJoinDialogOpen] = createSignal(false);
+  const [joinError, setJoinError] = createSignal<string | undefined>(undefined);
   let formRef: HTMLFormElement | undefined;
   let continueButtonRef: HTMLButtonElement | undefined;
   /** Set when a selection just happened; we move focus to Continue instead of leaving it on the input. */
@@ -43,6 +46,24 @@ export default function OrganizationSelection() {
 
   const handleCreateSubmit = (name: string) => {
     const newOrg: MockOrganization = { id: String(Date.now()), name };
+    setOrganizations((prev) => [...prev, newOrg]);
+    setSelectedOrg(newOrg);
+  };
+
+  const openJoinDialog = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setJoinError(undefined);
+    setJoinDialogOpen(true);
+  };
+
+  const handleJoinSubmit = (code: string) => {
+    setJoinError(undefined);
+    // Mock: treat code as org id suffix and add a placeholder org; replace with real API call.
+    const newOrg: MockOrganization = {
+      id: `join-${code}`,
+      name: `Organization (${code})`,
+    };
     setOrganizations((prev) => [...prev, newOrg]);
     setSelectedOrg(newOrg);
   };
@@ -67,23 +88,29 @@ export default function OrganizationSelection() {
           fallback={
             <EmptyState
               title="No organizations yet"
-              description="Create your first organization to start conducting or taking exams."
+              description="Create your first organization or join one with a code."
               action={
-                <Button type="button" onClick={openCreateDialog}>
-                  Create your first organization
-                </Button>
+                <div class="flex flex-col gap-2">
+                  <Button type="button" onClick={openCreateDialog}>
+                    Create your first organization
+                  </Button>
+                  <Button type="button" variant="outline" onClick={openJoinDialog}>
+                    Join with code
+                  </Button>
+                </div>
               }
             />
           }
         >
-          <Card class="shadow-apple-lg">
-            <CardHeader class="flex flex-col">
+          <Card class="flex flex-col shadow-apple-lg">
+            <CardHeader>
               <CardTitle>Your organizations</CardTitle>
               <CardDescription class="text-pretty">
                 Select one to continue or create a new organization.
               </CardDescription>
             </CardHeader>
-            <CardContent class="flex flex-col gap-6">
+
+            <CardContent>
               <form
                 ref={formRef}
                 noValidate
@@ -159,9 +186,24 @@ export default function OrganizationSelection() {
                   >
                     Continue
                   </Button>
-                  <Button type="button" variant="outline" class="w-full" onClick={openCreateDialog}>
-                    Create new organization
-                  </Button>
+                  <div class="flex flex-row gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      class="w-full p-2"
+                      onClick={openCreateDialog}
+                    >
+                      Create new organization
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      class="w-full p-2"
+                      onClick={openJoinDialog}
+                    >
+                      Join with code
+                    </Button>
+                  </div>
                 </div>
               </form>
             </CardContent>
@@ -173,6 +215,12 @@ export default function OrganizationSelection() {
         open={createDialogOpen()}
         onOpenChange={setCreateDialogOpen}
         onSubmit={handleCreateSubmit}
+      />
+      <JoinOrganizationDialog
+        open={joinDialogOpen()}
+        onOpenChange={setJoinDialogOpen}
+        onSubmit={handleJoinSubmit}
+        error={joinError()}
       />
     </OrganizationsPageLayout>
   );

@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import type { RouteSectionProps } from "@solidjs/router";
 import CreateOrganizationDialog from "~/components/dialogs/create-organization-dialog";
+import JoinOrganizationDialog from "~/components/dialogs/join-organization-dialog";
 import AppLayout from "~/components/layout/app-layout";
 import { getOrgNavSections } from "~/lib/constants";
 import { createSignal } from "solid-js";
@@ -22,6 +23,8 @@ export default function OrganizationLayout(props: RouteSectionProps) {
   const navigate = useNavigate();
   const [organizations, setOrganizations] = createSignal(INITIAL_ORGANIZATIONS);
   const [createDialogOpen, setCreateDialogOpen] = createSignal(false);
+  const [joinDialogOpen, setJoinDialogOpen] = createSignal(false);
+  const [joinError, setJoinError] = createSignal<string | undefined>(undefined);
 
   const orgId = () => params.id;
 
@@ -41,6 +44,14 @@ export default function OrganizationLayout(props: RouteSectionProps) {
     navigate(`/organizations/${newOrg.id}`);
   }
 
+  function handleJoinOrganization(code: string) {
+    setJoinError(undefined);
+    // Mock: add org and navigate; replace with real API call that validates code.
+    const newOrg = { id: `join-${code}`, name: `Organization (${code})` };
+    setOrganizations((prev) => [...prev, newOrg]);
+    navigate(`/organizations/${newOrg.id}`);
+  }
+
   return (
     <AppLayout
       orgId={orgId()}
@@ -51,6 +62,10 @@ export default function OrganizationLayout(props: RouteSectionProps) {
         organizations: organizations(),
         addTeamHref: "/organizations",
         onAddTeam: () => setCreateDialogOpen(true),
+        onJoinWithCode: () => {
+          setJoinError(undefined);
+          setJoinDialogOpen(true);
+        },
       }}
       userBlock={{
         name: MOCK_USER.name,
@@ -63,6 +78,12 @@ export default function OrganizationLayout(props: RouteSectionProps) {
         open={createDialogOpen()}
         onOpenChange={setCreateDialogOpen}
         onSubmit={handleCreateOrganization}
+      />
+      <JoinOrganizationDialog
+        open={joinDialogOpen()}
+        onOpenChange={setJoinDialogOpen}
+        onSubmit={handleJoinOrganization}
+        error={joinError()}
       />
     </AppLayout>
   );

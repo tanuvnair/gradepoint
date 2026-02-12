@@ -12,6 +12,7 @@ import {
 import { cn } from "~/lib/utils";
 import Building2 from "lucide-solid/icons/building-2";
 import ChevronsUpDown from "lucide-solid/icons/chevrons-up-down";
+import KeyRound from "lucide-solid/icons/key-round";
 import Plus from "lucide-solid/icons/plus";
 
 export interface OrgOption {
@@ -30,6 +31,8 @@ export interface AppSidebarOrgSelectorProps {
   addTeamHref: string;
   /** When set, "Add team" calls this instead of navigating (e.g. open create-org dialog). */
   onAddTeam?: () => void;
+  /** When set, "Join with code" is shown and calls this (e.g. open join-org dialog). */
+  onJoinWithCode?: () => void;
   /** When true, show only the icon (for collapsed sidebar). */
   collapsed?: boolean;
   /** When true, hover style is suppressed (e.g. during sidebar collapse transition). */
@@ -109,6 +112,12 @@ export default function AppSidebarOrgSelector(props: AppSidebarOrgSelectorProps)
           <Plus class={itemIconClass} aria-hidden />
           <DropdownMenuItemLabel>Add team</DropdownMenuItemLabel>
         </DropdownMenuItem>
+        {props.onJoinWithCode && (
+          <DropdownMenuItem closeOnSelect onSelect={props.onJoinWithCode}>
+            <KeyRound class={itemIconClass} aria-hidden />
+            <DropdownMenuItemLabel>Join with code</DropdownMenuItemLabel>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

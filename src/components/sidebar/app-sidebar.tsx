@@ -34,6 +34,8 @@ export interface OrgSelectorConfig {
   addTeamHref: string;
   /** When set, "Add team" calls this instead of navigating (e.g. open create-org dialog). */
   onAddTeam?: () => void;
+  /** When set, "Join with code" is shown and calls this (e.g. open join-org dialog). */
+  onJoinWithCode?: () => void;
 }
 
 export interface UserBlockConfig {
@@ -214,6 +216,7 @@ export default function AppSidebar(props: AppSidebarProps) {
                 organizations={props.orgSelector.organizations}
                 addTeamHref={props.orgSelector.addTeamHref}
                 onAddTeam={props.orgSelector.onAddTeam}
+                onJoinWithCode={props.orgSelector.onJoinWithCode}
                 collapsed={collapsed()}
                 suppressHover={transitioning()}
                 class="w-full"
