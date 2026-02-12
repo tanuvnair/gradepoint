@@ -28,6 +28,10 @@ export default function OrganizationSelection() {
   const [organizations, setOrganizations] = createSignal<MockOrganization[]>(MOCK_ORGANIZATIONS);
   const [selectedOrg, setSelectedOrg] = createSignal<MockOrganization | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = createSignal(false);
+  let formRef: HTMLFormElement | undefined;
+  let continueButtonRef: HTMLButtonElement | undefined;
+  /** Set when a selection just happened; we move focus to Continue instead of leaving it on the input. */
+  let justSelectedRef = false;
 
   const hasOrganizations = () => organizations().length > 0;
 
@@ -80,7 +84,22 @@ export default function OrganizationSelection() {
               </CardDescription>
             </CardHeader>
             <CardContent class="flex flex-col gap-6">
-              <form noValidate onSubmit={(e) => e.preventDefault()} class="flex flex-col gap-6">
+              <form
+                ref={formRef}
+                noValidate
+                onSubmit={(e) => e.preventDefault()}
+                class="flex flex-col gap-6"
+                onFocusIn={(e) => {
+                  if (
+                    justSelectedRef &&
+                    e.target instanceof HTMLInputElement &&
+                    formRef?.querySelector("input") === e.target
+                  ) {
+                    justSelectedRef = false;
+                    continueButtonRef?.focus();
+                  }
+                }}
+              >
                 <Combobox
                   options={organizations()}
                   optionValue={(o) => (o as MockOrganization).id}
@@ -88,7 +107,10 @@ export default function OrganizationSelection() {
                   optionLabel={(o) => (o as MockOrganization).name}
                   placeholder="Select organization"
                   value={selectedOrg()}
-                  onChange={(v: unknown) => setSelectedOrg(v as MockOrganization | null)}
+                  onChange={(v: unknown) => {
+                    setSelectedOrg(v as MockOrganization | null);
+                    justSelectedRef = true;
+                  }}
                   onInputChange={(value) => {
                     if (value === "") setSelectedOrg(null);
                   }}
@@ -118,7 +140,10 @@ export default function OrganizationSelection() {
                     </Combobox.Trigger>
                   </Combobox.Control>
                   <Combobox.Portal>
-                    <Combobox.Content class="max-h-[min(var(--kb-combobox-content-available-height),18rem)]">
+                    <Combobox.Content
+                      class="max-h-[min(var(--kb-combobox-content-available-height),18rem)]"
+                      onCloseAutoFocus={(e: Event) => e.preventDefault()}
+                    >
                       <Combobox.Listbox />
                     </Combobox.Content>
                   </Combobox.Portal>
@@ -126,6 +151,7 @@ export default function OrganizationSelection() {
 
                 <div class="flex flex-col gap-3">
                   <Button
+                    ref={continueButtonRef}
                     type="submit"
                     class="w-full"
                     disabled={!selectedOrg()}
