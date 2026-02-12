@@ -48,20 +48,16 @@ export interface DialogDescriptionProps {
 
 const Dialog: Component<DialogProps> = (props) => {
   const [local, others] = splitProps(props, ["class", "children"]);
-  return (
-    <DialogRoot forceMount {...others}>
-      {local.children}
-    </DialogRoot>
-  );
+  return <DialogRoot {...others}>{local.children}</DialogRoot>;
 };
 
 const DialogContent: Component<DialogContentProps> = (props) => (
   <DialogPortal>
-    <div class="fixed inset-0 z-50 flex items-center justify-center">
-      <DialogOverlay class="dialog-overlay fixed inset-0 z-50 bg-black/50" />
+    <div class="fixed inset-0 z-50 flex items-center justify-center safe-area-inset-bottom safe-area-inset-top">
+      <DialogOverlay class="dialog-overlay fixed inset-0 z-50 bg-black/50 safe-area-inset-bottom safe-area-inset-top" />
       <DialogContentPrimitive
         class="dialog-content relative z-50"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: MouseEvent) => e.stopPropagation()}
       >
         <div
           class={cn(
