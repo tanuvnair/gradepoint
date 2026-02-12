@@ -76,6 +76,30 @@
   --animate-dialog-overlay-out: dialog-overlay-out 0.2s ease-out forwards;
   --animate-dialog-content-in: dialog-content-in 0.2s ease-out forwards;
   --animate-dialog-content-out: dialog-content-out 0.2s ease-out forwards;
+
+  @keyframes global-loader-loading {
+    0% {
+      transform: scaleX(0);
+    }
+    70% {
+      transform: scaleX(0.7);
+    }
+    100% {
+      transform: scaleX(0.7);
+    }
+  }
+  @keyframes global-loader-completing {
+    0% {
+      transform: scaleX(0.7);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+  --animate-global-loader-loading: global-loader-loading 1.2s ease-out forwards;
+  --animate-global-loader-completing: global-loader-completing 0.2s ease-out forwards;
 }
 
 @layer base {
@@ -264,7 +288,24 @@
     @apply cursor-not-allowed;
   }
 
+  .global-loader-bar--loading {
+    animation: var(--animate-global-loader-loading);
+  }
+  .global-loader-bar--completing {
+    animation: var(--animate-global-loader-completing);
+  }
   @media (prefers-reduced-motion: reduce) {
+    .global-loader-bar--loading,
+    .global-loader-bar--completing {
+      animation: none;
+    }
+    .global-loader-bar--loading {
+      transform: scaleX(0.7);
+    }
+    .global-loader-bar--completing {
+      transform: scaleX(1);
+      opacity: 0;
+    }
     [data-dialog-overlay][data-expanded],
     [data-dialog-overlay][data-closed] {
       animation: none;
