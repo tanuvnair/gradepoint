@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Combobox,
   Dialog,
   DialogBody,
   DialogContent,
@@ -19,7 +20,6 @@ import {
   Input,
   Label,
 } from "~/components/ui";
-import { cn } from "~/lib/utils";
 
 interface MockOrganization {
   id: string;
@@ -32,13 +32,9 @@ const MOCK_ORGANIZATIONS: MockOrganization[] = [
   { id: "2", name: "Tech Institute" },
 ];
 
-const selectPlaceholderClass = cn(
-  "flex h-11 w-full items-center rounded-lg border border-input bg-muted/30 px-4 py-2 text-base text-muted-foreground",
-  "cursor-not-allowed"
-);
-
 export default function OrganizationSelection() {
   const [organizations, setOrganizations] = createSignal<MockOrganization[]>(MOCK_ORGANIZATIONS);
+  const [selectedOrg, setSelectedOrg] = createSignal<MockOrganization | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = createSignal(false);
   const [newOrgName, setNewOrgName] = createSignal("");
 
@@ -61,6 +57,7 @@ export default function OrganizationSelection() {
     if (!name) return;
     const newOrg: MockOrganization = { id: String(Date.now()), name };
     setOrganizations((prev) => [...prev, newOrg]);
+    setSelectedOrg(newOrg);
     closeCreateDialog();
   };
 
@@ -101,21 +98,64 @@ export default function OrganizationSelection() {
               </CardDescription>
             </CardHeader>
             <CardContent class="flex flex-col gap-6">
-              <div class="flex flex-col gap-3">
-                <Label for="organization-select">Organization</Label>
-                <div id="organization-select" class={selectPlaceholderClass}>
-                  Select organization
-                </div>
-              </div>
+              <form noValidate onSubmit={(e) => e.preventDefault()} class="flex flex-col gap-6">
+                <Combobox
+                  options={organizations()}
+                  optionValue={(o) => (o as MockOrganization).id}
+                  optionTextValue={(o) => (o as MockOrganization).name}
+                  optionLabel={(o) => (o as MockOrganization).name}
+                  placeholder="Select organization"
+                  value={selectedOrg()}
+                  onChange={(v: unknown) => setSelectedOrg(v as MockOrganization | null)}
+                  onInputChange={(value) => {
+                    if (value === "") setSelectedOrg(null);
+                  }}
+                  triggerMode="focus"
+                  defaultFilter={(option, inputValue) => {
+                    const o = option as MockOrganization;
+                    const selected = selectedOrg();
+                    if (selected && inputValue === selected.name) return true;
+                    return o.name.toLowerCase().includes((inputValue ?? "").toLowerCase());
+                  }}
+                  sameWidth
+                  required={false}
+                  itemComponent={(props) => (
+                    <Combobox.Item item={props.item}>
+                      <Combobox.ItemLabel>
+                        {(props.item.rawValue as MockOrganization).name}
+                      </Combobox.ItemLabel>
+                      <Combobox.ItemIndicator />
+                    </Combobox.Item>
+                  )}
+                >
+                  <Combobox.Label>Organization</Combobox.Label>
+                  <Combobox.Control aria-label="Organization">
+                    <Combobox.Input />
+                    <Combobox.Trigger aria-label="Open organization list">
+                      <Combobox.Icon />
+                    </Combobox.Trigger>
+                  </Combobox.Control>
+                  <Combobox.Portal>
+                    <Combobox.Content class="max-h-[min(var(--kb-combobox-content-available-height),18rem)]">
+                      <Combobox.Listbox />
+                    </Combobox.Content>
+                  </Combobox.Portal>
+                </Combobox>
 
-              <div class="flex flex-col gap-3">
-                <Button type="button" class="w-full" disabled>
-                  Continue
-                </Button>
-                <Button type="button" variant="outline" class="w-full" onClick={openCreateDialog}>
-                  Create new organization
-                </Button>
-              </div>
+                <div class="flex flex-col gap-3">
+                  <Button
+                    type="submit"
+                    class="w-full"
+                    disabled={!selectedOrg()}
+                    title={!selectedOrg() ? "Select an organization to continue" : undefined}
+                  >
+                    Continue
+                  </Button>
+                  <Button type="button" variant="outline" class="w-full" onClick={openCreateDialog}>
+                    Create new organization
+                  </Button>
+                </div>
+              </form>
             </CardContent>
           </Card>
         </Show>

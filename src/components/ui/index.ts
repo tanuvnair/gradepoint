@@ -10,6 +10,7 @@ export {
   CardFooter,
 } from "./card";
 export { default as Checkbox } from "./checkbox";
+export { default as Combobox } from "./combobox";
 export { default as Container } from "./container";
 export {
   default as Dialog,
@@ -39,6 +40,15 @@ export type {
   CardFooterProps,
 } from "./card";
 export type { CheckboxProps } from "./checkbox";
+export type {
+  ComboboxProps,
+  ComboboxControlPropsOption,
+  ComboboxContentPropsOption,
+  ComboboxItemPropsOption,
+  ComboboxLabelPropsOption,
+  ComboboxDescriptionPropsOption,
+  ComboboxErrorMessagePropsOption,
+} from "./combobox";
 export type { ContainerProps } from "./container";
 export type {
   DialogProps,
