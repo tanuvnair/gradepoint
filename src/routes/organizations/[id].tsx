@@ -1,25 +1,69 @@
-import { useParams } from "@solidjs/router";
-import { Title } from "@solidjs/meta";
-import { Container } from "~/components/ui";
+import { useNavigate, useParams } from "@solidjs/router";
+import type { RouteSectionProps } from "@solidjs/router";
+import CreateOrganizationDialog from "~/components/dialogs/create-organization-dialog";
+import AppLayout from "~/components/layout/app-layout";
+import { getOrgNavSections } from "~/lib/constants";
+import { createSignal } from "solid-js";
 
-/**
- * Placeholder for organization-scoped app.
- * Replace with dashboard, exams, etc. when implementing.
- */
-export default function OrganizationPlaceholder() {
+/** Mock: replace with real org list from API/session. */
+const INITIAL_ORGANIZATIONS = [
+  { id: "1", name: "Acme School" },
+  { id: "2", name: "Tech Institute" },
+];
+
+/** Mock: replace with real user from session. */
+const MOCK_USER = {
+  name: "User",
+  email: "user@example.com",
+};
+
+export default function OrganizationLayout(props: RouteSectionProps) {
   const params = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [organizations, setOrganizations] = createSignal(INITIAL_ORGANIZATIONS);
+  const [createDialogOpen, setCreateDialogOpen] = createSignal(false);
+
+  const orgId = () => params.id;
+
+  const currentOrg = () => {
+    const id = orgId();
+    const found = organizations().find((o) => o.id === id);
+    return {
+      id,
+      name: found?.name ?? "Organization",
+      subtitle: "Team",
+    };
+  };
+
+  function handleCreateOrganization(name: string) {
+    const newOrg = { id: String(Date.now()), name };
+    setOrganizations((prev) => [...prev, newOrg]);
+    navigate(`/organizations/${newOrg.id}`);
+  }
 
   return (
-    <div class="flex min-h-dvh flex-col items-center justify-center p-4">
-      <Title>Organization - GradePoint</Title>
-      <Container size="sm" class="text-center">
-        <p class="text-muted-foreground text-pretty">
-          Organization ID: <span class="font-medium text-foreground tabular-nums">{params.id}</span>
-        </p>
-        <p class="mt-2 text-sm text-muted-foreground">
-          Dashboard and org-scoped routes will go here.
-        </p>
-      </Container>
-    </div>
+    <AppLayout
+      orgId={orgId()}
+      navSections={getOrgNavSections(orgId())}
+      homeHref={`/organizations/${orgId()}`}
+      orgSelector={{
+        currentOrg: currentOrg(),
+        organizations: organizations(),
+        addTeamHref: "/organizations",
+        onAddTeam: () => setCreateDialogOpen(true),
+      }}
+      userBlock={{
+        name: MOCK_USER.name,
+        email: MOCK_USER.email,
+        signOutHref: "/sign-in",
+      }}
+    >
+      {props.children}
+      <CreateOrganizationDialog
+        open={createDialogOpen()}
+        onOpenChange={setCreateDialogOpen}
+        onSubmit={handleCreateOrganization}
+      />
+    </AppLayout>
   );
 }

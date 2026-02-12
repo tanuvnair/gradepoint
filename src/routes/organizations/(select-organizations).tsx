@@ -1,5 +1,6 @@
 import { Meta } from "@solidjs/meta";
 import { Show, createSignal } from "solid-js";
+import CreateOrganizationDialog from "~/components/dialogs/create-organization-dialog";
 import OrganizationsPageLayout from "~/components/layout/organizations-page-layout";
 import {
   Button,
@@ -9,16 +10,7 @@ import {
   CardHeader,
   CardTitle,
   Combobox,
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   EmptyState,
-  Input,
-  Label,
 } from "~/components/ui";
 
 interface MockOrganization {
@@ -36,29 +28,19 @@ export default function OrganizationSelection() {
   const [organizations, setOrganizations] = createSignal<MockOrganization[]>(MOCK_ORGANIZATIONS);
   const [selectedOrg, setSelectedOrg] = createSignal<MockOrganization | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = createSignal(false);
-  const [newOrgName, setNewOrgName] = createSignal("");
 
   const hasOrganizations = () => organizations().length > 0;
 
   const openCreateDialog = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setNewOrgName("");
     setCreateDialogOpen(true);
   };
 
-  const closeCreateDialog = () => {
-    setCreateDialogOpen(false);
-  };
-
-  const handleCreateSubmit = (e: Event) => {
-    e.preventDefault();
-    const name = newOrgName().trim();
-    if (!name) return;
+  const handleCreateSubmit = (name: string) => {
     const newOrg: MockOrganization = { id: String(Date.now()), name };
     setOrganizations((prev) => [...prev, newOrg]);
     setSelectedOrg(newOrg);
-    closeCreateDialog();
   };
 
   return (
@@ -161,37 +143,11 @@ export default function OrganizationSelection() {
         </Show>
       </div>
 
-      <Dialog open={createDialogOpen()} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
-          <form onSubmit={handleCreateSubmit}>
-            <DialogHeader>
-              <DialogTitle>Create organization</DialogTitle>
-              <DialogDescription class="text-pretty">
-                Give your organization a name. You can change this later.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogBody class="flex flex-col gap-4">
-              <div class="flex flex-col gap-2">
-                <Label for="create-org-name">Organization name</Label>
-                <Input
-                  id="create-org-name"
-                  value={newOrgName()}
-                  onInput={(e) => setNewOrgName(e.currentTarget.value)}
-                  placeholder="e.g. Acme School"
-                  autocomplete="organization"
-                  required
-                />
-              </div>
-            </DialogBody>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeCreateDialog}>
-                Cancel
-              </Button>
-              <Button type="submit">Create organization</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CreateOrganizationDialog
+        open={createDialogOpen()}
+        onOpenChange={setCreateDialogOpen}
+        onSubmit={handleCreateSubmit}
+      />
     </OrganizationsPageLayout>
   );
 }

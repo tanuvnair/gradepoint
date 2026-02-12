@@ -13,6 +13,16 @@ export { default as Checkbox } from "./checkbox";
 export { default as Combobox } from "./combobox";
 export { default as Container } from "./container";
 export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuGroupLabel,
+  DropdownMenuItem,
+  DropdownMenuItemLabel,
+  DropdownMenuSeparator,
+} from "./dropdown-menu";
+export {
   default as Dialog,
   DialogContent,
   DialogHeader,
