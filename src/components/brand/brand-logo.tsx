@@ -33,7 +33,7 @@ export default function BrandLogo(props: BrandLogoProps) {
       class={cn(
         "flex items-center no-underline text-foreground",
         !iconOnly() && "gap-2",
-        size() === "lg" && !iconOnly() && "flex-col gap-3",
+        size() === "lg" && !iconOnly() && "flex-col gap-2",
         props.class
       )}
       aria-label="GradePoint home"
