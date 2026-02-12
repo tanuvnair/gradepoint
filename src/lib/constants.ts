@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-solid";
+import ClipboardList from "lucide-solid/icons/clipboard-list";
 import LayoutDashboard from "lucide-solid/icons/layout-dashboard";
 import LogOut from "lucide-solid/icons/log-out";
 import Settings from "lucide-solid/icons/settings";
@@ -35,6 +36,12 @@ export const ORG_NAV_SECTIONS: NavSectionConfig[] = [
         description: "Welcome to your GradePoint dashboard.",
         path: "",
         exact: true,
+      },
+      {
+        icon: ClipboardList,
+        name: "Exams",
+        description: "Create and manage exams for your organization.",
+        path: "exams",
       },
       {
         icon: Users,
