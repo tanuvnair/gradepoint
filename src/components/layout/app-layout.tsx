@@ -12,13 +12,7 @@ import {
   PageHeadingDescription,
   PageHeadingTitle,
 } from "~/components/layout/page-heading";
-import {
-  DOCUMENT_TITLE_SUFFIX,
-  FOOTER_ROUTE,
-  getPageHeading,
-  MAIN_NAV_ROUTES,
-  routeDefsToNavItems,
-} from "~/lib/constants";
+import { DOCUMENT_TITLE_SUFFIX, FOOTER_ROUTE, getPageHeading } from "~/lib/constants";
 import { cn } from "~/lib/utils";
 import { type JSX, Show } from "solid-js";
 
@@ -47,7 +41,7 @@ export interface AppLayoutProps {
   orgId?: string;
 }
 
-const defaultNavItems: NavItem[] = routeDefsToNavItems(MAIN_NAV_ROUTES);
+const defaultNavItems: NavItem[] = [];
 const defaultFooterItem = {
   href: FOOTER_ROUTE.path,
   label: FOOTER_ROUTE.label,

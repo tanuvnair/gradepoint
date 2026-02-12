@@ -2,7 +2,7 @@ import { Container } from "~/components/ui";
 
 /**
  * Org-scoped settings route: /organizations/:id/settings
- * Title and description come from lib/constants (ORG_NAV_ROUTES) via app-layout.
+ * Title and description come from lib/constants (ORG_NAV_SECTIONS) via app-layout.
  */
 export default function OrganizationSettings() {
   return (

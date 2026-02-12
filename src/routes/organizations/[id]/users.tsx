@@ -2,7 +2,7 @@ import { Container } from "~/components/ui";
 
 /**
  * Org-scoped users route: /organizations/:id/users
- * Title and description come from lib/constants (ORG_NAV_ROUTES) via app-layout.
+ * Title and description come from lib/constants (ORG_NAV_SECTIONS) via app-layout.
  */
 export default function OrganizationUsers() {
   return (

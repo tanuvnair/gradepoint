@@ -6,6 +6,8 @@ import Users from "lucide-solid/icons/users";
 
 /** Route definition for nav: path, label, icon, optional exact match, optional page heading. */
 export interface RouteDef {
+  /** Stable id for the route (e.g. for analytics or tests). */
+  constant?: string;
   path: string;
   label: string;
   icon: LucideIcon;
@@ -17,17 +19,51 @@ export interface RouteDef {
   pageDescription?: string;
 }
 
-/** Main app sidebar nav (e.g. when not in an org context). */
-export const MAIN_NAV_ROUTES: RouteDef[] = [
+/** Sidebar section: header and list of route definitions. */
+export interface NavSectionConfig {
+  header: string;
+  submenu: RouteDef[];
+}
+
+/**
+ * Org-scoped sidebar nav: sections with header and submenu. Paths are relative to
+ * /organizations/:id (e.g. "" for dashboard, "users" for /organizations/:id/users).
+ */
+export const ORG_NAV_SECTIONS: NavSectionConfig[] = [
   {
-    path: "/dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    exact: true,
-    pageTitle: "Dashboard",
-    pageDescription: "Welcome to your GradePoint dashboard.",
+    header: "Platform",
+    submenu: [
+      {
+        constant: "DASHBOARD",
+        path: "",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        exact: true,
+        pageTitle: "Dashboard",
+        pageDescription: "Welcome to your GradePoint dashboard.",
+      },
+      {
+        constant: "USERS_ROUTE",
+        path: "users",
+        label: "Users",
+        icon: Users,
+        pageTitle: "Users",
+        pageDescription: "Manage organization members and roles.",
+      },
+      {
+        constant: "SETTINGS_ROUTE",
+        path: "settings",
+        label: "Settings",
+        icon: Settings,
+        pageTitle: "Settings",
+        pageDescription: "Organization settings and preferences.",
+      },
+    ],
   },
 ];
+
+/** Suffix for document titles (e.g. "Dashboard - GradePoint"). */
+export const DOCUMENT_TITLE_SUFFIX = "GradePoint";
 
 /** Footer nav item (e.g. sign out). */
 export const FOOTER_ROUTE: RouteDef = {
@@ -35,41 +71,6 @@ export const FOOTER_ROUTE: RouteDef = {
   label: "Sign out",
   icon: LogOut,
 };
-
-/**
- * Org-scoped nav routes. Paths are relative to /organizations/:id
- * (e.g. "" for dashboard, "users" for /organizations/:id/users).
- */
-export const ORG_NAV_ROUTES: RouteDef[] = [
-  {
-    path: "",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    exact: true,
-    pageTitle: "Dashboard",
-    pageDescription: "Welcome to your GradePoint dashboard.",
-  },
-  {
-    path: "users",
-    label: "Users",
-    icon: Users,
-    pageTitle: "Users",
-    pageDescription: "Manage organization members and roles.",
-  },
-  {
-    path: "settings",
-    label: "Settings",
-    icon: Settings,
-    pageTitle: "Settings",
-    pageDescription: "Organization settings and preferences.",
-  },
-];
-
-/** Section title for org nav in the sidebar. */
-export const ORG_NAV_SECTION_TITLE = "Platform";
-
-/** Suffix for document titles (e.g. "Dashboard - GradePoint"). */
-export const DOCUMENT_TITLE_SUFFIX = "GradePoint";
 
 /**
  * Converts route definitions to nav items with resolved hrefs.
@@ -97,15 +98,17 @@ export function routeDefsToNavItems(
 }
 
 /**
- * Builds org nav sections for the sidebar from ORG_NAV_ROUTES.
+ * Builds org nav sections for the sidebar from ORG_NAV_SECTIONS.
  * @param orgId - Organization id (e.g. from route params)
  */
 export function getOrgNavSections(
   orgId: string
 ): Array<{ title?: string; items: ReturnType<typeof routeDefsToNavItems> }> {
   const basePath = `/organizations/${orgId}`;
-  const items = routeDefsToNavItems(ORG_NAV_ROUTES, basePath);
-  return [{ title: ORG_NAV_SECTION_TITLE, items }];
+  return ORG_NAV_SECTIONS.map((section) => ({
+    title: section.header,
+    items: routeDefsToNavItems(section.submenu, basePath),
+  }));
 }
 
 export interface PageHeadingConfig {
@@ -115,13 +118,14 @@ export interface PageHeadingConfig {
 
 /**
  * Resolves page heading for the current path from route definitions.
- * When orgId is set, matches against ORG_NAV_ROUTES; otherwise MAIN_NAV_ROUTES.
+ * When orgId is set, matches against ORG_NAV_SECTIONS (all submenus).
  * @param pathname - Current pathname (e.g. from useLocation().pathname)
  * @param orgId - When in org context, the organization id
  */
 export function getPageHeading(pathname: string, orgId?: string): PageHeadingConfig | undefined {
-  const defs = orgId != null ? ORG_NAV_ROUTES : MAIN_NAV_ROUTES;
-  const basePath = orgId != null ? `/organizations/${orgId}` : "";
+  if (orgId == null) return undefined;
+  const defs = ORG_NAV_SECTIONS.flatMap((s) => s.submenu);
+  const basePath = `/organizations/${orgId}`;
 
   for (const def of defs) {
     const defFullPath =
