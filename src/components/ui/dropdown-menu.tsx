@@ -46,6 +46,7 @@ const DropdownMenuTriggerComponent: Component<DropdownMenuTriggerProps> = (props
     <DropdownMenuTrigger
       class={cn(
         "flex cursor-pointer items-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "data-expanded:bg-muted",
         local.class
       )}
       {...others}
@@ -62,6 +63,11 @@ const DropdownMenuContent: Component<DropdownMenuContentComponentProps> = (props
       <DropdownMenuContentPrimitive
         class={cn(
           "z-50 min-w-32 overflow-hidden rounded-lg border border-border bg-popover px-0 py-2 text-popover-foreground shadow-apple-lg",
+          "data-expanded:animate-dialog-content-in data-closed:animate-dialog-content-out",
+          "data-closed:opacity-0 data-closed:scale-95",
+          "motion-reduce:data-expanded:animate-none motion-reduce:data-closed:animate-none",
+          "motion-reduce:data-expanded:opacity-100 motion-reduce:data-expanded:scale-100",
+          "motion-reduce:data-closed:opacity-0 motion-reduce:data-closed:scale-95",
           local.class
         )}
         {...others}
