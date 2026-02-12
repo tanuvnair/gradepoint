@@ -84,33 +84,19 @@ export default function AppSidebarUserBlock(props: AppSidebarUserBlockProps) {
           {!collapsed() && (
             <>
               <div class="flex min-w-0 flex-1 flex-col">
-                <span class="truncate text-sm font-medium text-foreground">
-                  {props.name}
-                </span>
-                <span class="truncate text-xs text-muted-foreground">
-                  {props.email}
-                </span>
+                <span class="truncate text-sm font-medium text-foreground">{props.name}</span>
+                <span class="truncate text-xs text-muted-foreground">{props.email}</span>
               </div>
-              <ChevronsUpDown
-                class="size-4 shrink-0 text-muted-foreground"
-                aria-hidden
-              />
+              <ChevronsUpDown class="size-4 shrink-0 text-muted-foreground" aria-hidden />
             </>
           )}
         </DropdownMenuTrigger>
-        <DropdownMenuContent class="min-w-56 py-0">
-          <div
-            class="flex items-center gap-3 px-3 py-2"
-            aria-hidden
-          >
+        <DropdownMenuContent class="min-w-56">
+          <div class="flex items-center gap-3 px-3 py-2" aria-hidden>
             <UserAvatar name={props.name} avatarUrl={props.avatarUrl} />
             <div class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate text-sm font-medium text-foreground">
-                {props.name}
-              </span>
-              <span class="truncate text-xs text-muted-foreground">
-                {props.email}
-              </span>
+              <span class="truncate text-sm font-medium text-foreground">{props.name}</span>
+              <span class="truncate text-xs text-muted-foreground">{props.email}</span>
             </div>
           </div>
           <DropdownMenuSeparator />
