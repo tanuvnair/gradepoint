@@ -54,9 +54,13 @@ const Dialog: Component<DialogProps> = (props) => {
 const DialogContent: Component<DialogContentProps> = (props) => (
   <DialogPortal>
     <div class="fixed inset-0 z-50 flex items-center justify-center safe-area-inset-bottom safe-area-inset-top">
-      <DialogOverlay class="dialog-overlay fixed inset-0 z-50 bg-black/50 safe-area-inset-bottom safe-area-inset-top" />
+      <DialogOverlay
+        data-dialog-overlay
+        class="fixed inset-0 z-50 bg-black/50 safe-area-inset-bottom safe-area-inset-top data-expanded:animate-dialog-overlay-in data-closed:animate-dialog-overlay-out data-closed:opacity-0 motion-reduce:data-expanded:animate-none motion-reduce:data-closed:animate-none motion-reduce:data-expanded:opacity-100 motion-reduce:data-closed:opacity-0"
+      />
       <DialogContentPrimitive
-        class="dialog-content relative z-50"
+        data-dialog-content
+        class="relative z-50 data-expanded:animate-dialog-content-in data-closed:animate-dialog-content-out data-closed:opacity-0 data-closed:scale-95 motion-reduce:data-expanded:animate-none motion-reduce:data-closed:animate-none motion-reduce:data-expanded:opacity-100 motion-reduce:data-expanded:scale-100 motion-reduce:data-closed:opacity-0 motion-reduce:data-closed:scale-95"
         onClick={(e: MouseEvent) => e.stopPropagation()}
       >
         <div

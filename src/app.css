@@ -35,6 +35,47 @@
   --shadow-apple-button: 0 1px 3px 0 rgba(0, 0, 0, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
   --shadow-apple-button-hover:
     0 2px 6px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+
+  @keyframes dialog-overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes dialog-overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes dialog-content-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes dialog-content-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+  --animate-dialog-overlay-in: dialog-overlay-in 0.2s ease-out forwards;
+  --animate-dialog-overlay-out: dialog-overlay-out 0.2s ease-out forwards;
+  --animate-dialog-content-in: dialog-content-in 0.2s ease-out forwards;
+  --animate-dialog-content-out: dialog-content-out 0.2s ease-out forwards;
 }
 
 @layer base {
@@ -115,21 +156,19 @@
 
 @layer utilities {
   .glass {
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(24px);
+    @apply bg-white/80 backdrop-blur-3xl;
   }
 
   .dark .glass {
-    background-color: rgba(17, 24, 39, 0.8);
+    @apply bg-[rgba(17,24,39,0.8)];
   }
 
   .glass-strong {
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(32px);
+    @apply bg-white/95 backdrop-blur-[32px];
   }
 
   .dark .glass-strong {
-    background-color: rgba(17, 24, 39, 0.95);
+    @apply bg-[rgba(17,24,39,0.95)];
   }
 
   input[type="checkbox"]:checked {
@@ -144,11 +183,11 @@
     background: transparent;
   }
 
-  input[type="range"].slider-with-fill {
+  input[type="range"][data-slider-fill] {
     --fill-percentage: 0%;
   }
 
-  input[type="range"].slider-with-fill::-webkit-slider-track {
+  input[type="range"][data-slider-fill]::-webkit-slider-track {
     background: linear-gradient(
       to right,
       hsl(var(--primary)) 0%,
@@ -159,7 +198,7 @@
     @apply h-1.5 rounded;
   }
 
-  input[type="range"]:not(.slider-with-fill)::-webkit-slider-track {
+  input[type="range"]:not([data-slider-fill])::-webkit-slider-track {
     @apply h-1.5 rounded;
     background: hsl(var(--input));
   }
@@ -183,7 +222,7 @@
     background: hsl(var(--primary-active));
   }
 
-  input[type="range"].slider-with-fill::-moz-range-track {
+  input[type="range"][data-slider-fill]::-moz-range-track {
     background: linear-gradient(
       to right,
       hsl(var(--primary)) 0%,
@@ -194,7 +233,7 @@
     @apply h-1.5 rounded border-0;
   }
 
-  input[type="range"]:not(.slider-with-fill)::-moz-range-track {
+  input[type="range"]:not([data-slider-fill])::-moz-range-track {
     @apply h-1.5 rounded border-0;
     background: hsl(var(--input));
   }
@@ -225,79 +264,23 @@
     @apply cursor-not-allowed;
   }
 
-  @keyframes dialog-overlay-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  @keyframes dialog-overlay-out {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
-  @keyframes dialog-content-in {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  @keyframes dialog-content-out {
-    from {
-      opacity: 1;
-      transform: scale(1);
-    }
-    to {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-  }
-  .dialog-overlay[data-closed] {
-    opacity: 0;
-  }
-  .dialog-overlay[data-expanded] {
-    animation: dialog-overlay-in 0.2s ease-out forwards;
-  }
-  .dialog-overlay[data-closed][data-exiting="true"] {
-    animation: dialog-overlay-out 0.2s ease-out forwards;
-  }
-  .dialog-content[data-closed] {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  .dialog-content[data-expanded] {
-    animation: dialog-content-in 0.2s ease-out forwards;
-  }
-  .dialog-content[data-closed][data-exiting="true"] {
-    animation: dialog-content-out 0.2s ease-out forwards;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .dialog-overlay[data-expanded],
-    .dialog-overlay[data-closed][data-exiting="true"] {
+    [data-dialog-overlay][data-expanded],
+    [data-dialog-overlay][data-closed] {
       animation: none;
     }
-    .dialog-overlay[data-expanded] {
+    [data-dialog-overlay][data-expanded] {
       opacity: 1;
     }
-    .dialog-content[data-expanded],
-    .dialog-content[data-closed][data-exiting="true"] {
+    [data-dialog-content][data-expanded],
+    [data-dialog-content][data-closed] {
       animation: none;
     }
-    .dialog-content[data-expanded] {
+    [data-dialog-content][data-expanded] {
       opacity: 1;
       transform: scale(1);
     }
-    .dialog-content[data-closed] {
+    [data-dialog-content][data-closed] {
       opacity: 0;
       transform: scale(0.95);
     }
