@@ -8,10 +8,8 @@ import {
   DropdownMenuSeparator,
 } from "~/components/ui";
 import { cn } from "~/lib/utils";
-import Bell from "lucide-solid/icons/bell";
 import ChevronsUpDown from "lucide-solid/icons/chevrons-up-down";
 import LogOut from "lucide-solid/icons/log-out";
-import CircleUser from "lucide-solid/icons/circle-user";
 
 export interface AppSidebarUserBlockProps {
   /** User display name. */
@@ -22,10 +20,6 @@ export interface AppSidebarUserBlockProps {
   avatarUrl?: string;
   /** URL for sign out (e.g. /sign-in). */
   signOutHref: string;
-  /** Optional URL for account/settings. */
-  accountHref?: string;
-  /** Optional URL for notifications. */
-  notificationsHref?: string;
   /** When true, show only the avatar (for collapsed sidebar). */
   collapsed?: boolean;
   class?: string;
@@ -99,23 +93,6 @@ export default function AppSidebarUserBlock(props: AppSidebarUserBlockProps) {
               <span class="truncate text-xs text-muted-foreground">{props.email}</span>
             </div>
           </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            closeOnSelect
-            onSelect={() => handleSelect(props.accountHref)}
-            class="flex items-center gap-3"
-          >
-            <CircleUser class={itemIconClass} aria-hidden />
-            <DropdownMenuItemLabel>Account</DropdownMenuItemLabel>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            closeOnSelect
-            onSelect={() => handleSelect(props.notificationsHref)}
-            class="flex items-center gap-3"
-          >
-            <Bell class={itemIconClass} aria-hidden />
-            <DropdownMenuItemLabel>Notifications</DropdownMenuItemLabel>
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             closeOnSelect

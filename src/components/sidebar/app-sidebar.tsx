@@ -41,8 +41,6 @@ export interface UserBlockConfig {
   email: string;
   avatarUrl?: string;
   signOutHref: string;
-  accountHref?: string;
-  notificationsHref?: string;
 }
 
 export interface AppSidebarProps {
@@ -301,8 +299,6 @@ export default function AppSidebar(props: AppSidebarProps) {
               email={props.userBlock.email}
               avatarUrl={props.userBlock.avatarUrl}
               signOutHref={props.userBlock.signOutHref}
-              accountHref={props.userBlock.accountHref}
-              notificationsHref={props.userBlock.notificationsHref}
               collapsed={collapsed()}
             />
           ) : (
